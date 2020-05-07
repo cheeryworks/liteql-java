@@ -1,0 +1,16 @@
+{
+  "description": "",
+  "operations": [
+    {
+      "operation": "create_field",
+      "domainType": "organization",
+      "fields": [
+        {
+          "name": "country",
+          "type": "association",
+          "reference": "country"
+        }
+      ]
+    }
+  ]
+}

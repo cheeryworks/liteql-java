@@ -1,0 +1,10 @@
+{
+  "domainType": "liteql.user",
+  "conditions": [
+    {
+      "field": "name",
+      "condition": "contains",
+      "value": "s"
+    }
+  ]
+}

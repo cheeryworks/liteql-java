@@ -1,0 +1,14 @@
+{
+  "queries": [
+    {
+      "queryType": "delete",
+      "domainType": "liteql.country",
+      "conditions": [
+        {
+          "field": "code",
+          "value": "usa"
+        }
+      ]
+    }
+  ]
+}

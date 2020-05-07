@@ -1,0 +1,12 @@
+{
+  "queries": [
+    {
+      "queryType": "create",
+      "domainType": "liteql.user",
+      "data": {
+        "name": "Carr Chang",
+        "username": "carrchang"
+      }
+    }
+  ]
+}

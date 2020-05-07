@@ -1,0 +1,28 @@
+{
+  "name": "country",
+  "fields": [
+    {
+      "name": "id",
+      "type": "id"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "code",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    }
+  ],
+  "uniques": [
+    {
+      "fields": [
+        "code"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "organization",
+  "fields": [
+    {
+      "name": "id",
+      "type": "id"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "code",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "country",
+      "type": "association",
+      "reference": "country"
+    }
+  ],
+  "uniques": [
+    {
+      "fields": [
+        "code"
+      ]
+    }
+  ]
+}

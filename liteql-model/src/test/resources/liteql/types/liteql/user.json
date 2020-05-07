@@ -1,0 +1,47 @@
+{
+  "name": "user",
+  "fields": [
+    {
+      "name": "id",
+      "type": "id"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "username",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "age",
+      "type": "integer"
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "organization",
+      "type": "association",
+      "reference": "organization"
+    },
+    {
+      "name": "country",
+      "type": "association",
+      "reference": "country"
+    }
+  ],
+  "uniques": [
+    {
+      "fields": [
+        "username"
+      ]
+    }
+  ]
+}

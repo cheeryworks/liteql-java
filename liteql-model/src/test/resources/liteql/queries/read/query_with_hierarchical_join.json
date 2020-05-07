@@ -1,0 +1,29 @@
+{
+  "queryType": "read",
+  "domainType": "liteql.user",
+  "joins": [
+    {
+      "domainType": "liteql.organization",
+      "fields": {
+        "name": "organizationName",
+        "code": "organizationCode"
+      },
+      "conditions": [
+        {
+          "field": "code",
+          "condition": "starts_with",
+          "value": "F"
+        }
+      ],
+      "joins": [
+        {
+          "domainType": "liteql.country",
+          "fields": {
+            "name": "countryName",
+            "code": "countryCode"
+          }
+        }
+      ]
+    }
+  ]
+}
