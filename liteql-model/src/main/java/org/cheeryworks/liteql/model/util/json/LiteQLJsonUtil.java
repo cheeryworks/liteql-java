@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
 import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.enums.StandardConditionClause;
-import org.cheeryworks.liteql.model.migration.MigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
 import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.condition.ConditionType;
 import org.cheeryworks.liteql.model.query.condition.QueryConditions;

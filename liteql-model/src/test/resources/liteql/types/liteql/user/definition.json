@@ -1,5 +1,5 @@
 {
-  "name": "organization",
+  "name": "user",
   "fields": [
     {
       "name": "id",
@@ -12,21 +12,35 @@
       "nullable": false
     },
     {
-      "name": "code",
+      "name": "username",
       "type": "string",
       "length": 255,
       "nullable": false
     },
     {
+      "name": "age",
+      "type": "integer"
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "organization",
+      "type": "association",
+      "reference": "liteql.organization"
+    },
+    {
       "name": "country",
       "type": "association",
-      "reference": "country"
+      "reference": "liteql.country"
     }
   ],
   "uniques": [
     {
       "fields": [
-        "code"
+        "username"
       ]
     }
   ]

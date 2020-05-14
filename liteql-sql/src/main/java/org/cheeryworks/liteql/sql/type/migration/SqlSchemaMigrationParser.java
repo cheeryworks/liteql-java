@@ -1,6 +1,6 @@
-package org.cheeryworks.liteql.sql.migration;
+package org.cheeryworks.liteql.sql.type.migration;
 
-import org.cheeryworks.liteql.model.migration.Migration;
+import org.cheeryworks.liteql.model.type.migration.Migration;
 
 import java.util.List;
 

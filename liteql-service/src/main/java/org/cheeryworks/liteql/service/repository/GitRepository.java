@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.service.repository;
 
-import org.cheeryworks.liteql.model.migration.Migration;
+import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.type.DomainType;
 
 import java.util.List;

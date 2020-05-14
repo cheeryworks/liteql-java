@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.repository;
 
-import org.cheeryworks.liteql.model.migration.Migration;
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.json.JsonReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 
@@ -16,9 +16,9 @@ public class FileSystemRepository implements Repository {
 
     private String path;
 
-    private Map<String, Map<String, DomainType>> schemas = new LinkedHashMap<String, Map<String, DomainType>>();
+    private Map<String, Map<String, DomainType>> schemas = new LinkedHashMap<>();
 
-    private Map<String, Map<String, Migration>> migrations = new LinkedHashMap<String, Map<String, Migration>>();
+    private Map<String, Map<String, Migration>> migrations = new LinkedHashMap<>();
 
     public FileSystemRepository(String path) {
         this.path = path;
@@ -32,28 +32,29 @@ public class FileSystemRepository implements Repository {
 
         for (Map.Entry<String, String> typeJsonFileEntry : typeJsonFiles.entrySet()) {
             String typePath = typeJsonFileEntry.getKey();
-            String schemaName = typePath.substring(0, typePath.indexOf("/"));
-            String typeName = typePath.substring(
-                    typePath.lastIndexOf("/") + 1, typePath.indexOf(".json"));
-            DomainType domainType = LiteQLJsonUtil.toBean(typeJsonFileEntry.getValue(), DomainType.class);
+            String[] definitionInformation = typePath.split("/");
+            String schemaName = definitionInformation[0];
+            String typeName = definitionInformation[1];
 
-            domainType.setSchema(schemaName);
+            if (typePath.endsWith("definition.json")) {
+                DomainType domainType = LiteQLJsonUtil.toBean(typeJsonFileEntry.getValue(), DomainType.class);
 
-            addType(schemaName, typeName, domainType);
-        }
+                domainType.setSchema(schemaName);
+                domainType.setName(typeName);
 
-        Map<String, String> migrationJsonFiles = JsonReader.readJsonFiles(
-                path + (path.endsWith("/") ? "" : "/") + "migrations");
+                addType(schemaName, typeName, domainType);
+            }
 
-        for (Map.Entry<String, String> migrationJsonFileEntry : migrationJsonFiles.entrySet()) {
-            String migrationPath = migrationJsonFileEntry.getKey();
-            String schemaName = migrationPath.substring(0, migrationPath.indexOf("/"));
-            String migrationName = migrationPath.substring(
-                    migrationPath.lastIndexOf("/") + 1, migrationPath.indexOf(".json"));
-            Migration migration = LiteQLJsonUtil.toBean(migrationJsonFileEntry.getValue(), Migration.class);
-            migration.setName(migrationName);
+            if (typePath.contains("/migrations/")) {
+                String migrationName = definitionInformation[3].substring(
+                        0, definitionInformation[3].indexOf(".json"));
+                Migration migration = LiteQLJsonUtil.toBean(typeJsonFileEntry.getValue(), Migration.class);
+                migration.setName(migrationName);
+                migration.setSchema(schemaName);
+                migration.setDomainType(typeName);
 
-            addMigration(schemaName, migrationName, migration);
+                addMigration(schemaName, migrationName, migration);
+            }
         }
     }
 
@@ -61,7 +62,7 @@ public class FileSystemRepository implements Repository {
         Map<String, DomainType> schema = schemas.get(schemaName);
 
         if (schema == null) {
-            schema = new LinkedHashMap<String, DomainType>();
+            schema = new LinkedHashMap<>();
             schemas.put(schemaName, schema);
         }
 
@@ -72,7 +73,7 @@ public class FileSystemRepository implements Repository {
         Map<String, Migration> migrationsInSchema = migrations.get(schemaName);
 
         if (migrationsInSchema == null) {
-            migrationsInSchema = new LinkedHashMap<String, Migration>();
+            migrationsInSchema = new LinkedHashMap<>();
             migrations.put(schemaName, migrationsInSchema);
         }
 

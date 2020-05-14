@@ -1,14 +1,14 @@
 package org.cheeryworks.liteql.sql.jooq;
 
-import org.cheeryworks.liteql.model.migration.Migration;
+import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.util.JOOQDDLUtil;
 import org.cheeryworks.liteql.sql.jooq.util.JOOQDataTypeUtil;
-import org.cheeryworks.liteql.sql.migration.SqlSchemaMigrationExecutor;
-import org.cheeryworks.liteql.sql.migration.SqlSchemaMigrationParser;
+import org.cheeryworks.liteql.sql.type.migration.SqlSchemaMigrationExecutor;
+import org.cheeryworks.liteql.sql.type.migration.SqlSchemaMigrationParser;
 import org.cheeryworks.liteql.sql.util.DatabaseTypeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.AlterTableFinalStep;

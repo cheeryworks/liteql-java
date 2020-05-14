@@ -3,7 +3,6 @@
   "operations": [
     {
       "operation": "create_type",
-      "domainType": "country",
       "fields": [
         {
           "name": "id",

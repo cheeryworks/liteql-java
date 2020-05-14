@@ -20,7 +20,7 @@ public abstract class JsonReader {
     }
 
     public static Map<String, String> readJsonFiles(String path, boolean recursive) {
-        TreeMap<String, String> jsonFiles = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<String, String> jsonFiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         try {
             if (!path.endsWith("/")) {

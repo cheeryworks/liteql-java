@@ -3,7 +3,6 @@
   "operations": [
     {
       "operation": "create_type",
-      "domainType": "user",
       "fields": [
         {
           "name": "id",
@@ -33,7 +32,7 @@
         {
           "name": "organization",
           "type": "association",
-          "reference": "organization"
+          "reference": "liteql.organization"
         }
       ],
       "uniques": [

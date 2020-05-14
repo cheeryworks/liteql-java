@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.sql.migration;
+package org.cheeryworks.liteql.sql.type.migration;
 
 public interface SqlSchemaMigrationExecutor {
 

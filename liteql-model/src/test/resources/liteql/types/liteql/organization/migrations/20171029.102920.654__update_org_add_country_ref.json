@@ -3,12 +3,11 @@
   "operations": [
     {
       "operation": "create_field",
-      "domainType": "user",
       "fields": [
         {
           "name": "country",
           "type": "association",
-          "reference": "country"
+          "reference": "liteql.country"
         }
       ]
     }

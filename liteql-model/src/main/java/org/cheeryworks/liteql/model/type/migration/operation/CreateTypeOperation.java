@@ -1,7 +1,7 @@
-package org.cheeryworks.liteql.model.migration.operation;
+package org.cheeryworks.liteql.model.type.migration.operation;
 
 import org.cheeryworks.liteql.model.enums.StandardMigrationOperationType;
-import org.cheeryworks.liteql.model.migration.MigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
 import org.cheeryworks.liteql.model.type.DomainTypeField;
 import org.cheeryworks.liteql.model.type.DomainTypeUniqueKey;
 

@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.migration;
+package org.cheeryworks.liteql.model.type.migration;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +14,10 @@ public class Migration implements Serializable {
     public static final String STATE_FAILED = "Failed";
 
     private String name;
+
+    private String schema;
+
+    private String domainType;
 
     private String description;
 
@@ -33,6 +37,22 @@ public class Migration implements Serializable {
         }
 
         return null;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public String getDomainType() {
+        return domainType;
+    }
+
+    public void setDomainType(String domainType) {
+        this.domainType = domainType;
     }
 
     public String getDescription() {
