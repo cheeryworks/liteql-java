@@ -62,7 +62,7 @@
         <repository>
             <id>cheeryworks-releases</id>
             <name>CheeryWorks Releases Repository</name>
-            <url>https://repository.cheeryworks.org/repository/maven-releases</url>
+            <url>https://repository.cheeryworks.net/repository/maven-releases</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
@@ -75,7 +75,7 @@
         <repository>
             <id>cheeryworks-snapshots</id>
             <name>CheeryWorks Snapshots Repository</name>
-            <url>https://repository.cheeryworks.org/repository/maven-snapshots</url>
+            <url>https://repository.cheeryworks.net/repository/maven-snapshots</url>
             <releases>
                 <enabled>false</enabled>
                 <updatePolicy>never</updatePolicy>
@@ -90,7 +90,7 @@
         <pluginRepository>
             <id>cheeryworks-maven-plugin-releases</id>
             <name>CheeryWorks Maven Plugin Releases</name>
-            <url>https://repository.cheeryworks.org/repository/maven-releases</url>
+            <url>https://repository.cheeryworks.net/repository/maven-releases</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
@@ -103,7 +103,7 @@
         <pluginRepository>
             <id>cheeryworks-maven-plugin-snapshots</id>
             <name>CheeryWorks Maven Plugin Snapshots</name>
-            <url>https://repository.cheeryworks.org/repository/maven-snapshots</url>
+            <url>https://repository.cheeryworks.net/repository/maven-snapshots</url>
             <releases>
                 <enabled>false</enabled>
                 <updatePolicy>never</updatePolicy>
