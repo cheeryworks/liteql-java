@@ -29,18 +29,6 @@ public class JOOQDatabaseTypeUtil {
             return SQLDialect.POSTGRES;
         }
 
-        if (database.equals(Database.ORACLE)) {
-            return SQLDialect.ORACLE;
-        }
-
-        if (database.equals(Database.SQL_SERVER)) {
-            return SQLDialect.SQL_SERVER;
-        }
-
-        if (database.equals(Database.DB2)) {
-            return SQLDialect.DB2;
-        }
-
         throw new SQLDialectNotSupportedException(database.name());
     }
 

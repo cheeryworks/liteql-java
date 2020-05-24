@@ -2,14 +2,11 @@ package org.cheeryworks.liteql.sql.jooq.util;
 
 
 import org.cheeryworks.liteql.sql.enums.Database;
-import org.cheeryworks.liteql.sql.jooq.datatype.DB2JOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.datatype.H2JOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.datatype.HSQLJOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.datatype.MySQLJOOQDataType;
-import org.cheeryworks.liteql.sql.jooq.datatype.OracleJOOQDataType;
 import org.cheeryworks.liteql.sql.jooq.datatype.PostgreSQLJOOQDataType;
-import org.cheeryworks.liteql.sql.jooq.datatype.SqlServerJOOQDataType;
 import org.jooq.SQLDialect;
 
 import java.math.BigDecimal;
@@ -28,12 +25,6 @@ public abstract class JOOQDataTypeUtil {
     private static final JOOQDataType MY_SQL_JOOQ_DATA_TYPE = new MySQLJOOQDataType();
 
     private static final JOOQDataType POSTGRE_SQL_JOOQ_DATA_TYPE = new PostgreSQLJOOQDataType();
-
-    private static final JOOQDataType ORACLE_JOOQ_DATA_TYPE = new OracleJOOQDataType();
-
-    private static final JOOQDataType SQL_SERVER_JOOQ_DATA_TYPE = new SqlServerJOOQDataType();
-
-    private static final JOOQDataType DB2_JOOQ_DATA_TYPE = new DB2JOOQDataType();
 
     public static final Map<Integer, Class> SUPPORTED_DATA_TYPES;
 
@@ -61,12 +52,6 @@ public abstract class JOOQDataTypeUtil {
             return MY_SQL_JOOQ_DATA_TYPE;
         } else if (SQLDialect.POSTGRES.equals(sqlDialect)) {
             return POSTGRE_SQL_JOOQ_DATA_TYPE;
-        } else if (SQLDialect.ORACLE.equals(sqlDialect)) {
-            return ORACLE_JOOQ_DATA_TYPE;
-        } else if (SQLDialect.SQL_SERVER.equals(sqlDialect)) {
-            return SQL_SERVER_JOOQ_DATA_TYPE;
-        } else if (SQLDialect.DB2.equals(sqlDialect)) {
-            return DB2_JOOQ_DATA_TYPE;
         }
 
         throw new IllegalArgumentException("Database " + database.name() + " not supported");
