@@ -1,15 +1,13 @@
 package org.cheeryworks.liteql.model.type.field;
 
 import org.cheeryworks.liteql.model.enums.DataType;
-import org.cheeryworks.liteql.model.type.AbstractDomainTypeField;
+import org.cheeryworks.liteql.model.type.AbstractNullableDomainTypeField;
 
-public class DecimalField extends AbstractDomainTypeField {
+public class DecimalField extends AbstractNullableDomainTypeField {
 
     private Integer precision;
 
     private Integer scale;
-
-    private Boolean nullable;
 
     public Integer getPrecision() {
         return precision;
@@ -25,14 +23,6 @@ public class DecimalField extends AbstractDomainTypeField {
 
     public void setScale(Integer scale) {
         this.scale = scale;
-    }
-
-    public Boolean getNullable() {
-        return nullable;
-    }
-
-    public void setNullable(Boolean nullable) {
-        this.nullable = nullable;
     }
 
     public DecimalField() {

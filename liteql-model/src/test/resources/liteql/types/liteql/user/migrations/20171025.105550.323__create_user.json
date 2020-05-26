@@ -31,8 +31,8 @@
         },
         {
           "name": "organization",
-          "type": "association",
-          "reference": "liteql.organization"
+          "type": "reference",
+          "domainType": "liteql.organization"
         }
       ],
       "uniques": [

@@ -34,21 +34,21 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
         for (DomainType domainType : domainTypes.values()) {
-            schemaSqlBuilder.append(domainTypeToSql(schemaName, domainType));
+            schemaSqlBuilder.append(domainTypeToSql(domainType));
         }
 
         return schemaSqlBuilder.toString();
     }
 
     @Override
-    public String domainTypeToSql(String schemaName, String domainTypeName) {
-        return domainTypeToSql(schemaName, getRepository().getDomainType(schemaName, domainTypeName));
+    public String domainTypeToSql(String domainTypeName) {
+        return domainTypeToSql(getRepository().getDomainType(domainTypeName));
     }
 
-    private String domainTypeToSql(String schemaName, DomainType domainType) {
+    private String domainTypeToSql(DomainType domainType) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getTableName(schemaName, domainType.getName());
+        String tableName = getTableName(domainType.getName());
 
         if (tableName.length() > 25) {
             throw new IllegalArgumentException("Schema or Domain Type name is too long, "

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.cheeryworks.liteql.model.enums.DataType;
 import org.cheeryworks.liteql.model.type.DomainTypeField;
-import org.cheeryworks.liteql.model.type.field.AssociationField;
+import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.BooleanField;
 import org.cheeryworks.liteql.model.type.field.ClobField;
@@ -53,8 +53,8 @@ public class FieldDeserializer extends StdDeserializer<DomainTypeField> {
                         return LiteQLJsonUtil.toBean(node.toString(), ClobField.class);
                     case Blob:
                         return LiteQLJsonUtil.toBean(node.toString(), BlobField.class);
-                    case Association:
-                        return LiteQLJsonUtil.toBean(node.toString(), AssociationField.class);
+                    case Reference:
+                        return LiteQLJsonUtil.toBean(node.toString(), ReferenceField.class);
                     default:
                         throw new IllegalArgumentException("Unsupported field type: " + dataTypeInString);
                 }

@@ -45,39 +45,32 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
         for (MigrationOperation operation : migration.getOperations()) {
             if (operation instanceof CreateTypeOperation) {
                 migrationInSql.addAll(
-                        parsingCreateTypeOperation(
-                                schemaName, migration.getDomainType(), (CreateTypeOperation) operation));
+                        parsingCreateTypeOperation(migration.getDomainType(), (CreateTypeOperation) operation));
             } else if (operation instanceof CreateFieldOperation) {
                 migrationInSql.addAll(
-                        parsingCreateFieldOperation(
-                                schemaName, migration.getDomainType(), (CreateFieldOperation) operation));
+                        parsingCreateFieldOperation(migration.getDomainType(), (CreateFieldOperation) operation));
             } else if (operation instanceof CreateUniqueOperation) {
                 migrationInSql.addAll(
-                        parsingCreateUniqueOperation(
-                                schemaName, migration.getDomainType(), (CreateUniqueOperation) operation));
+                        parsingCreateUniqueOperation(migration.getDomainType(), (CreateUniqueOperation) operation));
             } else if (operation instanceof DeleteTypeOperation) {
                 migrationInSql.addAll(
-                        parsingDeleteTypeOperation(
-                                schemaName, migration.getDomainType(), (DeleteTypeOperation) operation));
+                        parsingDeleteTypeOperation(migration.getDomainType(), (DeleteTypeOperation) operation));
             } else if (operation instanceof DeleteFieldOperation) {
                 migrationInSql.addAll(
-                        parsingDeleteFieldOperation(
-                                schemaName, migration.getDomainType(), (DeleteFieldOperation) operation));
+                        parsingDeleteFieldOperation(migration.getDomainType(), (DeleteFieldOperation) operation));
             } else if (operation instanceof DeleteUniqueOperation) {
                 migrationInSql.addAll(
-                        parsingDeleteUniqueOperation(
-                                schemaName, migration.getDomainType(), (DeleteUniqueOperation) operation));
+                        parsingDeleteUniqueOperation(migration.getDomainType(), (DeleteUniqueOperation) operation));
             }
         }
 
         return migrationInSql;
     }
 
-    private List<String> parsingCreateTypeOperation(
-            String schemaName, String domainType, CreateTypeOperation createTypeOperation) {
+    private List<String> parsingCreateTypeOperation(String domainTypeName, CreateTypeOperation createTypeOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainType);
+        String tableName = getTableName(domainTypeName);
 
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
@@ -100,10 +93,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateFieldOperation(
-            String schemaName, String domainType, CreateFieldOperation createFieldOperation) {
+            String domainTypeName, CreateFieldOperation createFieldOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainType);
+        String tableName = getTableName(domainTypeName);
 
         List<org.jooq.Field> jooqFields = getJooqFields(createFieldOperation.getFields(), getDatabase());
 
@@ -119,10 +112,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateUniqueOperation(
-            String schemaName, String domainType, CreateUniqueOperation createUniqueOperation) {
+            String domainTypeName, CreateUniqueOperation createUniqueOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainType);
+        String tableName = getTableName(domainTypeName);
 
         operationsInSql.addAll(
                 parsingAddUniques(
@@ -132,13 +125,12 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
         return operationsInSql;
     }
 
-    private List<String> parsingDeleteTypeOperation(
-            String schemaName, String domainTypeName, DeleteTypeOperation deleteTypeOperation) {
+    private List<String> parsingDeleteTypeOperation(String domainTypeName, DeleteTypeOperation deleteTypeOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainTypeName);
+        String tableName = getTableName(domainTypeName);
 
-        DomainType domainType = getRepository().getDomainType(schemaName, domainTypeName);
+        DomainType domainType = getRepository().getDomainType(domainTypeName);
 
         operationsInSql.addAll(parsingDropUniques(tableName, domainType.getUniques()));
 
@@ -152,10 +144,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDeleteFieldOperation(
-            String schemaName, String domainType, DeleteFieldOperation deleteFieldOperation) {
+            String domainTypeName, DeleteFieldOperation deleteFieldOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainType);
+        String tableName = getTableName(domainTypeName);
 
         for (String field : deleteFieldOperation.getFields()) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()
@@ -169,10 +161,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDeleteUniqueOperation(
-            String schemaName, String domainType, DeleteUniqueOperation deleteUniqueOperation) {
+            String domainTypeName, DeleteUniqueOperation deleteUniqueOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(schemaName, domainType);
+        String tableName = getTableName(domainTypeName);
 
         operationsInSql.addAll(parsingDropUniques(tableName, deleteUniqueOperation.getUniques()));
 

@@ -8,16 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
 import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.enums.StandardConditionClause;
-import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
 import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.condition.ConditionType;
 import org.cheeryworks.liteql.model.query.condition.QueryConditions;
 import org.cheeryworks.liteql.model.query.field.QueryFieldDefinitions;
 import org.cheeryworks.liteql.model.type.DomainTypeField;
-import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

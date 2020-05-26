@@ -431,7 +431,7 @@ public abstract class SqlQueryServiceUtil {
     }
 
     public static Map<String, Class> getFieldDefinitions(DomainType domainType) {
-        Map<String, Class> fieldDefinitions = new HashMap<String, Class>();
+        Map<String, Class> fieldDefinitions = new HashMap<>();
 
         for (DomainTypeField field : domainType.getFields()) {
             fieldDefinitions.put(field.getName(), getDataType(field.getType()));
@@ -443,7 +443,7 @@ public abstract class SqlQueryServiceUtil {
     private static Class getDataType(String dataType) {
         switch (org.cheeryworks.liteql.model.enums.DataType.valueOf(StringUtils.capitalize(dataType))) {
             case Id:
-            case Association:
+            case Reference:
             case String:
                 return String.class;
             case Integer:

@@ -1,5 +1,8 @@
 package org.cheeryworks.liteql.sql.query;
 
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.query.AbstractQuery;
 import org.cheeryworks.liteql.model.query.CreateQuery;
 import org.cheeryworks.liteql.model.query.DeleteQuery;
@@ -14,15 +17,11 @@ import org.cheeryworks.liteql.model.query.result.PageReadResults;
 import org.cheeryworks.liteql.model.query.result.ReadResult;
 import org.cheeryworks.liteql.model.query.result.ReadResults;
 import org.cheeryworks.liteql.model.query.result.TreeReadResults;
-import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.query.diagnostic.SaveQueryDiagnostic;
 import org.cheeryworks.liteql.sql.util.SqlQueryServiceUtil;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,8 +164,7 @@ public abstract class SqlQueryService implements QueryService {
         long currentTime = System.currentTimeMillis();
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
-        Map<Integer, Map<String, List<SaveQuery>>> sortedSaveQueries
-                = new HashMap<Integer, Map<String, List<SaveQuery>>>();
+        Map<Integer, Map<String, List<SaveQuery>>> sortedSaveQueries = new HashMap<>();
 
         saveQueryDiagnostic.setTransformingSaveQueryDuration(
                 transformingSaveQuery(sortedSaveQueries, saveQueries, 0));
@@ -190,7 +188,7 @@ public abstract class SqlQueryService implements QueryService {
         Map<String, List<SaveQuery>> saveQueriesWithType = sortedSaveQueries.get(level);
 
         if (saveQueriesWithType == null) {
-            saveQueriesWithType = new HashMap<String, List<SaveQuery>>();
+            saveQueriesWithType = new HashMap<>();
             sortedSaveQueries.put(level, saveQueriesWithType);
         }
 
@@ -200,7 +198,7 @@ public abstract class SqlQueryService implements QueryService {
             List<SaveQuery> saveQueriesInSameType = saveQueriesWithType.get(saveQuery.getDomainType());
 
             if (saveQueriesInSameType == null) {
-                saveQueriesInSameType = new ArrayList<SaveQuery>();
+                saveQueriesInSameType = new ArrayList<>();
                 saveQueriesWithType.put(saveQuery.getDomainType(), saveQueriesInSameType);
             }
 
@@ -275,7 +273,7 @@ public abstract class SqlQueryService implements QueryService {
         for (Map.Entry<String, List<SaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
             List<SaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
-                    getDomainType(saveQueriesWithTypeEntry.getKey()));
+                    repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
             for (SaveQuery saveQuery : saveQueries) {
                 if (CollectionUtils.isNotEmpty(saveQuery.getAssociations())) {
@@ -327,11 +325,11 @@ public abstract class SqlQueryService implements QueryService {
         for (Map.Entry<String, List<SaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
             String sql = null;
 
-            List<Object[]> parametersList = new ArrayList<Object[]>();
+            List<Object[]> parametersList = new ArrayList<>();
 
             for (SaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
-                        saveQuery, getDomainType(saveQueriesWithTypeEntry.getKey()));
+                        saveQuery, repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
                 if (sql == null) {
                     sql = sqlSaveQuery.getSql();
@@ -360,12 +358,6 @@ public abstract class SqlQueryService implements QueryService {
         postPersistDuration += System.currentTimeMillis() - currentTime;
 
         return new long[]{prePersistDuration, persistDuration, postPersistDuration, count};
-    }
-
-    private DomainType getDomainType(String type) {
-        String[] typeWithSchema = type.split("\\.");
-
-        return repository.getDomainType(typeWithSchema[0], typeWithSchema[1]);
     }
 
     private void printDiagnosticMessages(

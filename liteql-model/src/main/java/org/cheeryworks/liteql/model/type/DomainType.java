@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
-import org.cheeryworks.liteql.model.type.field.AssociationField;
+import org.cheeryworks.liteql.model.type.field.ReferenceField;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,13 +11,11 @@ public class DomainType implements Serializable {
 
     private String name;
 
-    private Boolean embeddable;
-
-    private List<String> embeddedTypes;
-
     private List<DomainTypeField> fields;
 
     private List<DomainTypeUniqueKey> uniques;
+
+    private List<DomainTypeIndexKey> indexes;
 
     public String getSchema() {
         return schema;
@@ -33,22 +31,6 @@ public class DomainType implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Boolean getEmbeddable() {
-        return embeddable;
-    }
-
-    public void setEmbeddable(Boolean embeddable) {
-        this.embeddable = embeddable;
-    }
-
-    public List<String> getEmbeddedTypes() {
-        return embeddedTypes;
-    }
-
-    public void setEmbeddedTypes(List<String> embeddedTypes) {
-        this.embeddedTypes = embeddedTypes;
     }
 
     public List<DomainTypeField> getFields() {
@@ -67,10 +49,18 @@ public class DomainType implements Serializable {
         this.uniques = uniques;
     }
 
-    public boolean isAssociation(String fieldName) {
+    public List<DomainTypeIndexKey> getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(List<DomainTypeIndexKey> indexes) {
+        this.indexes = indexes;
+    }
+
+    public boolean isReferenceField(String fieldName) {
         if (fields != null && fields.size() > 0) {
             for (DomainTypeField field : fields) {
-                if (field instanceof AssociationField
+                if (field instanceof ReferenceField
                         && field.getName().toLowerCase().equals(fieldName.toLowerCase())) {
                     return true;
                 }

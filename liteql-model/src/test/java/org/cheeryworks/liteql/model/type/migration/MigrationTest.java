@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.model.type.migration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.BaseTest;
 import org.cheeryworks.liteql.model.util.json.JsonReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
@@ -21,10 +20,9 @@ public class MigrationTest extends BaseTest {
                 Migration migration = LiteQLJsonUtil.toBean(migrationInJsonFile.getValue(), Migration.class);
 
                 Assertions.assertEquals(
-                        StringUtils.deleteWhitespace(migrationInJsonFile.getValue()),
-                        StringUtils.deleteWhitespace(LiteQLJsonUtil.toJson(migration)));
+                        LiteQLJsonUtil.toJsonNode(migrationInJsonFile.getValue()),
+                        LiteQLJsonUtil.toJsonNode(LiteQLJsonUtil.toJson(migration)));
             }
         }
     }
-
 }

@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.model.type;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.BaseTest;
 import org.cheeryworks.liteql.model.util.json.JsonReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
@@ -21,8 +20,8 @@ public class TypeTest extends BaseTest {
                 DomainType domainType = LiteQLJsonUtil.toBean(typeInJsonFile.getValue(), DomainType.class);
 
                 Assertions.assertEquals(
-                        StringUtils.deleteWhitespace(typeInJsonFile.getValue()),
-                        StringUtils.deleteWhitespace(LiteQLJsonUtil.toJson(domainType)));
+                        LiteQLJsonUtil.toJsonNode(typeInJsonFile.getValue()),
+                        LiteQLJsonUtil.toJsonNode(LiteQLJsonUtil.toJson(domainType)));
             }
         }
     }

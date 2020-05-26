@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class FileSystemRepository implements Repository {
 
@@ -28,32 +29,32 @@ public class FileSystemRepository implements Repository {
 
     private void init() {
         Map<String, String> typeJsonFiles = JsonReader.readJsonFiles(
-                path + (path.endsWith("/") ? "" : "/") + "types");
+                path + (path.endsWith("/") ? "" : "/") + NAME_OF_TYPES_DIRECTORY);
 
         for (Map.Entry<String, String> typeJsonFileEntry : typeJsonFiles.entrySet()) {
             String typePath = typeJsonFileEntry.getKey();
             String[] definitionInformation = typePath.split("/");
-            String schemaName = definitionInformation[0];
-            String typeName = definitionInformation[1];
+            String schema = definitionInformation[0];
+            String domainTypeName = definitionInformation[0] + "." + definitionInformation[1];
 
-            if (typePath.endsWith("definition.json")) {
+            if (typePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
                 DomainType domainType = LiteQLJsonUtil.toBean(typeJsonFileEntry.getValue(), DomainType.class);
 
-                domainType.setSchema(schemaName);
-                domainType.setName(typeName);
+                domainType.setSchema(schema);
+                domainType.setName(domainTypeName);
 
-                addType(schemaName, typeName, domainType);
+                addType(schema, domainTypeName, domainType);
             }
 
-            if (typePath.contains("/migrations/")) {
+            if (typePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
                 String migrationName = definitionInformation[3].substring(
-                        0, definitionInformation[3].indexOf(".json"));
+                        0, definitionInformation[3].indexOf(SUFFIX_OF_CONFIGURATION_FILE));
                 Migration migration = LiteQLJsonUtil.toBean(typeJsonFileEntry.getValue(), Migration.class);
                 migration.setName(migrationName);
-                migration.setSchema(schemaName);
-                migration.setDomainType(typeName);
+                migration.setSchema(schema);
+                migration.setDomainType(domainTypeName);
 
-                addMigration(schemaName, migrationName, migration);
+                addMigration(schema, migrationName, migration);
             }
         }
     }
@@ -73,7 +74,7 @@ public class FileSystemRepository implements Repository {
         Map<String, Migration> migrationsInSchema = migrations.get(schemaName);
 
         if (migrationsInSchema == null) {
-            migrationsInSchema = new LinkedHashMap<>();
+            migrationsInSchema = new TreeMap<>(String::compareToIgnoreCase);
             migrations.put(schemaName, migrationsInSchema);
         }
 
@@ -91,8 +92,8 @@ public class FileSystemRepository implements Repository {
     }
 
     @Override
-    public DomainType getDomainType(String schemaName, String domainTypeName) {
-        return schemas.get(schemaName).get(domainTypeName);
+    public DomainType getDomainType(String domainTypeName) {
+        return schemas.get(domainTypeName.split("\\.")[0]).get(domainTypeName);
     }
 
     @Override

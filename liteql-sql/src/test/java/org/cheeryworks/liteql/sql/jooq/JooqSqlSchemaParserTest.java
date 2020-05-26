@@ -29,7 +29,7 @@ public class JooqSqlSchemaParserTest extends AbstractSqlTest {
 
     @Test
     public void testingTypeToSql() {
-        logger.info("\n" + jooqSqlSchemaParser.domainTypeToSql("liteql", "user"));
+        logger.info("\n" + jooqSqlSchemaParser.domainTypeToSql("liteql.user"));
     }
 
 }

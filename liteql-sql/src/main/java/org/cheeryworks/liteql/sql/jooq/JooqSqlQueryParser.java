@@ -2,11 +2,14 @@ package org.cheeryworks.liteql.sql.jooq;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.StandardConditionClause;
-import org.cheeryworks.liteql.model.query.ReadQuery;
 import org.cheeryworks.liteql.model.query.CreateQuery;
 import org.cheeryworks.liteql.model.query.DeleteQuery;
 import org.cheeryworks.liteql.model.query.PageReadQuery;
+import org.cheeryworks.liteql.model.query.ReadQuery;
 import org.cheeryworks.liteql.model.query.SaveQuery;
 import org.cheeryworks.liteql.model.query.UpdateQuery;
 import org.cheeryworks.liteql.model.query.condition.QueryCondition;
@@ -20,8 +23,8 @@ import org.cheeryworks.liteql.model.query.sort.QuerySort;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.DomainTypeField;
 import org.cheeryworks.liteql.model.type.DomainTypeUniqueKey;
-import org.cheeryworks.liteql.model.type.field.AssociationField;
 import org.cheeryworks.liteql.model.type.field.IdField;
+import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.enums.Database;
@@ -37,9 +40,6 @@ import org.cheeryworks.liteql.sql.query.SqlReadQuery;
 import org.cheeryworks.liteql.sql.query.SqlSaveQuery;
 import org.cheeryworks.liteql.sql.query.join.JoinedTable;
 import org.cheeryworks.liteql.sql.util.SqlQueryServiceUtil;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.DeleteFinalStep;
@@ -170,11 +170,11 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                                 joinedQuery.getDomainType(), joinedQuery.getFields(),
                                 joinedTable.getTableAlias(), sqlReadQuery));
 
-                List<QueryCondition> joinConditions = new LinkedList<QueryCondition>();
+                List<QueryCondition> joinConditions = new LinkedList<>();
                 joinConditions.add(new QueryCondition(
                         DomainTypeField.ID_FIELD_NAME,
                         StandardConditionClause.EQUALS, new FieldConditionType(),
-                        getDomainType(joinedQuery.getDomainType()).getName()
+                        getDomainType(joinedQuery.getDomainType()).getName().split("\\.")[1]
                                 + StringUtils.capitalize(DomainTypeField.ID_FIELD_NAME)));
                 joinedTable.setJoinCondition(
                         getCondition(
@@ -196,19 +196,19 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     }
 
     private List<Field<Object>> getSelectFields(
-            String domainTypeWithSchemaName, QueryFieldDefinitions fieldDefinitions,
+            String domainTypeName, QueryFieldDefinitions fieldDefinitions,
             String tableAlias, SqlReadQuery sqlReadQuery) {
-        List<Field<Object>> fields = new ArrayList<Field<Object>>();
+        List<Field<Object>> fields = new ArrayList<>();
 
         if (MapUtils.isEmpty(sqlReadQuery.getFields())) {
-            sqlReadQuery.setFields(new HashMap<String, DomainTypeField>());
+            sqlReadQuery.setFields(new HashMap<>());
         }
 
-        DomainType domainType = getDomainType(domainTypeWithSchemaName);
+        DomainType domainType = getDomainType(domainTypeName);
 
         if (TABLE_ALIAS_PREFIX.equals(tableAlias) && fieldDefinitions == null) {
             for (DomainTypeField field : domainType.getFields()) {
-                if (field instanceof AssociationField || field instanceof IdField) {
+                if (field instanceof ReferenceField || field instanceof IdField) {
                     continue;
                 } else {
                     fields.add(
@@ -236,18 +236,8 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         return fields;
     }
 
-    private String getTableName(String domainType) {
-        String schemaName = domainType.substring(0, domainType.indexOf("."));
-        String domainTypeName = domainType.substring(domainType.indexOf(".") + 1);
-
-        return getTableName(schemaName, domainTypeName);
-    }
-
-    private DomainType getDomainType(String domainTypeWithSchemaName) {
-        String schemaName = domainTypeWithSchemaName.substring(0, domainTypeWithSchemaName.indexOf("."));
-        String domainTypeName = domainTypeWithSchemaName.substring(domainTypeWithSchemaName.indexOf(".") + 1);
-
-        return getRepository().getDomainType(schemaName, domainTypeName);
+    private DomainType getDomainType(String domainTypeName) {
+        return getRepository().getDomainType(domainTypeName);
     }
 
     private Condition getCondition(List<QueryCondition> conditions, String parentTableAlias, String tableAlias) {
@@ -283,14 +273,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 dataType = jooqDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
-                if (domainType.isAssociation(dataEntry.getKey())) {
+                if (domainType.isReferenceField(dataEntry.getKey())) {
                     String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
                             + StringUtils.capitalize(DomainTypeField.ID_FIELD_NAME));
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
                                 field(fieldName, dataType),
-                                getAssociationIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
+                                getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
                     } else {
                         insertSetMoreStep.set(field(fieldName, dataType), dataEntry.getValue());
                     }
@@ -323,14 +313,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                             field(SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()), dataType)
                                     .eq(dataEntry.getValue()));
                 } else {
-                    if (domainType.isAssociation(dataEntry.getKey())) {
+                    if (domainType.isReferenceField(dataEntry.getKey())) {
                         String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
                                 + StringUtils.capitalize(DomainTypeField.ID_FIELD_NAME));
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(
                                     field(fieldName, dataType),
-                                    getAssociationIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
+                                    getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
                         } else {
                             updateSetStep.set(field(fieldName, dataType), dataEntry.getValue());
                         }
@@ -357,7 +347,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         return sqlSaveQuery;
     }
 
-    private Object getAssociationIdSelect(String fieldName, Object fieldValue, DomainType domainType) {
+    private Object getReferenceIdSelect(String fieldName, Object fieldValue, DomainType domainType) {
         Condition condition = DSL.trueCondition();
 
         for (Map.Entry<String, Object> fieldValueEntry : ((Map<String, Object>) fieldValue).entrySet()) {

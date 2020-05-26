@@ -6,8 +6,8 @@
       "fields": [
         {
           "name": "country",
-          "type": "association",
-          "reference": "liteql.country"
+          "type": "reference",
+          "domainType": "liteql.country"
         }
       ]
     }

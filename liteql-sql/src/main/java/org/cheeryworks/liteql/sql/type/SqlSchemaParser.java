@@ -12,6 +12,6 @@ public interface SqlSchemaParser {
 
     String schemaToSql(String schemaName);
 
-    String domainTypeToSql(String schemaName, String domainTypeName);
+    String domainTypeToSql(String domainTypeName);
 
 }

@@ -28,13 +28,13 @@
     },
     {
       "name": "organization",
-      "type": "association",
-      "reference": "liteql.organization"
+      "type": "reference",
+      "domainType": "liteql.organization"
     },
     {
       "name": "country",
-      "type": "association",
-      "reference": "liteql.country"
+      "type": "reference",
+      "domainType": "liteql.country"
     }
   ],
   "uniques": [
