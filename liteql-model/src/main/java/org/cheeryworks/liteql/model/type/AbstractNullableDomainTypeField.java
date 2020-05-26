@@ -7,7 +7,7 @@ public abstract class AbstractNullableDomainTypeField extends AbstractDomainType
     private Boolean nullable;
 
     @JsonGetter
-    private Boolean isNullable() {
+    private Boolean nullable() {
         return nullable;
     }
 
@@ -15,12 +15,12 @@ public abstract class AbstractNullableDomainTypeField extends AbstractDomainType
         this.nullable = nullable;
     }
 
-    public Boolean nullable() {
+    public boolean isNullable() {
         if (nullable == null) {
-            return Boolean.TRUE;
+            return true;
         }
 
-        return nullable;
+        return nullable.booleanValue();
     }
 
 }

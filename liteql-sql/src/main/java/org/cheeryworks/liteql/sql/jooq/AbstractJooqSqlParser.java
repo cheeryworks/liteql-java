@@ -139,14 +139,14 @@ public abstract class AbstractJooqSqlParser {
         } else if (field instanceof ReferenceField) {
             return JOOQDataTypeUtil.getInstance(database).getStringDataType()
                     .length(128)
-                    .nullable(((ReferenceField) field).nullable());
+                    .nullable(((ReferenceField) field).isNullable());
         } else if (field instanceof StringField) {
             StringField stringField = (StringField) field;
             DataType dataType = JOOQDataTypeUtil
                     .getInstance(database)
                     .getStringDataType()
                     .length(stringField.getLength())
-                    .nullable(stringField.nullable());
+                    .nullable(stringField.isNullable());
 
             return dataType;
         } else if (field instanceof IntegerField) {
@@ -154,7 +154,7 @@ public abstract class AbstractJooqSqlParser {
             DataType dataType = JOOQDataTypeUtil
                     .getInstance(database)
                     .getIntegerDataType()
-                    .nullable(integerField.nullable());
+                    .nullable(integerField.isNullable());
 
             return dataType;
         }
