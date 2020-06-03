@@ -30,11 +30,6 @@
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <classifier>sources</classifier>
-        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
