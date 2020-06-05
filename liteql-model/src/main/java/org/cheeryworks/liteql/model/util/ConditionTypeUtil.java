@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.util;
 
-import org.cheeryworks.liteql.model.query.condition.ConditionType;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,7 +10,7 @@ import java.util.ServiceLoader;
 
 public abstract class ConditionTypeUtil {
 
-    private static final Map<String, ConditionType> CONDITION_TYPES = new HashMap<String, ConditionType>();
+    private static final Map<String, ConditionType> CONDITION_TYPES = new HashMap<>();
 
     static {
         Iterator<ConditionType> conditionTypeIterator = ServiceLoader.load(ConditionType.class).iterator();
@@ -18,7 +18,7 @@ public abstract class ConditionTypeUtil {
         while (conditionTypeIterator.hasNext()) {
             ConditionType conditionType = conditionTypeIterator.next();
 
-            CONDITION_TYPES.put(conditionType.getName().toLowerCase(), conditionType);
+            CONDITION_TYPES.put(conditionType.name().toLowerCase(), conditionType);
         }
     }
 

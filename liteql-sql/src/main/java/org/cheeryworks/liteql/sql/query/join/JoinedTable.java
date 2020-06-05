@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.sql.query.join;
 
-import org.cheeryworks.liteql.model.query.condition.QueryCondition;
-import org.cheeryworks.liteql.model.query.field.QueryFieldDefinition;
+import org.cheeryworks.liteql.model.query.QueryCondition;
+import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
 import org.jooq.Condition;
 import org.jooq.Field;
 
@@ -20,10 +20,9 @@ public class JoinedTable {
 
     private List<Field<Object>> fields;
 
-    private LinkedList<QueryFieldDefinition> joinedColumns = new LinkedList<QueryFieldDefinition>();
+    private LinkedList<FieldDefinition> joinedColumns = new LinkedList<>();
 
-    private LinkedList<QueryCondition>
-            joinConditions = new LinkedList<QueryCondition>();
+    private LinkedList<QueryCondition> joinConditions = new LinkedList<>();
 
     private Condition condition;
 
@@ -45,11 +44,11 @@ public class JoinedTable {
         this.tableAlias = tableAlias;
     }
 
-    public LinkedList<QueryFieldDefinition> getJoinedColumns() {
+    public LinkedList<FieldDefinition> getJoinedColumns() {
         return joinedColumns;
     }
 
-    public void setJoinedColumns(LinkedList<QueryFieldDefinition> joinedColumns) {
+    public void setJoinedColumns(LinkedList<FieldDefinition> joinedColumns) {
         this.joinedColumns = joinedColumns;
     }
 

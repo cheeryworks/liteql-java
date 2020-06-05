@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.cheeryworks.liteql.model.query.condition.QueryCondition;
-import org.cheeryworks.liteql.model.query.condition.QueryConditions;
+import org.cheeryworks.liteql.model.query.QueryCondition;
+import org.cheeryworks.liteql.model.query.QueryConditions;
 import org.cheeryworks.liteql.model.util.ConditionTypeUtil;
 
 import java.io.IOException;

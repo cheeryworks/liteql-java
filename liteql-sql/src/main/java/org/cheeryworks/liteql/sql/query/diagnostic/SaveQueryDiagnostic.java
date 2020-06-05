@@ -16,8 +16,6 @@ public class SaveQueryDiagnostic implements Serializable {
 
     private long persistDuration;
 
-    private long postPersistDuration;
-
     private long persistCount;
 
     private long afterSaveEventProcessingDuration;
@@ -71,14 +69,6 @@ public class SaveQueryDiagnostic implements Serializable {
         this.persistDuration = persistDuration;
     }
 
-    public long getPostPersistDuration() {
-        return postPersistDuration;
-    }
-
-    public void setPostPersistDuration(long postPersistDuration) {
-        this.postPersistDuration = postPersistDuration;
-    }
-
     public long getPersistCount() {
         return persistCount;
     }
@@ -102,7 +92,6 @@ public class SaveQueryDiagnostic implements Serializable {
         this.beforeSaveEventProcessingDuration += saveQueryDiagnostic.beforeSaveEventProcessingDuration;
         this.prePersistDuration += saveQueryDiagnostic.prePersistDuration;
         this.persistDuration += saveQueryDiagnostic.persistDuration;
-        this.postPersistDuration += saveQueryDiagnostic.postPersistDuration;
         this.persistCount += saveQueryDiagnostic.persistCount;
         this.afterSaveEventProcessingDuration += saveQueryDiagnostic.afterSaveEventProcessingDuration;
     }
@@ -114,7 +103,6 @@ public class SaveQueryDiagnostic implements Serializable {
                 + this.beforeSaveEventProcessingDuration
                 + this.prePersistDuration
                 + this.persistDuration
-                + this.postPersistDuration
                 + this.afterSaveEventProcessingDuration;
     }
 
@@ -127,7 +115,6 @@ public class SaveQueryDiagnostic implements Serializable {
                 + ", beforeSaveEventProcessingDuration=" + beforeSaveEventProcessingDuration
                 + ", prePersistDuration=" + prePersistDuration
                 + ", persistDuration=" + persistDuration
-                + ", postPersistDuration=" + postPersistDuration
                 + ", persistCount=" + persistCount
                 + ", afterSaveEventProcessingDuration=" + afterSaveEventProcessingDuration
                 + '}';

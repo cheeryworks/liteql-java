@@ -1,18 +1,23 @@
 package org.cheeryworks.liteql.sql.query.condition.converter;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
-import org.cheeryworks.liteql.model.query.condition.type.TimestampConditionType;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 
-public class TimestampConditionValueConverter implements ConditionValueConverter<TimestampConditionType> {
+public class TimestampConditionValueConverter implements ConditionValueConverter {
 
     private StdDateFormat stdDateFormat = new StdDateFormat();
 
     @Override
-    public Object convert(TimestampConditionType conditionType, Object value) {
+    public ConditionType getConditionType() {
+        return ConditionType.Timestamp;
+    }
+
+    @Override
+    public Object convert(Object value) {
         try {
             if (value instanceof Timestamp) {
                 return value;

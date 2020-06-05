@@ -6,25 +6,26 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.query.CreateQuery;
-import org.cheeryworks.liteql.model.query.DeleteQuery;
-import org.cheeryworks.liteql.model.query.PageReadQuery;
-import org.cheeryworks.liteql.model.query.ReadQuery;
-import org.cheeryworks.liteql.model.query.SaveQuery;
-import org.cheeryworks.liteql.model.query.UpdateQuery;
-import org.cheeryworks.liteql.model.query.condition.QueryCondition;
-import org.cheeryworks.liteql.model.query.condition.type.FieldConditionType;
-import org.cheeryworks.liteql.model.query.field.QueryFieldDefinition;
-import org.cheeryworks.liteql.model.query.field.QueryFieldDefinitions;
-import org.cheeryworks.liteql.model.query.join.JoinedQuery;
-import org.cheeryworks.liteql.model.query.page.PageRequest;
-import org.cheeryworks.liteql.model.query.page.Pageable;
-import org.cheeryworks.liteql.model.query.sort.QuerySort;
+import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.model.query.QueryCondition;
+import org.cheeryworks.liteql.model.query.QueryConditions;
+import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
+import org.cheeryworks.liteql.model.query.read.PageReadQuery;
+import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
+import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
+import org.cheeryworks.liteql.model.query.read.join.JoinedReadQuery;
+import org.cheeryworks.liteql.model.query.read.page.PageRequest;
+import org.cheeryworks.liteql.model.query.read.page.Pageable;
+import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
+import org.cheeryworks.liteql.model.query.save.CreateQuery;
+import org.cheeryworks.liteql.model.query.save.SaveQuery;
+import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.field.Field;
-import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
+import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.enums.Database;
@@ -58,7 +59,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +83,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     }
 
     @Override
-    public SqlReadQuery getSqlReadQuery(ReadQuery readQuery) {
+    public SqlReadQuery getSqlReadQuery(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = new InlineSqlReadQuery();
 
         Condition condition = getCondition(readQuery.getConditions(), null, TABLE_ALIAS_PREFIX);
@@ -125,7 +125,9 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         sqlReadQuery.setTotalSqlParameters(selectConditionStep.getBindValues());
 
         if (CollectionUtils.isNotEmpty(readQuery.getSorts())) {
-            for (QuerySort querySort : readQuery.getSorts()) {
+            List<QuerySort> querySorts = readQuery.getSorts();
+
+            for (QuerySort querySort : querySorts) {
                 selectConditionStep.orderBy(
                         field(SqlQueryServiceUtil.getColumnNameByFieldName(querySort.getField()))
                                 .sort(SortOrder.valueOf(querySort.getDirection().name())));
@@ -156,24 +158,24 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     }
 
     private List<JoinedTable> parseJoins(
-            List<JoinedQuery> joinedQueries, String joinedTableAliasPrefix, SqlReadQuery sqlReadQuery) {
+            List<JoinedReadQuery> joinedReadQueries, String joinedTableAliasPrefix, SqlReadQuery sqlReadQuery) {
         List<JoinedTable> joinedTables = new ArrayList<JoinedTable>();
 
-        if (CollectionUtils.isNotEmpty(joinedQueries)) {
-            for (JoinedQuery joinedQuery : joinedQueries) {
+        if (CollectionUtils.isNotEmpty(joinedReadQueries)) {
+            for (JoinedReadQuery joinedReadQuery : joinedReadQueries) {
                 JoinedTable joinedTable = new JoinedTable();
-                joinedTable.setTableName(getTableName(joinedQuery.getDomainType()));
+                joinedTable.setTableName(getTableName(joinedReadQuery.getDomainType()));
                 joinedTable.setTableAlias(joinedTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
                         getSelectFields(
-                                joinedQuery.getDomainType(), joinedQuery.getFields(),
+                                joinedReadQuery.getDomainType(), joinedReadQuery.getFields(),
                                 joinedTable.getTableAlias(), sqlReadQuery));
 
-                List<QueryCondition> joinConditions = new LinkedList<>();
+                QueryConditions joinConditions = new QueryConditions();
                 joinConditions.add(new QueryCondition(
                         Field.ID_FIELD_NAME,
-                        ConditionClause.EQUALS, new FieldConditionType(),
-                        getDomainType(joinedQuery.getDomainType()).getName().split("\\.")[1]
+                        ConditionClause.EQUALS, ConditionType.Field,
+                        getDomainType(joinedReadQuery.getDomainType()).getName().split("\\.")[1]
                                 + StringUtils.capitalize(Field.ID_FIELD_NAME)));
                 joinedTable.setJoinCondition(
                         getCondition(
@@ -181,12 +183,13 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                                 joinedTableAliasPrefix, joinedTable.getTableAlias()));
 
                 joinedTable.setCondition(
-                        getCondition(joinedQuery.getConditions(), null, joinedTable.getTableAlias()));
+                        getCondition(joinedReadQuery.getConditions(), null, joinedTable.getTableAlias()));
 
                 joinedTables.add(joinedTable);
 
-                if (CollectionUtils.isNotEmpty(joinedQuery.getJoins())) {
-                    joinedTables.addAll(parseJoins(joinedQuery.getJoins(), joinedTable.getTableAlias(), sqlReadQuery));
+                if (CollectionUtils.isNotEmpty(joinedReadQuery.getJoins())) {
+                    joinedTables.addAll(
+                            parseJoins(joinedReadQuery.getJoins(), joinedTable.getTableAlias(), sqlReadQuery));
                 }
             }
         }
@@ -195,7 +198,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     }
 
     private List<org.jooq.Field<Object>> getSelectFields(
-            String domainTypeName, QueryFieldDefinitions fieldDefinitions,
+            String domainTypeName, FieldDefinitions fieldDefinitions,
             String tableAlias, SqlReadQuery sqlReadQuery) {
         List<org.jooq.Field<Object>> fields = new ArrayList<>();
 
@@ -217,7 +220,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 }
             }
         } else if (fieldDefinitions != null) {
-            for (QueryFieldDefinition fieldDefinition : fieldDefinitions) {
+            for (FieldDefinition fieldDefinition : fieldDefinitions) {
                 fields.add(
                         field(tableAlias + "."
                                 + SqlQueryServiceUtil.getColumnNameByFieldName(fieldDefinition.getName()))
@@ -239,7 +242,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         return getRepository().getDomainType(domainTypeName);
     }
 
-    private Condition getCondition(List<QueryCondition> conditions, String parentTableAlias, String tableAlias) {
+    private Condition getCondition(QueryConditions conditions, String parentTableAlias, String tableAlias) {
         if (CollectionUtils.isNotEmpty(conditions)) {
             return SqlQueryServiceUtil.getConditions(
                     conditions, JOOQDataTypeUtil.getInstance(getDatabase()), parentTableAlias, tableAlias);

@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.sql.jooq;
 
-import org.cheeryworks.liteql.model.query.result.ReadResult;
-import org.cheeryworks.liteql.model.query.result.ReadResults;
+import org.cheeryworks.liteql.model.query.read.result.ReadResult;
+import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.query.SqlQueryExecutor;
@@ -62,8 +62,8 @@ public class JooqSqlQueryExecutor extends AbstractJooqSqlExecutor implements Sql
     }
 
     @Override
-    public void execute(String sql, Object[] parameters) {
-        getDslContext().execute(sql, parameters);
+    public int execute(String sql, Object[] parameters) {
+        return getDslContext().execute(sql, parameters);
     }
 
     @Override

@@ -1,14 +1,14 @@
 package org.cheeryworks.liteql.sql.jooq;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.AbstractDatabaseTest;
-import org.cheeryworks.liteql.model.query.ReadQuery;
-import org.cheeryworks.liteql.model.query.DeleteQuery;
 import org.cheeryworks.liteql.model.query.Queries;
+import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.json.JsonReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.QueryService;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;

@@ -1,9 +1,11 @@
 package org.cheeryworks.liteql.sql.query.condition;
 
-import org.cheeryworks.liteql.model.query.condition.ConditionType;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 
-public interface ConditionValueConverter<T extends ConditionType> {
+public interface ConditionValueConverter {
 
-    Object convert(T conditionType, Object value);
+    ConditionType getConditionType();
+
+    Object convert(Object value);
 
 }

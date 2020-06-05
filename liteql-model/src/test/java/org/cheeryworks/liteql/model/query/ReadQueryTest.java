@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.model.query;
 
 import org.cheeryworks.liteql.BaseTest;
+import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.json.JsonReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.junit.jupiter.api.Test;

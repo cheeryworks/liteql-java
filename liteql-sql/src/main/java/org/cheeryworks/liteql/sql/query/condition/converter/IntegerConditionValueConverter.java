@@ -1,12 +1,17 @@
 package org.cheeryworks.liteql.sql.query.condition.converter;
 
-import org.cheeryworks.liteql.model.query.condition.type.IntegerConditionType;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
 
-public class IntegerConditionValueConverter implements ConditionValueConverter<IntegerConditionType> {
+public class IntegerConditionValueConverter implements ConditionValueConverter {
 
     @Override
-    public Object convert(IntegerConditionType conditionType, Object value) {
+    public ConditionType getConditionType() {
+        return ConditionType.Integer;
+    }
+
+    @Override
+    public Object convert(Object value) {
         if (value instanceof Integer) {
             return value;
         } else {

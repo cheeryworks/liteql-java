@@ -5,18 +5,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.query.condition.ConditionType;
-import org.cheeryworks.liteql.model.query.condition.QueryCondition;
-import org.cheeryworks.liteql.model.query.condition.type.BooleanConditionType;
-import org.cheeryworks.liteql.model.query.condition.type.DecimalConditionType;
-import org.cheeryworks.liteql.model.query.condition.type.FieldConditionType;
-import org.cheeryworks.liteql.model.query.condition.type.IntegerConditionType;
-import org.cheeryworks.liteql.model.query.condition.type.StringConditionType;
-import org.cheeryworks.liteql.model.query.condition.type.TimestampConditionType;
-import org.cheeryworks.liteql.model.query.field.QueryFieldDefinition;
-import org.cheeryworks.liteql.model.query.result.ReadResult;
-import org.cheeryworks.liteql.model.query.result.TreeReadResult;
-import org.cheeryworks.liteql.model.query.result.TreeReadResults;
+import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.model.query.QueryCondition;
+import org.cheeryworks.liteql.model.query.QueryConditions;
+import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
+import org.cheeryworks.liteql.model.query.read.result.ReadResult;
+import org.cheeryworks.liteql.model.query.read.result.TreeReadResult;
+import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
@@ -45,11 +40,11 @@ import static org.cheeryworks.liteql.model.enums.ConditionClause.NULL;
 
 public abstract class SqlQueryServiceUtil {
 
-    public static final Map<Class<? extends ConditionType>, ConditionValueConverter>
+    public static final Map<ConditionType, ConditionValueConverter>
             CONDITION_VALUE_CONVERTERS;
 
     static {
-        Map<Class<? extends ConditionType>, ConditionValueConverter> conditionValueConverters
+        Map<ConditionType, ConditionValueConverter> conditionValueConverters
                 = new HashMap<>();
         Iterator<ConditionValueConverter> conditionValueConverterIterator
                 = ServiceLoader.load(ConditionValueConverter.class).iterator();
@@ -57,9 +52,7 @@ public abstract class SqlQueryServiceUtil {
         while (conditionValueConverterIterator.hasNext()) {
             ConditionValueConverter conditionValueConverter = conditionValueConverterIterator.next();
 
-            Class conditionTypeClass = getConditionTypeClass(conditionValueConverter.getClass());
-
-            conditionValueConverters.put(conditionTypeClass, conditionValueConverter);
+            conditionValueConverters.put(conditionValueConverter.getConditionType(), conditionValueConverter);
         }
 
         CONDITION_VALUE_CONVERTERS = Collections.unmodifiableMap(conditionValueConverters);
@@ -193,7 +186,7 @@ public abstract class SqlQueryServiceUtil {
     }
 
     public static Condition getConditions(
-            List<QueryCondition> queryConditions, JOOQDataType jooqDataType,
+            QueryConditions queryConditions, JOOQDataType jooqDataType,
             String parentTableAlias, String tableAlias) {
         Condition condition = null;
 
@@ -212,7 +205,7 @@ public abstract class SqlQueryServiceUtil {
                     String leftClause = ((tableAlias != null) ? tableAlias + "." : "")
                             + SqlQueryServiceUtil.getColumnNameByFieldName(queryCondition.getField());
 
-                    org.jooq.Field field = (queryCondition.getType() instanceof FieldConditionType)
+                    org.jooq.Field field = (ConditionType.Field.equals(queryCondition.getType()))
                             ? DSL.field(leftClause)
                             : DSL.field(leftClause, getJOOQDataType(queryCondition.getType(), jooqDataType));
 
@@ -339,7 +332,7 @@ public abstract class SqlQueryServiceUtil {
 
     private static Object getConditionRightClause(
             QueryCondition queryCondition, String parentTableAlias) {
-        if (queryCondition.getType() instanceof FieldConditionType) {
+        if (ConditionType.Field.equals(queryCondition.getType())) {
             return DSL.field(
                     ((parentTableAlias != null) ? parentTableAlias + "." : "")
                             + SqlQueryServiceUtil.getColumnNameByFieldName(queryCondition.getValue().toString()));
@@ -367,7 +360,7 @@ public abstract class SqlQueryServiceUtil {
 
     private static Object transformValue(ConditionType conditionType, Object value) {
         try {
-            return CONDITION_VALUE_CONVERTERS.get(conditionType.getClass()).convert(conditionType, value);
+            return CONDITION_VALUE_CONVERTERS.get(conditionType).convert(value);
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
@@ -375,37 +368,37 @@ public abstract class SqlQueryServiceUtil {
 
     public static DataType getJOOQDataType(ConditionType conditionType, JOOQDataType jooqDataType) {
         if (conditionType == null) {
-            conditionType = new StringConditionType();
+            conditionType = ConditionType.String;
         }
 
-        if (conditionType instanceof IntegerConditionType) {
+        if (conditionType.equals(ConditionType.Integer)) {
             return jooqDataType.getIntegerDataType();
-        } else if (conditionType instanceof BooleanConditionType) {
+        } else if (conditionType.equals(ConditionType.Boolean)) {
             return jooqDataType.getBooleanDataType();
-        } else if (conditionType instanceof DecimalConditionType) {
+        } else if (conditionType.equals(ConditionType.Decimal)) {
             return jooqDataType.getBigDecimalDataType();
-        } else if (conditionType instanceof TimestampConditionType) {
+        } else if (conditionType.equals(ConditionType.Timestamp)) {
             return jooqDataType.getTimestampDataType();
-        } else if (conditionType instanceof StringConditionType) {
+        } else if (conditionType.equals(ConditionType.String)) {
             return jooqDataType.getStringDataType();
         }
 
         throw new IllegalArgumentException(
-                "Condition type " + conditionType.getName() + " not mapping with JOOQ DataType");
+                "Condition type " + conditionType.name() + " not mapping with JOOQ DataType");
     }
 
-    public static List<QueryFieldDefinition> getFieldDefinitions(JsonNode fields) {
-        List<QueryFieldDefinition> fieldDefinitions = new ArrayList<QueryFieldDefinition>();
+    public static List<FieldDefinition> getFieldDefinitions(JsonNode fields) {
+        List<FieldDefinition> fieldDefinitions = new ArrayList<FieldDefinition>();
 
         if (fields != null) {
             if (fields instanceof ArrayNode) {
                 for (JsonNode field : fields) {
-                    QueryFieldDefinition fieldDefinition = new QueryFieldDefinition();
+                    FieldDefinition fieldDefinition = new FieldDefinition();
 
                     if (field instanceof ValueNode) {
                         fieldDefinition.setName(field.asText());
                     } else if (field instanceof ObjectNode) {
-                        fieldDefinition = LiteQLJsonUtil.toBean(field.toString(), QueryFieldDefinition.class);
+                        fieldDefinition = LiteQLJsonUtil.toBean(field.toString(), FieldDefinition.class);
                     } else {
                         throw new IllegalArgumentException(
                                 "Fields definition not supported: \n" + LiteQLJsonUtil.toJson(fields));
@@ -419,7 +412,7 @@ public abstract class SqlQueryServiceUtil {
                     String fieldName = fieldNameIterator.next();
                     String fieldAlias = fields.get(fieldName).asText();
 
-                    fieldDefinitions.add(new QueryFieldDefinition(fieldName, fieldAlias, fieldAlias));
+                    fieldDefinitions.add(new FieldDefinition(fieldName, fieldAlias, fieldAlias));
                 }
             } else {
                 throw new IllegalArgumentException(

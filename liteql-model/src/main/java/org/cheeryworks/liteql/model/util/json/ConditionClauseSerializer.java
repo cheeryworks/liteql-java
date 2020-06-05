@@ -9,7 +9,8 @@ import java.io.IOException;
 
 public class ConditionClauseSerializer extends StdSerializer<ConditionClause> {
 
-    protected ConditionClauseSerializer() {
+
+    public ConditionClauseSerializer() {
         super(ConditionClause.class);
     }
 

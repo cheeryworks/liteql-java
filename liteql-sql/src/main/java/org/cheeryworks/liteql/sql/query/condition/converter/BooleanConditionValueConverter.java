@@ -1,13 +1,18 @@
 package org.cheeryworks.liteql.sql.query.condition.converter;
 
-import org.cheeryworks.liteql.model.query.condition.type.BooleanConditionType;
-import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
 import org.apache.commons.lang3.BooleanUtils;
+import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
 
-public class BooleanConditionValueConverter implements ConditionValueConverter<BooleanConditionType> {
+public class BooleanConditionValueConverter implements ConditionValueConverter {
 
     @Override
-    public Object convert(BooleanConditionType conditionType, Object value) {
+    public ConditionType getConditionType() {
+        return ConditionType.Boolean;
+    }
+
+    @Override
+    public Object convert(Object value) {
         if (value instanceof Boolean) {
             return value;
         } else {

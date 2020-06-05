@@ -1,17 +1,18 @@
 package org.cheeryworks.liteql.service.query;
 
-import org.cheeryworks.liteql.model.query.CreateQuery;
-import org.cheeryworks.liteql.model.query.DeleteQuery;
-import org.cheeryworks.liteql.model.query.PageReadQuery;
-import org.cheeryworks.liteql.model.query.Queries;
-import org.cheeryworks.liteql.model.query.ReadQuery;
-import org.cheeryworks.liteql.model.query.SingleReadQuery;
-import org.cheeryworks.liteql.model.query.TreeReadQuery;
-import org.cheeryworks.liteql.model.query.UpdateQuery;
-import org.cheeryworks.liteql.model.query.result.ReadResult;
-import org.cheeryworks.liteql.model.query.result.ReadResults;
-import org.cheeryworks.liteql.model.query.result.PageReadResults;
-import org.cheeryworks.liteql.model.query.result.TreeReadResults;
+import org.cheeryworks.liteql.model.query.PublicQuery;
+import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.model.query.read.PageReadQuery;
+import org.cheeryworks.liteql.model.query.read.ReadQuery;
+import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
+import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.model.query.read.result.PageReadResults;
+import org.cheeryworks.liteql.model.query.read.result.ReadResult;
+import org.cheeryworks.liteql.model.query.read.result.ReadResults;
+import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
+import org.cheeryworks.liteql.model.query.save.CreateQuery;
+import org.cheeryworks.liteql.model.query.save.SaveQuery;
+import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 
 import java.util.List;
 
@@ -25,14 +26,18 @@ public interface QueryService {
 
     PageReadResults read(PageReadQuery pageReadQuery);
 
-    List<CreateQuery> create(List<CreateQuery> createQueries);
+    CreateQuery create(CreateQuery createQuery);
 
-    List<UpdateQuery> update(List<UpdateQuery> updateQueries);
+    UpdateQuery update(UpdateQuery updateQuery);
 
-    void delete(DeleteQuery deleteQuery);
+    SaveQuery save(SaveQuery saveQuery);
+
+    List<SaveQuery> save(List<SaveQuery> saveQueries);
+
+    int delete(DeleteQuery deleteQuery);
 
     void delete(List<DeleteQuery> deleteQueries);
 
-    Object execute(Queries queries);
+    Object execute(PublicQuery query);
 
 }

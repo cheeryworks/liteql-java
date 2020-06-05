@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.sql.query;
 
-import org.cheeryworks.liteql.model.query.result.ReadResults;
+import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.type.field.Field;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public interface SqlQueryExecutor {
 
     ReadResults read(String sql, Map<String, Field> fields, Object[] parameters);
 
-    void execute(String sql, Object[] parameters);
+    int execute(String sql, Object[] parameters);
 
     void executeBatch(String sql, List<Object[]> parametersList);
 

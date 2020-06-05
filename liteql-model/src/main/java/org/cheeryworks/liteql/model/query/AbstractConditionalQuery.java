@@ -1,11 +1,9 @@
 package org.cheeryworks.liteql.model.query;
 
 import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.query.condition.ConditionType;
-import org.cheeryworks.liteql.model.query.condition.QueryCondition;
-import org.cheeryworks.liteql.model.query.condition.QueryConditions;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 
-public abstract class AbstractConditionalQuery extends AbstractQuery {
+public abstract class AbstractConditionalQuery extends AbstractDomainQuery {
 
     private QueryConditions conditions;
 

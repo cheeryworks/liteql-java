@@ -1,12 +1,17 @@
 package org.cheeryworks.liteql.sql.query.condition.converter;
 
-import org.cheeryworks.liteql.model.query.condition.type.StringConditionType;
+import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
 
-public class StringConditionValueConverter implements ConditionValueConverter<StringConditionType> {
+public class StringConditionValueConverter implements ConditionValueConverter {
 
     @Override
-    public Object convert(StringConditionType conditionType, Object value) {
+    public ConditionType getConditionType() {
+        return ConditionType.String;
+    }
+
+    @Override
+    public Object convert(Object value) {
         return value;
     }
 

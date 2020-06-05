@@ -10,7 +10,7 @@ import java.io.IOException;
 public class ConditionOperatorSerializer extends StdSerializer<ConditionOperator> {
 
 
-    protected ConditionOperatorSerializer() {
+    public ConditionOperatorSerializer() {
         super(ConditionOperator.class);
     }
 

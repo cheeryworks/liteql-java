@@ -13,6 +13,7 @@ public enum ConditionClause {
     BETWEEN,
     IN,
     NULL,
-    NOT_NULL
+    NOT_NULL,
+    LENGTH
 
 }
