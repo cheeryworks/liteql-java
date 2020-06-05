@@ -14,7 +14,6 @@
         <module>liteql-model</module>
         <module>liteql-service</module>
         <module>liteql-sql</module>
-        <module>liteql-mongo</module>
     </modules>
     <packaging>pom</packaging>
     <name>LiteQL</name>
