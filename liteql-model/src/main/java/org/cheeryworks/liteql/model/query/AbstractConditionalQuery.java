@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.query;
 
-import org.cheeryworks.liteql.model.enums.StandardConditionClause;
+import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.query.condition.ConditionType;
 import org.cheeryworks.liteql.model.query.condition.QueryCondition;
 import org.cheeryworks.liteql.model.query.condition.QueryConditions;
@@ -25,7 +25,7 @@ public abstract class AbstractConditionalQuery extends AbstractQuery {
         this.conditions.add(condition);
     }
 
-    public void addCondition(String field, StandardConditionClause condition, ConditionType type, Object value) {
+    public void addCondition(String field, ConditionClause condition, ConditionType type, Object value) {
         this.addCondition(new QueryCondition(field, condition, type, value));
     }
 

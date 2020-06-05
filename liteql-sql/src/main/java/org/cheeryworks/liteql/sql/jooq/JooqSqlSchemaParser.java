@@ -1,6 +1,8 @@
 package org.cheeryworks.liteql.sql.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.type.SqlSchemaParser;
@@ -69,10 +71,18 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
 
         schemaSqlBuilder.append(parsingAddPrimaryKey(tableName)).append(";").append("\n\n");
 
-        List<String> uniqueKeySqls = parsingAddUniques(tableName, domainType.getUniques());
+        List<String> uniqueSqls = parsingIndexMigrationOperation(
+                tableName, new CreateUniqueMigrationOperation(domainType.getUniques()));
 
-        for (String uniqueKeySql : uniqueKeySqls) {
-            schemaSqlBuilder.append(uniqueKeySql).append(";").append("\n\n");
+        for (String uniqueSql : uniqueSqls) {
+            schemaSqlBuilder.append(uniqueSql).append(";").append("\n\n");
+        }
+
+        List<String> indexSqls = parsingIndexMigrationOperation(
+                tableName, new CreateIndexMigrationOperation(domainType.getIndexes()));
+
+        for (String indexSql : indexSqls) {
+            schemaSqlBuilder.append(indexSql).append(";").append("\n\n");
         }
 
         return schemaSqlBuilder.toString();

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.cheeryworks.liteql.model.enums.DataType;
-import org.cheeryworks.liteql.model.type.DomainTypeField;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.BooleanField;
@@ -19,14 +19,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
-public class FieldDeserializer extends StdDeserializer<DomainTypeField> {
+public class FieldDeserializer extends StdDeserializer<Field> {
 
     public FieldDeserializer() {
-        super(DomainTypeField.class);
+        super(Field.class);
     }
 
     @Override
-    public DomainTypeField deserialize(
+    public Field deserialize(
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 

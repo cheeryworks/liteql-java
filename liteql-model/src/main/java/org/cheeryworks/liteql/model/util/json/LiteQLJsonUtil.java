@@ -9,15 +9,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
+import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 import org.cheeryworks.liteql.model.enums.QueryType;
-import org.cheeryworks.liteql.model.enums.StandardConditionClause;
 import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.condition.ConditionType;
 import org.cheeryworks.liteql.model.query.condition.QueryConditions;
 import org.cheeryworks.liteql.model.query.field.QueryFieldDefinitions;
-import org.cheeryworks.liteql.model.type.DomainTypeField;
-import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
+import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,17 +36,19 @@ public final class LiteQLJsonUtil {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(DomainTypeField.class, new FieldDeserializer());
+        module.addDeserializer(Field.class, new FieldDeserializer());
         module.addDeserializer(MigrationOperation.class, new MigrationOperationDeserializer());
+        module.addDeserializer(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
         module.addDeserializer(QueryType.class, new QueryTypeDeserializer());
         module.addDeserializer(QueryFieldDefinitions.class, new FieldDefinitionsDeserializer());
         module.addDeserializer(QueryConditions.class, new QueryConditionsDeserializer());
         module.addDeserializer(Queries.class, new QueriesDeserializer());
-        module.addDeserializer(StandardConditionClause.class, new ConditionClauseDeserializer());
+        module.addDeserializer(ConditionClause.class, new ConditionClauseDeserializer());
         module.addDeserializer(ConditionType.class, new ConditionTypeDeserializer());
         module.addDeserializer(ConditionOperator.class, new ConditionOperatorDeserializer());
+        module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
         module.addSerializer(QueryType.class, new QueryTypeSerializer());
-        module.addSerializer(StandardConditionClause.class, new ConditionClauseSerializer());
+        module.addSerializer(ConditionClause.class, new ConditionClauseSerializer());
         module.addSerializer(ConditionType.class, new ConditionTypeSerializer());
         module.addSerializer(ConditionOperator.class, new ConditionOperatorSerializer());
 

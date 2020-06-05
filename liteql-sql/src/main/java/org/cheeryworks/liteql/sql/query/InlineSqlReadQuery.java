@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.sql.query;
 
-import org.cheeryworks.liteql.model.type.DomainTypeField;
+import org.cheeryworks.liteql.model.type.field.Field;
 
 import java.util.HashMap;
 import java.util.List;
@@ -8,19 +8,19 @@ import java.util.Map;
 
 public class InlineSqlReadQuery extends InlineSqlQuery implements SqlReadQuery<List<Object>> {
 
-    private Map<String, DomainTypeField> fields = new HashMap<String, DomainTypeField>();
+    private Map<String, Field> fields = new HashMap<>();
 
     private String totalSql;
 
     private List<Object> totalSqlParameters;
 
     @Override
-    public Map<String, DomainTypeField> getFields() {
+    public Map<String, Field> getFields() {
         return fields;
     }
 
     @Override
-    public void setFields(Map<String, DomainTypeField> fields) {
+    public void setFields(Map<String, Field> fields) {
         this.fields = fields;
     }
 

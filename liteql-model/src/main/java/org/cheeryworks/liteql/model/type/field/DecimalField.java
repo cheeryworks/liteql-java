@@ -1,9 +1,8 @@
 package org.cheeryworks.liteql.model.type.field;
 
 import org.cheeryworks.liteql.model.enums.DataType;
-import org.cheeryworks.liteql.model.type.AbstractNullableDomainTypeField;
 
-public class DecimalField extends AbstractNullableDomainTypeField {
+public class DecimalField extends AbstractNullableField {
 
     private Integer precision;
 

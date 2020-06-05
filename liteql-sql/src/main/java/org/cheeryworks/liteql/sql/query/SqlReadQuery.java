@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.sql.query;
 
-import org.cheeryworks.liteql.model.type.DomainTypeField;
+import org.cheeryworks.liteql.model.type.field.Field;
 
 import java.util.Map;
 
@@ -14,8 +14,8 @@ public interface SqlReadQuery<T> extends SqlQuery<T> {
 
     void setTotalSqlParameters(T totalSqlParameters);
 
-    Map<String, DomainTypeField> getFields();
+    Map<String, Field> getFields();
 
-    void setFields(Map<String, DomainTypeField> fields);
+    void setFields(Map<String, Field> fields);
 
 }

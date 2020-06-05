@@ -6,7 +6,7 @@ public interface SqlSchemaParser {
 
     String UNIQUE_KEY_PREFIX = "uk_";
 
-    String INDEX_PREFIX = "idx_";
+    String INDEX_KEY_PREFIX = "idx_";
 
     String repositoryToSql();
 

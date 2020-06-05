@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.cheeryworks.liteql.model.enums.StandardMigrationOperationType;
-import org.cheeryworks.liteql.model.type.migration.MigrationOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.CreateFieldOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.CreateTypeOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.DeleteFieldOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.DeleteTypeOperation;
-import org.cheeryworks.liteql.model.type.migration.operation.DeleteUniqueOperation;
+import org.cheeryworks.liteql.model.enums.MigrationOperationType;
+import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.CreateFieldMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.CreateTypeMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.DropFieldMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.DropTypeMigrationOperation;
+import org.cheeryworks.liteql.model.type.migration.operation.DropUniqueMigrationOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -27,26 +27,26 @@ public class MigrationOperationDeserializer extends StdDeserializer<MigrationOpe
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
-        String migrationOperationTypeInString = node.get("operation").textValue();
+        String migrationOperationTypeInString = node.get("type").textValue();
 
         if (StringUtils.isNotBlank(migrationOperationTypeInString)) {
             try {
-                StandardMigrationOperationType migrationOperationType = StandardMigrationOperationType.valueOf(
+                MigrationOperationType migrationOperationType = MigrationOperationType.valueOf(
                         StringUtils.upperCase(migrationOperationTypeInString));
 
                 switch (migrationOperationType) {
                     case CREATE_TYPE:
-                        return LiteQLJsonUtil.toBean(node.toString(), CreateTypeOperation.class);
-                    case DELETE_TYPE:
-                        return LiteQLJsonUtil.toBean(node.toString(), DeleteTypeOperation.class);
+                        return LiteQLJsonUtil.toBean(node.toString(), CreateTypeMigrationOperation.class);
+                    case DROP_TYPE:
+                        return LiteQLJsonUtil.toBean(node.toString(), DropTypeMigrationOperation.class);
                     case CREATE_FIELD:
-                        return LiteQLJsonUtil.toBean(node.toString(), CreateFieldOperation.class);
-                    case DELETE_FIELD:
-                        return LiteQLJsonUtil.toBean(node.toString(), DeleteFieldOperation.class);
+                        return LiteQLJsonUtil.toBean(node.toString(), CreateFieldMigrationOperation.class);
+                    case DROP_FIELD:
+                        return LiteQLJsonUtil.toBean(node.toString(), DropFieldMigrationOperation.class);
                     case CREATE_UNIQUE:
-                        return LiteQLJsonUtil.toBean(node.toString(), CreateUniqueOperation.class);
-                    case DELETE_UNIQUE:
-                        return LiteQLJsonUtil.toBean(node.toString(), DeleteUniqueOperation.class);
+                        return LiteQLJsonUtil.toBean(node.toString(), CreateUniqueMigrationOperation.class);
+                    case DROP_UNIQUE:
+                        return LiteQLJsonUtil.toBean(node.toString(), DropUniqueMigrationOperation.class);
                     default:
                         throw new IllegalArgumentException(
                                 "Unsupported migration operation: " + migrationOperationTypeInString);

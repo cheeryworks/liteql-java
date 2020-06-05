@@ -1,8 +1,8 @@
-package org.cheeryworks.liteql.model.type;
+package org.cheeryworks.liteql.model.type.field;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public abstract class AbstractNullableDomainTypeField extends AbstractDomainTypeField {
+public abstract class AbstractNullableField extends AbstractField {
 
     private Boolean nullable;
 

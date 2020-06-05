@@ -1,12 +1,15 @@
 package org.cheeryworks.liteql.sql.jooq;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.model.type.DomainTypeField;
-import org.cheeryworks.liteql.model.type.DomainTypeUniqueKey;
+import org.cheeryworks.liteql.model.enums.IndexType;
+import org.cheeryworks.liteql.model.enums.MigrationOperationType;
+import org.cheeryworks.liteql.model.type.index.AbstractIndex;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
+import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.enums.Database;
@@ -16,6 +19,8 @@ import org.cheeryworks.liteql.sql.util.StringEncoder;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
+import org.jooq.Query;
+import org.jooq.conf.ParamType;
 import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
@@ -27,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.cheeryworks.liteql.sql.type.SqlSchemaParser.INDEX_KEY_PREFIX;
 import static org.cheeryworks.liteql.sql.type.SqlSchemaParser.PRIMARY_KEY_PREFIX;
 import static org.cheeryworks.liteql.sql.type.SqlSchemaParser.UNIQUE_KEY_PREFIX;
 import static org.jooq.impl.DSL.constraint;
@@ -70,61 +76,65 @@ public abstract class AbstractJooqSqlParser {
         AlterTableFinalStep alterTableFinalStep = getDslContext()
                 .alterTable(tableName)
                 .add(constraint(PRIMARY_KEY_PREFIX + tableName).
-                        primaryKey(DSL.field(DomainTypeField.ID_FIELD_NAME)));
+                        primaryKey(DSL.field(Field.ID_FIELD_NAME)));
 
         return alterTableFinalStep.getSQL();
     }
 
-    protected List<String> parsingAddUniques(String tableName, List<DomainTypeUniqueKey> uniques) {
+    protected List<String> parsingIndexMigrationOperation(
+            String tableName, AbstractIndexMigrationOperation indexMigrationOperation) {
         List<String> sqls = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(uniques)) {
-            for (DomainTypeUniqueKey uniqueKey : uniques) {
+        if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
+            for (AbstractIndex index : indexMigrationOperation.getIndexes()) {
                 String fieldsInString = Arrays.toString(
-                        uniqueKey.getFields().toArray(new String[uniqueKey.getFields().size()]));
-                String uniqueKeyName = UNIQUE_KEY_PREFIX
+                        index.getFields().toArray(new String[index.getFields().size()]));
+                String indexName
+                        = IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX
                         + StringEncoder.md5(tableName + "_" + fieldsInString).substring(0, 20);
 
-                AlterTableFinalStep alterTableFinalStep = getDslContext()
-                        .alterTable(tableName)
-                        .add(constraint(uniqueKeyName).
-                                unique(uniqueKey.getFields().toArray(
-                                        new String[uniqueKey.getFields().size()])));
+                Query query;
 
-                sqls.add(alterTableFinalStep.getSQL());
+                if (IndexType.Normal.equals(index.getType())) {
+                    if (MigrationOperationType.DROP_INDEX.equals(indexMigrationOperation.getType())) {
+                        query = getDslContext()
+                                .dropIndex(indexName)
+                                .on(tableName)
+                                .cascade();
+                    } else {
+                        query = getDslContext()
+                                .createIndex(indexName)
+                                .on(tableName, index.getFields().toArray(new String[index.getFields().size()]));
+                    }
+                } else {
+                    if (MigrationOperationType.DROP_UNIQUE.equals(indexMigrationOperation.getType())) {
+                        query = getDslContext()
+                                .alterTable(tableName)
+                                .dropUnique(indexName)
+                                .cascade();
+                    } else {
+                        query = getDslContext()
+                                .alterTable(tableName)
+                                .add(constraint(indexName).
+                                        unique(index.getFields().toArray(
+                                                new String[index.getFields().size()])));
+                    }
+                }
+
+                sqls.add(query.getSQL(ParamType.INLINED));
             }
         }
 
         return sqls;
     }
 
-    protected List<String> parsingDropUniques(String tableName, List<DomainTypeUniqueKey> uniques) {
-        List<String> sqls = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(uniques)) {
-            for (DomainTypeUniqueKey uniqueKey : uniques) {
-                String fieldsInString = Arrays.toString(
-                        uniqueKey.getFields().toArray(new String[uniqueKey.getFields().size()]));
-                String uniqueKeyName = UNIQUE_KEY_PREFIX
-                        + StringEncoder.md5(tableName + "_" + fieldsInString).substring(0, 20);
-
-                AlterTableFinalStep alterTableFinalStep = getDslContext()
-                        .alterTable(tableName)
-                        .dropConstraint(uniqueKeyName);
-
-                sqls.add(alterTableFinalStep.getSQL());
-            }
-        }
-
-        return sqls;
-    }
-
-    protected List<org.jooq.Field> getJooqFields(List<DomainTypeField> fields, Database database) {
+    protected List<org.jooq.Field> getJooqFields(List<Field> fields, Database database) {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
-        for (DomainTypeField field : fields) {
+        for (Field field : fields) {
             String fieldName = field.getName();
 
             if (field instanceof ReferenceField) {
-                fieldName += "_" + DomainTypeField.ID_FIELD_NAME;
+                fieldName += "_" + Field.ID_FIELD_NAME;
             }
 
             jooqFields.add(DSL.field(fieldName, getJooqDataType(field, database)));
@@ -133,7 +143,7 @@ public abstract class AbstractJooqSqlParser {
         return jooqFields;
     }
 
-    private DataType getJooqDataType(DomainTypeField field, Database database) {
+    private DataType getJooqDataType(Field field, Database database) {
         if (field instanceof IdField) {
             return JOOQDataTypeUtil.getInstance(database).getStringDataType().length(128).nullable(false);
         } else if (field instanceof ReferenceField) {

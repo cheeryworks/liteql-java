@@ -2,12 +2,11 @@ package org.cheeryworks.liteql.sql.jooq;
 
 import org.cheeryworks.liteql.model.query.result.ReadResult;
 import org.cheeryworks.liteql.model.query.result.ReadResults;
-import org.cheeryworks.liteql.model.type.DomainTypeField;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.query.SqlQueryExecutor;
 import org.cheeryworks.liteql.sql.util.SqlQueryServiceUtil;
 import org.jooq.BatchBindStep;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
@@ -36,7 +35,7 @@ public class JooqSqlQueryExecutor extends AbstractJooqSqlExecutor implements Sql
     }
 
     @Override
-    public ReadResults read(String sql, Map<String, DomainTypeField> fields, Object[] parameters) {
+    public ReadResults read(String sql, Map<String, Field> fields, Object[] parameters) {
         ResultQuery resultQuery = getDslContext().resultQuery(sql, parameters);
 
         Results results = getDslContext().fetchMany(resultQuery);
@@ -47,7 +46,7 @@ public class JooqSqlQueryExecutor extends AbstractJooqSqlExecutor implements Sql
             List<ReadResult> subResultsInMap = result.map((RecordMapper<Record, Map<String, Object>>) record -> {
                 Map<String, Object> subResultInMap = new HashMap<>();
 
-                for (Field jooqField : record.fields()) {
+                for (org.jooq.Field jooqField : record.fields()) {
                     subResultInMap.put(
                             SqlQueryServiceUtil.getFieldNameByColumnName(jooqField.getName()),
                             record.getValue(jooqField.getName()));

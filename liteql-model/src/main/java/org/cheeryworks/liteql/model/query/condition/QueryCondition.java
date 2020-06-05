@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.model.query.condition;
 
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
-import org.cheeryworks.liteql.model.enums.StandardConditionClause;
+import org.cheeryworks.liteql.model.enums.ConditionClause;
 
 import java.io.Serializable;
 
@@ -11,7 +11,7 @@ public class QueryCondition implements Serializable {
 
     private String field;
 
-    private StandardConditionClause condition = StandardConditionClause.EQUALS;
+    private ConditionClause condition = ConditionClause.EQUALS;
 
     private ConditionType type;
 
@@ -35,11 +35,11 @@ public class QueryCondition implements Serializable {
         this.field = field;
     }
 
-    public StandardConditionClause getCondition() {
+    public ConditionClause getCondition() {
         return condition;
     }
 
-    public void setCondition(StandardConditionClause condition) {
+    public void setCondition(ConditionClause condition) {
         this.condition = condition;
     }
 
@@ -71,7 +71,7 @@ public class QueryCondition implements Serializable {
 
     }
 
-    public QueryCondition(String field, StandardConditionClause condition, ConditionType type, Object value) {
+    public QueryCondition(String field, ConditionClause condition, ConditionType type, Object value) {
         this.field = field;
         this.condition = condition;
         this.type = type;

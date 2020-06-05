@@ -18,7 +18,7 @@ import org.cheeryworks.liteql.model.query.result.ReadResult;
 import org.cheeryworks.liteql.model.query.result.TreeReadResult;
 import org.cheeryworks.liteql.model.query.result.TreeReadResults;
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.DomainTypeField;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.cheeryworks.liteql.sql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.sql.query.condition.ConditionValueConverter;
@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import static org.cheeryworks.liteql.model.enums.StandardConditionClause.IN;
-import static org.cheeryworks.liteql.model.enums.StandardConditionClause.NOT_NULL;
-import static org.cheeryworks.liteql.model.enums.StandardConditionClause.NULL;
+import static org.cheeryworks.liteql.model.enums.ConditionClause.IN;
+import static org.cheeryworks.liteql.model.enums.ConditionClause.NOT_NULL;
+import static org.cheeryworks.liteql.model.enums.ConditionClause.NULL;
 
 public abstract class SqlQueryServiceUtil {
 
@@ -433,7 +433,7 @@ public abstract class SqlQueryServiceUtil {
     public static Map<String, Class> getFieldDefinitions(DomainType domainType) {
         Map<String, Class> fieldDefinitions = new HashMap<>();
 
-        for (DomainTypeField field : domainType.getFields()) {
+        for (Field field : domainType.getFields()) {
             fieldDefinitions.put(field.getName(), getDataType(field.getType()));
         }
 

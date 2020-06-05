@@ -4,29 +4,30 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.enums.ConditionClause;
+import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 
 import java.io.IOException;
 
-public class ConditionClauseDeserializer extends StdDeserializer<ConditionClause> {
+public class MigrationOperationTypeDeserializer extends StdDeserializer<MigrationOperationType> {
 
-    public ConditionClauseDeserializer() {
+    public MigrationOperationTypeDeserializer() {
         super(ConditionClause.class);
     }
 
     @Override
-    public ConditionClause deserialize(
+    public MigrationOperationType deserialize(
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
         try {
-            ConditionClause conditionClause
-                    = ConditionClause.valueOf(StringUtils.upperCase(node.asText()));
+            MigrationOperationType migrationOperationType
+                    = MigrationOperationType.valueOf(StringUtils.upperCase(node.asText()));
 
-            return conditionClause;
+            return migrationOperationType;
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Unsupported condition clause: " + node.asText());
+            throw new IllegalArgumentException("Unsupported migration operation type: " + node.asText());
         }
     }
 

@@ -1,6 +1,9 @@
 package org.cheeryworks.liteql.model.type;
 
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
+import org.cheeryworks.liteql.model.type.index.Index;
+import org.cheeryworks.liteql.model.type.index.Unique;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,11 +14,11 @@ public class DomainType implements Serializable {
 
     private String name;
 
-    private List<DomainTypeField> fields;
+    private List<Field> fields;
 
-    private List<DomainTypeUniqueKey> uniques;
+    private List<Unique> uniques;
 
-    private List<DomainTypeIndexKey> indexes;
+    private List<Index> indexes;
 
     public String getSchema() {
         return schema;
@@ -33,33 +36,33 @@ public class DomainType implements Serializable {
         this.name = name;
     }
 
-    public List<DomainTypeField> getFields() {
+    public List<Field> getFields() {
         return fields;
     }
 
-    public void setFields(List<DomainTypeField> fields) {
+    public void setFields(List<Field> fields) {
         this.fields = fields;
     }
 
-    public List<DomainTypeUniqueKey> getUniques() {
+    public List<Unique> getUniques() {
         return uniques;
     }
 
-    public void setUniques(List<DomainTypeUniqueKey> uniques) {
+    public void setUniques(List<Unique> uniques) {
         this.uniques = uniques;
     }
 
-    public List<DomainTypeIndexKey> getIndexes() {
+    public List<Index> getIndexes() {
         return indexes;
     }
 
-    public void setIndexes(List<DomainTypeIndexKey> indexes) {
+    public void setIndexes(List<Index> indexes) {
         this.indexes = indexes;
     }
 
     public boolean isReferenceField(String fieldName) {
         if (fields != null && fields.size() > 0) {
-            for (DomainTypeField field : fields) {
+            for (Field field : fields) {
                 if (field instanceof ReferenceField
                         && field.getName().toLowerCase().equals(fieldName.toLowerCase())) {
                     return true;

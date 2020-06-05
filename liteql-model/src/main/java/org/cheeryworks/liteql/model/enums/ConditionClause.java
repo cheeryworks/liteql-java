@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.enums;
 
-public enum StandardConditionClause {
+public enum ConditionClause {
 
     EQUALS,
     NOT_EQUALS,

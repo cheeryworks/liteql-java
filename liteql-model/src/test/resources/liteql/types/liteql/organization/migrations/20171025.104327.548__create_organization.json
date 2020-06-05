@@ -2,7 +2,7 @@
   "description": "",
   "operations": [
     {
-      "operation": "create_type",
+      "type": "create_type",
       "fields": [
         {
           "name": "id",

@@ -1,6 +1,6 @@
-package org.cheeryworks.liteql.model.type;
+package org.cheeryworks.liteql.model.type.field;
 
-public abstract class AbstractDomainTypeField implements DomainTypeField {
+public abstract class AbstractField implements Field {
 
     private String name;
 
