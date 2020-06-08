@@ -19,7 +19,7 @@ import org.cheeryworks.liteql.model.query.read.page.PageRequest;
 import org.cheeryworks.liteql.model.query.read.page.Pageable;
 import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
-import org.cheeryworks.liteql.model.query.save.SaveQuery;
+import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.field.Field;
@@ -252,7 +252,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     }
 
     @Override
-    public SqlSaveQuery getSqlSaveQuery(SaveQuery saveQuery, DomainType domainType) {
+    public SqlSaveQuery getSqlSaveQuery(AbstractSaveQuery saveQuery, DomainType domainType) {
         Map<String, Object> data = saveQuery.getData();
 
         SqlSaveQuery sqlSaveQuery = new InlineSqlSaveQuery();

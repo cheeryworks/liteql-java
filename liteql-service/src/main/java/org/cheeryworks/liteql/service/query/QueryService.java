@@ -11,7 +11,7 @@ import org.cheeryworks.liteql.model.query.read.result.ReadResult;
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
-import org.cheeryworks.liteql.model.query.save.SaveQuery;
+import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 
 import java.util.List;
@@ -30,9 +30,9 @@ public interface QueryService {
 
     UpdateQuery update(UpdateQuery updateQuery);
 
-    SaveQuery save(SaveQuery saveQuery);
+    AbstractSaveQuery save(AbstractSaveQuery saveQuery);
 
-    List<SaveQuery> save(List<SaveQuery> saveQueries);
+    List<AbstractSaveQuery> save(List<AbstractSaveQuery> saveQueries);
 
     int delete(DeleteQuery deleteQuery);
 

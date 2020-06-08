@@ -4,17 +4,13 @@ import org.cheeryworks.liteql.model.query.AbstractDomainQuery;
 
 import java.util.Map;
 
-public class SaveQuery extends AbstractDomainQuery {
+public abstract class AbstractSaveQuery extends AbstractDomainQuery {
 
     private Map<String, Object> data;
 
     private Map<String, String> references;
 
     private SaveQueryAssociations associations;
-
-    protected SaveQuery() {
-
-    }
 
     public Map<String, Object> getData() {
         return data;

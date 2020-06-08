@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.cheeryworks.liteql.model.query.PublicQuery;
-import org.cheeryworks.liteql.model.query.save.SaveQuery;
+import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueryAssociations;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class SaveQueryAssociationsDeserializer extends StdDeserializer<SaveQuery
                 for (JsonNode field : saveAssociationsNode) {
                     PublicQuery query = jsonParser.getCodec().treeToValue(field, PublicQuery.class);
 
-                    saveQueryAssociations.add((SaveQuery) query);
+                    saveQueryAssociations.add((AbstractSaveQuery) query);
                 }
             } else {
                 throw new IllegalArgumentException(

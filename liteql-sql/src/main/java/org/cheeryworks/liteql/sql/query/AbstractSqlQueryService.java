@@ -15,9 +15,9 @@ import org.cheeryworks.liteql.model.query.read.result.PageReadResults;
 import org.cheeryworks.liteql.model.query.read.result.ReadResult;
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
+import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueries;
-import org.cheeryworks.liteql.model.query.save.SaveQuery;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
@@ -175,16 +175,16 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     @Override
-    public SaveQuery save(SaveQuery saveQuery) {
+    public AbstractSaveQuery save(AbstractSaveQuery saveQuery) {
         return save(Collections.singletonList(saveQuery)).get(0);
     }
 
     @Override
-    public List<SaveQuery> save(List<SaveQuery> saveQueries) {
+    public List<AbstractSaveQuery> save(List<AbstractSaveQuery> saveQueries) {
         long currentTime = System.currentTimeMillis();
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
-        Map<Integer, Map<String, List<SaveQuery>>> sortedSaveQueries = new HashMap<>();
+        Map<Integer, Map<String, List<AbstractSaveQuery>>> sortedSaveQueries = new HashMap<>();
 
         saveQueryDiagnostic.setTransformingSaveQueryDuration(
                 transformingSaveQuery(sortedSaveQueries, saveQueries, 0));
@@ -201,21 +201,22 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private long transformingSaveQuery(
-            Map<Integer, Map<String, List<SaveQuery>>> sortedSaveQueries, List<SaveQuery> saveQueries, int level) {
+            Map<Integer, Map<String, List<AbstractSaveQuery>>> sortedSaveQueries,
+            List<AbstractSaveQuery> saveQueries, int level) {
         long currentTime = System.currentTimeMillis();
         long duration = 0;
 
-        Map<String, List<SaveQuery>> saveQueriesWithType = sortedSaveQueries.get(level);
+        Map<String, List<AbstractSaveQuery>> saveQueriesWithType = sortedSaveQueries.get(level);
 
         if (saveQueriesWithType == null) {
             saveQueriesWithType = new HashMap<>();
             sortedSaveQueries.put(level, saveQueriesWithType);
         }
 
-        for (SaveQuery saveQuery : saveQueries) {
+        for (AbstractSaveQuery saveQuery : saveQueries) {
             transformingFieldValue(saveQuery.getData());
 
-            List<SaveQuery> saveQueriesInSameType = saveQueriesWithType.get(saveQuery.getDomainType());
+            List<AbstractSaveQuery> saveQueriesInSameType = saveQueriesWithType.get(saveQuery.getDomainType());
 
             if (saveQueriesInSameType == null) {
                 saveQueriesInSameType = new ArrayList<>();
@@ -245,7 +246,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private SaveQueryDiagnostic batchSave(
-            Map<String, List<SaveQuery>> saveQueriesWithType, int i) {
+            Map<String, List<AbstractSaveQuery>> saveQueriesWithType, int i) {
         long currentTime = System.currentTimeMillis();
 
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
@@ -272,7 +273,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return saveQueryDiagnostic;
     }
 
-    private long auditingEntities(Map<String, List<SaveQuery>> saveQueriesWithType) {
+    private long auditingEntities(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime = System.currentTimeMillis();
 //        for (List<SaveQuery> saveQueries : saveQueriesWithType.values()) {
 //            for (SaveQuery saveQuery : saveQueries) {
@@ -286,17 +287,17 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return System.currentTimeMillis() - currentTime;
     }
 
-    private long linkingParent(Map<String, List<SaveQuery>> saveQueriesWithType) {
+    private long linkingParent(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime = System.currentTimeMillis();
 
-        for (Map.Entry<String, List<SaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
-            List<SaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
+        for (Map.Entry<String, List<AbstractSaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
+            List<AbstractSaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
                     repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
-            for (SaveQuery saveQuery : saveQueries) {
+            for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (CollectionUtils.isNotEmpty(saveQuery.getAssociations())) {
-                    for (SaveQuery associatedSaveQuery : saveQuery.getAssociations()) {
+                    for (AbstractSaveQuery associatedSaveQuery : saveQuery.getAssociations()) {
                         if (associatedSaveQuery.getReferences() != null) {
                             Map<String, String> references = associatedSaveQuery.getReferences();
 
@@ -328,7 +329,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return System.currentTimeMillis() - currentTime;
     }
 
-    private long[] persist(Map<String, List<SaveQuery>> saveQueriesWithType) {
+    private long[] persist(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime;
         long persistDuration = 0;
         long prePersistDuration = 0;
@@ -340,12 +341,12 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
         currentTime = System.currentTimeMillis();
 
-        for (Map.Entry<String, List<SaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
+        for (Map.Entry<String, List<AbstractSaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
             String sql = null;
 
             List<Object[]> parametersList = new ArrayList<>();
 
-            for (SaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
+            for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
                         saveQuery, repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
@@ -360,7 +361,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
             int i = 0;
 
-            for (SaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
+            for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 if (saveQuery instanceof CreateQuery) {
                     saveQuery.getData().put("id", parametersList.get(i)[0]);
                 }
@@ -475,8 +476,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
             AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
 
             return query(readQuery);
-        } else if (query instanceof SaveQuery) {
-            SaveQuery saveQuery = (SaveQuery) query;
+        } else if (query instanceof AbstractSaveQuery) {
+            AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
 
             return save(saveQuery);
         } else if (query instanceof SaveQueries) {

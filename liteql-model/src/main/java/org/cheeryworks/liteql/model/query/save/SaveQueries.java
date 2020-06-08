@@ -7,13 +7,13 @@ import org.cheeryworks.liteql.model.query.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaveQueries extends ArrayList<SaveQuery> implements TypedQuery, PublicQuery {
+public class SaveQueries extends ArrayList<AbstractSaveQuery> implements TypedQuery, PublicQuery {
 
     public SaveQueries() {
         super();
     }
 
-    public SaveQueries(List<SaveQuery> saveQueries) {
+    public SaveQueries(List<AbstractSaveQuery> saveQueries) {
         super(saveQueries);
     }
 
