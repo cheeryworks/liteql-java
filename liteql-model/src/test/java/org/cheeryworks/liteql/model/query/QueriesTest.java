@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.model.query;
 
 import org.cheeryworks.liteql.BaseTest;
-import org.cheeryworks.liteql.model.util.json.JsonReader;
+import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.junit.jupiter.api.Test;
 
@@ -11,8 +11,8 @@ public class QueriesTest extends BaseTest {
 
     @Test
     public void testingQueriesParser() {
-        Map<String, String> queriesJsonFiles = JsonReader.readJsonFiles(
-                getClass().getResource("/liteql/queries").getPath(), false);
+        Map<String, String> queriesJsonFiles = FileReader.readFiles(
+                getClass().getResource("/liteql/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
             Queries queries = LiteQLJsonUtil.toBean(queriesJsonFile, Queries.class);

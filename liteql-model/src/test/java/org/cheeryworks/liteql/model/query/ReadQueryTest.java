@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.model.query;
 
 import org.cheeryworks.liteql.BaseTest;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.util.json.JsonReader;
+import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,7 @@ public class ReadQueryTest extends BaseTest {
 
     @Test
     public void testingReadQueryParser() {
-        Map<String, String> readQueryInJsonFiles = JsonReader.readJsonFiles(
+        Map<String, String> readQueryInJsonFiles = FileReader.readJsonFilesRecursively(
                 getClass().getResource("/liteql/queries/read").getPath());
 
         for (String readQueryInJson : readQueryInJsonFiles.values()) {

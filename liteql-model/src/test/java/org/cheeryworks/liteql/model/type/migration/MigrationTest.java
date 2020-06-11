@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.model.type.migration;
 
 import org.cheeryworks.liteql.BaseTest;
-import org.cheeryworks.liteql.model.util.json.JsonReader;
+import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ public class MigrationTest extends BaseTest {
 
     @Test
     public void testingMigrationParser() {
-        Map<String, String> migrationInJsonFiles = JsonReader.readJsonFiles(
+        Map<String, String> migrationInJsonFiles = FileReader.readJsonFilesRecursively(
                 getClass().getResource("/liteql/types/").getPath());
 
         for (Map.Entry<String, String> migrationInJsonFile : migrationInJsonFiles.entrySet()) {

@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -13,14 +13,18 @@ import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public abstract class JsonReader {
+public abstract class FileReader {
 
-    public static Map<String, String> readJsonFiles(String path) {
-        return readJsonFiles(path, true);
+    public static Map<String, String> readJsonFilesRecursively(String path) {
+        return readFilesRecursively(path, "json");
     }
 
-    public static Map<String, String> readJsonFiles(String path, boolean recursive) {
-        TreeMap<String, String> jsonFiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    public static Map<String, String> readFilesRecursively(String path, String suffix) {
+        return readFiles(path, suffix, true);
+    }
+
+    public static Map<String, String> readFiles(String path, String suffix, boolean recursively) {
+        TreeMap<String, String> files = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         try {
             if (!path.endsWith("/")) {
@@ -33,20 +37,20 @@ public abstract class JsonReader {
                 while (typeEntries.hasMoreElements()) {
                     JarEntry jarEntry = typeEntries.nextElement();
                     if (jarEntry.getName().startsWith(path.substring(path.indexOf("!") + 2))
-                            && jarEntry.getName().endsWith(".json")) {
-                        String jsonFileRelativePath = jarEntry.getName().substring(
+                            && jarEntry.getName().endsWith("." + suffix)) {
+                        String fileRelativePath = jarEntry.getName().substring(
                                 path.length() - path.indexOf("!") - 2);
 
 
-                        if (!recursive && jsonFileRelativePath.indexOf("/") > 0) {
+                        if (!recursively && fileRelativePath.indexOf("/") > 0) {
                             continue;
                         }
 
-                        String jsonFileContent = IOUtils.toString(
-                                JsonReader.class.getResourceAsStream(
+                        String fileContent = IOUtils.toString(
+                                FileReader.class.getResourceAsStream(
                                         "/" + jarEntry.getName()), StandardCharsets.UTF_8);
 
-                        jsonFiles.put(jsonFileRelativePath, jsonFileContent);
+                        files.put(fileRelativePath, fileContent);
                     }
                 }
 
@@ -55,13 +59,13 @@ public abstract class JsonReader {
                 File typeFilesPath = new File(path);
 
                 if (typeFilesPath.exists()) {
-                    Collection<File> typeFiles = FileUtils.listFiles(new File(path), new String[]{"json"}, recursive);
+                    Collection<File> typeFiles = FileUtils.listFiles(new File(path), new String[]{suffix}, recursively);
 
                     for (File typeFile : typeFiles) {
-                        String jsonFileRelativePath = typeFile.toURI().toURL().getPath().substring(path.length());
-                        String jsonFileContent = IOUtils.toString(typeFile.toURI(), StandardCharsets.UTF_8);
+                        String fileRelativePath = typeFile.toURI().toURL().getPath().substring(path.length());
+                        String fileContent = IOUtils.toString(typeFile.toURI(), StandardCharsets.UTF_8);
 
-                        jsonFiles.put(jsonFileRelativePath, jsonFileContent);
+                        files.put(fileRelativePath, fileContent);
                     }
                 }
             }
@@ -69,7 +73,7 @@ public abstract class JsonReader {
             throw new RuntimeException(ex.getMessage(), ex);
         }
 
-        return jsonFiles;
+        return files;
     }
 
 }
