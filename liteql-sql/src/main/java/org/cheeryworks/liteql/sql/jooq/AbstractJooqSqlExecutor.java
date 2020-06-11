@@ -5,7 +5,6 @@ import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.jooq.util.JOOQDatabaseTypeUtil;
 import org.jooq.DSLContext;
 import org.jooq.conf.RenderNameCase;
-import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
 import org.jooq.conf.SettingsTools;
