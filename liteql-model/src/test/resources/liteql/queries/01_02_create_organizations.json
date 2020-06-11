@@ -15,8 +15,8 @@
       "queryType": "create",
       "domainType": "liteql.organization",
       "data": {
-        "name": "CheeryWorks",
-        "code": "cheeryworks",
+        "name": "CheeryApp",
+        "code": "cheeryapp",
         "country": {
           "code": "cn"
         }
