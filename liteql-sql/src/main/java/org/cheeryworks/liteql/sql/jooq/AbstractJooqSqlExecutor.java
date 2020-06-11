@@ -4,7 +4,9 @@ import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.jooq.util.JOOQDatabaseTypeUtil;
 import org.jooq.DSLContext;
+import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.RenderNameStyle;
+import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
 import org.jooq.conf.SettingsTools;
 import org.jooq.impl.DefaultDSLContext;
@@ -29,7 +31,8 @@ public abstract class AbstractJooqSqlExecutor {
         this.database = database;
 
         Settings settings = SettingsTools.defaultSettings();
-        settings.setRenderNameStyle(RenderNameStyle.LOWER);
+        settings.setRenderQuotedNames(RenderQuotedNames.NEVER);
+        settings.setRenderNameCase(RenderNameCase.LOWER);
 
         if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
             settings.withRenderFormatted(true);
