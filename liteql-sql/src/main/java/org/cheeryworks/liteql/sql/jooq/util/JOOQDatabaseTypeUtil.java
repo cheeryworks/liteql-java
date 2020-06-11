@@ -25,6 +25,10 @@ public class JOOQDatabaseTypeUtil {
             return SQLDialect.MYSQL;
         }
 
+        if (database.equals(Database.MARIA_DB)) {
+            return SQLDialect.MARIADB;
+        }
+
         if (database.equals(Database.POSTGRESQL)) {
             return SQLDialect.POSTGRES;
         }

@@ -4,6 +4,7 @@ import org.cheeryworks.liteql.sql.enums.Database;
 import org.cheeryworks.liteql.sql.util.database.DatabaseType;
 import org.cheeryworks.liteql.sql.util.database.H2Database;
 import org.cheeryworks.liteql.sql.util.database.HSQLDatabase;
+import org.cheeryworks.liteql.sql.util.database.MariaDBDatabase;
 import org.cheeryworks.liteql.sql.util.database.MySQLDatabase;
 import org.cheeryworks.liteql.sql.util.database.PostgreSQLDatabase;
 
@@ -13,6 +14,7 @@ public final class DatabaseTypeUtil {
             Database.H2,
             Database.HSQL,
             Database.MYSQL,
+            Database.MARIA_DB,
             Database.POSTGRESQL
     };
 
@@ -21,6 +23,8 @@ public final class DatabaseTypeUtil {
     private static DatabaseType hsqlDatabase = new HSQLDatabase();
 
     private static DatabaseType mysqlDatabase = new MySQLDatabase();
+
+    private static DatabaseType mariaDBDatabase = new MariaDBDatabase();
 
     private static DatabaseType postgresqlDatabase = new PostgreSQLDatabase();
 
@@ -31,6 +35,8 @@ public final class DatabaseTypeUtil {
             return hsqlDatabase;
         } else if (Database.MYSQL.equals(database)) {
             return mysqlDatabase;
+        } else if (Database.MARIA_DB.equals(database)) {
+            return mariaDBDatabase;
         } else if (Database.POSTGRESQL.equals(database)) {
             return postgresqlDatabase;
         }
@@ -56,6 +62,14 @@ public final class DatabaseTypeUtil {
 
     public static boolean isMySQL(Database database) {
         if (Database.MYSQL.equals(database)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean isMariaDB(Database database) {
+        if (Database.MARIA_DB.equals(database)) {
             return true;
         }
 
