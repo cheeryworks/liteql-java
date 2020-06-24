@@ -12,7 +12,7 @@ public class QueriesTest extends BaseTest {
     @Test
     public void testingQueriesParser() {
         Map<String, String> queriesJsonFiles = FileReader.readFiles(
-                getClass().getResource("/liteql/queries").getPath(), "json", false);
+                getClass().getResource("/liteql/liteql/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
             Queries queries = LiteQLJsonUtil.toBean(queriesJsonFile, Queries.class);

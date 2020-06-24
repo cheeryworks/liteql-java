@@ -12,8 +12,8 @@
     <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>liteql-model</module>
+        <module>liteql-api</module>
         <module>liteql-service</module>
-        <module>liteql-sql</module>
     </modules>
     <packaging>pom</packaging>
     <name>LiteQL</name>
@@ -36,23 +36,18 @@
             </dependency>
             <dependency>
                 <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-service</artifactId>
+                <artifactId>liteql-api</artifactId>
                 <version>${liteql.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-service</artifactId>
+                <artifactId>liteql-api</artifactId>
                 <type>test-jar</type>
                 <version>${liteql.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-sql</artifactId>
-                <version>${liteql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-mongo</artifactId>
+                <artifactId>liteql-service</artifactId>
                 <version>${liteql.version}</version>
             </dependency>
         </dependencies>
