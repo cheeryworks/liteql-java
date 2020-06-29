@@ -7,7 +7,7 @@ import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.FileReader;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
+import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
     public JooqSqlQueryServiceTest() {
         super();
 
-        queryService = new JooqSqlQueryService(getRepository(), getDataSource(), getDatabase());
+        queryService = new JooqSqlQueryService(getRepository(), getObjectMapper(), getDataSource(), getDatabase());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
             ReadQuery readQuery = LiteQLJsonUtil.toBean(
-                    readQueryInJson, ReadQuery.class);
+                    getObjectMapper(), readQueryInJson, ReadQuery.class);
 
             Object results = queryService.read(readQuery);
 
@@ -75,7 +75,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
                 getClass().getResource("/liteql/liteql/queries/delete").getPath());
 
         for (String deleteQueryInJson : deleteQueryJsonFiles.values()) {
-            DeleteQuery deleteQuery = LiteQLJsonUtil.toBean(deleteQueryInJson, DeleteQuery.class);
+            DeleteQuery deleteQuery = LiteQLJsonUtil.toBean(getObjectMapper(), deleteQueryInJson, DeleteQuery.class);
 
             queryService.delete(deleteQuery);
         }
@@ -87,11 +87,11 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
                 getClass().getResource("/liteql/liteql/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
-            Queries queries = LiteQLJsonUtil.toBean(queriesJsonFile, Queries.class);
+            Queries queries = LiteQLJsonUtil.toBean(getObjectMapper(), queriesJsonFile, Queries.class);
 
             Object results = queryService.execute(queries);
 
-            getLogger().info(LiteQLJsonUtil.toJson(results));
+            getLogger().info(LiteQLJsonUtil.toJson(getObjectMapper(), results));
         }
 
         exportAndPrintDdl();

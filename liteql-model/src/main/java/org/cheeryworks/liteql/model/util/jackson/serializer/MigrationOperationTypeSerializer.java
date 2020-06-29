@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class MigrationOperationTypeSerializer extends StdSerializer<MigrationOperationType> {
 
-    protected MigrationOperationTypeSerializer() {
+    public MigrationOperationTypeSerializer() {
         super(MigrationOperationType.class);
     }
 

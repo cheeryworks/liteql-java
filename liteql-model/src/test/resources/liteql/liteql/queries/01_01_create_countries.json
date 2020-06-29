@@ -2,7 +2,7 @@
   "queries": [
     {
       "queryType": "create",
-      "domainType": "liteql.country",
+      "domainTypeName": "liteql.country",
       "data": {
         "name": "China",
         "code": "cn"

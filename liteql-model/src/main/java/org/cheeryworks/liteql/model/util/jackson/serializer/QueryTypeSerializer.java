@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

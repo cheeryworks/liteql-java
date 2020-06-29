@@ -1,11 +1,11 @@
 {
   "queryType": "read",
-  "domainType": "liteql.user",
+  "domainTypeName": "liteql.user",
   "conditions": [
     {
       "field": "age",
       "operator": "and",
-      "domainType": "integer",
+      "domainTypeName": "integer",
       "condition": "greater_than",
       "value": 1
     }

@@ -1,5 +1,4 @@
 {
-  "name": "user",
   "fields": [
     {
       "name": "id",
@@ -29,12 +28,12 @@
     {
       "name": "organization",
       "type": "reference",
-      "domainType": "liteql.organization"
+      "domainTypeName": "liteql.organization"
     },
     {
       "name": "country",
       "type": "reference",
-      "domainType": "liteql.country"
+      "domainTypeName": "liteql.country"
     }
   ],
   "uniques": [

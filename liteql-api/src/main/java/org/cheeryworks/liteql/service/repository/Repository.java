@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.repository;
 
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface Repository {
 
     Map<String, DomainType> getDomainTypes(String schemaName);
 
-    DomainType getDomainType(String domainTypeName);
+    DomainType getDomainType(DomainTypeName domainTypeName);
 
     List<Migration> getMigrations(String schemaName);
 

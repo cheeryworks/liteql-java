@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.query;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,10 +20,11 @@ import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueries;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     private Repository repository;
 
+    private ObjectMapper objectMapper;
+
     private SqlQueryParser sqlQueryParser;
 
     private SqlQueryExecutor sqlQueryExecutor;
@@ -61,8 +65,10 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     public AbstractSqlQueryService(
-            Repository repository, SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor) {
+            Repository repository, ObjectMapper objectMapper,
+            SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor) {
         this.repository = repository;
+        this.objectMapper = objectMapper;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
     }
@@ -183,7 +189,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         long currentTime = System.currentTimeMillis();
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
-        Map<Integer, Map<String, List<AbstractSaveQuery>>> sortedSaveQueries = new HashMap<>();
+        Map<Integer, Map<DomainTypeName, List<AbstractSaveQuery>>> sortedSaveQueries = new HashMap<>();
 
         saveQueryDiagnostic.setTransformingSaveQueryDuration(
                 transformingSaveQuery(sortedSaveQueries, saveQueries, 0));
@@ -200,12 +206,12 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private long transformingSaveQuery(
-            Map<Integer, Map<String, List<AbstractSaveQuery>>> sortedSaveQueries,
+            Map<Integer, Map<DomainTypeName, List<AbstractSaveQuery>>> sortedSaveQueries,
             List<AbstractSaveQuery> saveQueries, int level) {
         long currentTime = System.currentTimeMillis();
         long duration = 0;
 
-        Map<String, List<AbstractSaveQuery>> saveQueriesWithType = sortedSaveQueries.get(level);
+        Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType = sortedSaveQueries.get(level);
 
         if (saveQueriesWithType == null) {
             saveQueriesWithType = new HashMap<>();
@@ -215,11 +221,11 @@ public abstract class AbstractSqlQueryService implements QueryService {
         for (AbstractSaveQuery saveQuery : saveQueries) {
             transformingFieldValue(saveQuery.getData());
 
-            List<AbstractSaveQuery> saveQueriesInSameType = saveQueriesWithType.get(saveQuery.getDomainType());
+            List<AbstractSaveQuery> saveQueriesInSameType = saveQueriesWithType.get(saveQuery.getDomainTypeName());
 
             if (saveQueriesInSameType == null) {
                 saveQueriesInSameType = new ArrayList<>();
-                saveQueriesWithType.put(saveQuery.getDomainType(), saveQueriesInSameType);
+                saveQueriesWithType.put(saveQuery.getDomainTypeName(), saveQueriesInSameType);
             }
 
             saveQueriesInSameType.add(saveQuery);
@@ -245,7 +251,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private SaveQueryDiagnostic batchSave(
-            Map<String, List<AbstractSaveQuery>> saveQueriesWithType, int i) {
+            Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType, int i) {
         long currentTime = System.currentTimeMillis();
 
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
@@ -272,7 +278,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return saveQueryDiagnostic;
     }
 
-    private long auditingEntities(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
+    private long auditingEntities(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime = System.currentTimeMillis();
 //        for (List<SaveQuery> saveQueries : saveQueriesWithType.values()) {
 //            for (SaveQuery saveQuery : saveQueries) {
@@ -286,10 +292,11 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return System.currentTimeMillis() - currentTime;
     }
 
-    private long linkingParent(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
+    private long linkingParent(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime = System.currentTimeMillis();
 
-        for (Map.Entry<String, List<AbstractSaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
+        for (Map.Entry<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithTypeEntry
+                : saveQueriesWithType.entrySet()) {
             List<AbstractSaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
                     repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
@@ -328,7 +335,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return System.currentTimeMillis() - currentTime;
     }
 
-    private long[] persist(Map<String, List<AbstractSaveQuery>> saveQueriesWithType) {
+    private long[] persist(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime;
         long persistDuration = 0;
         long prePersistDuration = 0;
@@ -340,7 +347,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
         currentTime = System.currentTimeMillis();
 
-        for (Map.Entry<String, List<AbstractSaveQuery>> saveQueriesWithTypeEntry : saveQueriesWithType.entrySet()) {
+        for (Map.Entry<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithTypeEntry
+                : saveQueriesWithType.entrySet()) {
             String sql = null;
 
             List<Object[]> parametersList = new ArrayList<>();
@@ -375,7 +383,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private void printDiagnosticMessages(
-            SaveQueryDiagnostic saveQueryDiagnostic, long totalDuration, Integer level, Set<String> typeNames) {
+            SaveQueryDiagnostic saveQueryDiagnostic, long totalDuration,
+            Integer level, Set<DomainTypeName> domainTypeNames) {
         if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
             int messageLength = 50;
             String beginMessage = "Diagnostic Messages (Save)";
@@ -388,14 +397,15 @@ public abstract class AbstractSqlQueryService implements QueryService {
                 beginMessage = "Diagnostic Summary Messages (Save)";
             }
 
-            if (CollectionUtils.isNotEmpty(typeNames)) {
+            if (CollectionUtils.isNotEmpty(domainTypeNames)) {
                 int i = 1;
-                for (String typeName : typeNames) {
-                    if (typeName.length() > 40) {
-                        typeName = StringUtils.abbreviateMiddle(typeName, "~", 40);
+                for (DomainTypeName domainTypeName : domainTypeNames) {
+                    String domainTypeFullName = domainTypeName.getFullname();
+                    if (domainTypeFullName.length() > 40) {
+                        domainTypeFullName = StringUtils.abbreviateMiddle(domainTypeFullName, "~", 40);
                     }
 
-                    diagnosticMessages.put("Type" + i + ":", typeName);
+                    diagnosticMessages.put("Type" + i + ":", domainTypeFullName);
                     i++;
                 }
             }
@@ -441,7 +451,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
     public int delete(DeleteQuery deleteQuery) {
         if (!deleteQuery.isTruncated()) {
             PageReadQuery pageReadQuery = new PageReadQuery();
-            pageReadQuery.setDomainType(deleteQuery.getDomainType());
+            pageReadQuery.setDomainTypeName(deleteQuery.getDomainTypeName());
             pageReadQuery.setConditions(deleteQuery.getConditions());
             pageReadQuery.setPage(1);
             pageReadQuery.setSize(10000);
@@ -503,6 +513,6 @@ public abstract class AbstractSqlQueryService implements QueryService {
             return results;
         }
 
-        throw new UnsupportedOperationException(LiteQLJsonUtil.toJson(query));
+        throw new UnsupportedOperationException(LiteQLJsonUtil.toJson(this.objectMapper, query));
     }
 }

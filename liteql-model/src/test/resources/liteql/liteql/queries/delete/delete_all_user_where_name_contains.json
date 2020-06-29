@@ -1,5 +1,5 @@
 {
-  "domainType": "liteql.user",
+  "domainTypeName": "liteql.user",
   "conditions": [
     {
       "field": "name",

@@ -1,5 +1,7 @@
 package org.cheeryworks.liteql.service.type;
 
+import org.cheeryworks.liteql.model.type.DomainTypeName;
+
 public interface SqlSchemaParser {
 
     String PRIMARY_KEY_PREFIX = "pk_";
@@ -12,6 +14,6 @@ public interface SqlSchemaParser {
 
     String schemaToSql(String schemaName);
 
-    String domainTypeToSql(String domainTypeName);
+    String domainTypeToSql(DomainTypeName domainTypeName);
 
 }

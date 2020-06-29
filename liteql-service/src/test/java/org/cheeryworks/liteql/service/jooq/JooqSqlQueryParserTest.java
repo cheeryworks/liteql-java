@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.jooq;
 import org.cheeryworks.liteql.AbstractSqlTest;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.FileReader;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
+import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.SqlReadQuery;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ public class JooqSqlQueryParserTest extends AbstractSqlTest {
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
 
-            ReadQuery readQuery = LiteQLJsonUtil.toBean(readQueryInJson, ReadQuery.class);
+            ReadQuery readQuery = LiteQLJsonUtil.toBean(getObjectMapper(), readQueryInJson, ReadQuery.class);
 
             SqlReadQuery sqlQuery = jooqSqlQueryParser.getSqlReadQuery(readQuery);
         }

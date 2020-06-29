@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateFieldMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
@@ -11,8 +12,8 @@ import org.cheeryworks.liteql.model.type.migration.operation.DropIndexMigrationO
 import org.cheeryworks.liteql.model.type.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.enums.Database;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.type.migration.SqlSchemaMigrationParser;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.AlterTableFinalStep;
@@ -48,35 +49,35 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             if (operation instanceof CreateTypeMigrationOperation) {
                 migrationInSql.addAll(
                         parsingCreateTypeOperation(
-                                migration.getDomainType(), (CreateTypeMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateTypeMigrationOperation) operation));
             } else if (operation instanceof CreateFieldMigrationOperation) {
                 migrationInSql.addAll(
                         parsingCreateFieldOperation(
-                                migration.getDomainType(), (CreateFieldMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateFieldMigrationOperation) operation));
             } else if (operation instanceof CreateUniqueMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (CreateUniqueMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateUniqueMigrationOperation) operation));
             } else if (operation instanceof CreateIndexMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (CreateIndexMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateIndexMigrationOperation) operation));
             } else if (operation instanceof DropTypeMigrationOperation) {
                 migrationInSql.addAll(
                         parsingDropTypeOperation(
-                                migration.getDomainType(), (DropTypeMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropTypeMigrationOperation) operation));
             } else if (operation instanceof DropFieldMigrationOperation) {
                 migrationInSql.addAll(
                         parsingDropFieldOperation(
-                                migration.getDomainType(), (DropFieldMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropFieldMigrationOperation) operation));
             } else if (operation instanceof DropUniqueMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (DropUniqueMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropUniqueMigrationOperation) operation));
             } else if (operation instanceof DropIndexMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (DropIndexMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropIndexMigrationOperation) operation));
             }
         }
 
@@ -84,10 +85,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateTypeOperation(
-            String domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
+            DomainTypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getTableName(domainTypeName.getFullname());
 
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
@@ -106,20 +107,20 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        tableName, new CreateUniqueMigrationOperation(createTypeMigrationOperation.getUniques())));
+                        domainTypeName, new CreateUniqueMigrationOperation(createTypeMigrationOperation.getUniques())));
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        tableName, new CreateIndexMigrationOperation(createTypeMigrationOperation.getIndexes())));
+                        domainTypeName, new CreateIndexMigrationOperation(createTypeMigrationOperation.getIndexes())));
 
         return operationsInSql;
     }
 
     private List<String> parsingCreateFieldOperation(
-            String domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
+            DomainTypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getTableName(domainTypeName.getFullname());
 
         List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields(), getDatabase());
 
@@ -135,18 +136,20 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropTypeOperation(
-            String domainTypeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
+            DomainTypeName domainTypeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getTableName(domainTypeName.getFullname());
 
         DomainType domainType = getRepository().getDomainType(domainTypeName);
 
         operationsInSql.addAll(
-                parsingIndexMigrationOperation(tableName, new DropUniqueMigrationOperation(domainType.getUniques())));
+                parsingIndexMigrationOperation(
+                        domainTypeName, new DropUniqueMigrationOperation(domainType.getUniques())));
 
         operationsInSql.addAll(
-                parsingIndexMigrationOperation(tableName, new DropIndexMigrationOperation(domainType.getIndexes())));
+                parsingIndexMigrationOperation(
+                        domainTypeName, new DropIndexMigrationOperation(domainType.getIndexes())));
 
         DropTableFinalStep dropTableFinalStep = getDslContext()
                 .dropTable(tableName)
@@ -158,10 +161,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropFieldOperation(
-            String domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
+            DomainTypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getTableName(domainTypeName.getFullname());
 
         for (String field : dropFieldMigrationOperation.getFields()) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()

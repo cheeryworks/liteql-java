@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cheeryworks.liteql.model.enums.QueryType;
-import org.cheeryworks.liteql.model.query.AbstractDomainQuery;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.TypedQuery;
@@ -20,6 +19,7 @@ import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueries;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -47,7 +47,7 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
                     QueryType queryType = jsonParser.getCodec().treeToValue(
                             cql.get(TypedQuery.QUERY_TYPE_KEY), QueryType.class);
 
-                    if (cql.get(AbstractDomainQuery.DOMAIN_TYPE_KEY) == null) {
+                    if (cql.get(DomainTypeName.DOMAIN_TYPE_NAME_KEY) == null) {
                         throw new IllegalArgumentException("Required field domainType is not specified");
                     }
 

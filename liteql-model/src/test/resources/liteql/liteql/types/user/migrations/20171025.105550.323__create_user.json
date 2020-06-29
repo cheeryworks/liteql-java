@@ -32,7 +32,7 @@
         {
           "name": "organization",
           "type": "reference",
-          "domainType": "liteql.organization"
+          "domainTypeName": "liteql.organization"
         }
       ],
       "uniques": [

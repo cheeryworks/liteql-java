@@ -13,7 +13,7 @@ public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery> imp
     }
 
     public SingleReadQuery(ReadQuery readQuery) {
-        setDomainType(readQuery.getDomainType());
+        setDomainTypeName(readQuery.getDomainTypeName());
         setFields(readQuery.getFields());
         setJoins(readQuery.getJoins());
         setConditions(readQuery.getConditions());

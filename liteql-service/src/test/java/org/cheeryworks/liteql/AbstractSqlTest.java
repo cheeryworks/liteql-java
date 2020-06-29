@@ -11,7 +11,7 @@ public abstract class AbstractSqlTest extends BaseTest {
     private Database database;
 
     public AbstractSqlTest() {
-        repository = new PathMatchingResourceRepository("classpath*:/liteql");
+        repository = new PathMatchingResourceRepository(getObjectMapper(), "classpath*:/liteql");
 
         database = Database.H2;
     }

@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.model.type;
 
 import org.cheeryworks.liteql.BaseTest;
 import org.cheeryworks.liteql.model.util.FileReader;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
+import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +17,13 @@ public class TypeTest extends BaseTest {
 
         for (Map.Entry<String, String> typeInJsonFile : typeInJsonFiles.entrySet()) {
             if (typeInJsonFile.getKey().contains("definition.json")) {
-                DomainType domainType = LiteQLJsonUtil.toBean(typeInJsonFile.getValue(), DomainType.class);
+                DomainType domainType = LiteQLJsonUtil.toBean(
+                        getObjectMapper(), typeInJsonFile.getValue(), DomainType.class);
 
                 Assertions.assertEquals(
-                        LiteQLJsonUtil.toJsonNode(typeInJsonFile.getValue()),
-                        LiteQLJsonUtil.toJsonNode(LiteQLJsonUtil.toJson(domainType)));
+                        LiteQLJsonUtil.toJsonNode(getObjectMapper(), typeInJsonFile.getValue()),
+                        LiteQLJsonUtil.toJsonNode(
+                                getObjectMapper(), LiteQLJsonUtil.toJson(getObjectMapper(), domainType)));
             }
         }
     }

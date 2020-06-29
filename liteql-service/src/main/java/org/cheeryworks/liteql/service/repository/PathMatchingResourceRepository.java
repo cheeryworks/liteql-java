@@ -1,10 +1,12 @@
 package org.cheeryworks.liteql.service.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
+import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -21,13 +23,16 @@ import java.util.TreeMap;
 
 public class PathMatchingResourceRepository implements Repository {
 
+    private ObjectMapper objectMapper;
+
     private String[] locationPatterns;
 
     private Map<String, Map<String, DomainType>> schemas = new LinkedHashMap<>();
 
     private Map<String, Map<String, Migration>> migrations = new LinkedHashMap<>();
 
-    public PathMatchingResourceRepository(String... locationPatterns) {
+    public PathMatchingResourceRepository(ObjectMapper objectMapper, String... locationPatterns) {
+        this.objectMapper = objectMapper;
         this.locationPatterns = locationPatterns;
 
         init();
@@ -91,16 +96,19 @@ public class PathMatchingResourceRepository implements Repository {
                             continue;
                         }
 
-                        String domainTypeName = schemaName + "." + schemaDefinitionResourceRelativePath.split("/")[1];
+                        DomainTypeName domainTypeName = new DomainTypeName();
+
+                        domainTypeName.setSchema(schemaName);
+                        domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
 
                         if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
                             DomainType domainType = LiteQLJsonUtil.toBean(
-                                    schemaDefinitionContent.getValue(), DomainType.class);
+                                    objectMapper, schemaDefinitionContent.getValue(), DomainType.class);
 
                             domainType.setSchema(schemaName);
-                            domainType.setName(domainTypeName);
+                            domainType.setName(domainTypeName.getName());
 
-                            addType(schemaName, domainTypeName, domainType);
+                            addType(domainType);
                         }
 
                         if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
@@ -108,10 +116,9 @@ public class PathMatchingResourceRepository implements Repository {
                                     schemaDefinitionResourceRelativePath.lastIndexOf("/"),
                                     schemaDefinitionResourceRelativePath.lastIndexOf("."));
                             Migration migration = LiteQLJsonUtil.toBean(
-                                    schemaDefinitionContent.getValue(), Migration.class);
+                                    objectMapper, schemaDefinitionContent.getValue(), Migration.class);
                             migration.setName(migrationName);
-                            migration.setSchema(schemaName);
-                            migration.setDomainType(domainTypeName);
+                            migration.setDomainTypeName(domainTypeName);
 
                             addMigration(schemaName, migrationName, migration);
                         }
@@ -124,15 +131,15 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    private void addType(String schemaName, String typeName, DomainType type) {
-        Map<String, DomainType> schema = schemas.get(schemaName);
+    private void addType(DomainType domainType) {
+        Map<String, DomainType> schema = schemas.get(domainType.getSchema());
 
         if (schema == null) {
             schema = new LinkedHashMap<>();
-            schemas.put(schemaName, schema);
+            schemas.put(domainType.getSchema(), schema);
         }
 
-        schema.put(typeName, type);
+        schema.put(domainType.getName(), domainType);
     }
 
     private void addMigration(String schemaName, String migrationName, Migration migration) {
@@ -157,8 +164,8 @@ public class PathMatchingResourceRepository implements Repository {
     }
 
     @Override
-    public DomainType getDomainType(String domainTypeName) {
-        return schemas.get(domainTypeName.split("\\.")[0]).get(domainTypeName);
+    public DomainType getDomainType(DomainTypeName domainTypeName) {
+        return schemas.get(domainTypeName.getSchema()).get(domainTypeName.getName());
     }
 
     @Override

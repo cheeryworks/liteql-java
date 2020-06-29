@@ -1,13 +1,10 @@
 package org.cheeryworks.liteql.model.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.util.json.LiteQLJsonUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
 import java.util.Set;
 
 public final class StringUtil {
@@ -38,16 +35,6 @@ public final class StringUtil {
         }
 
         return selectedIds;
-    }
-
-    public static String getI18nText(String i18nTextInJson, Locale locale) {
-        Properties i18nText = LiteQLJsonUtil.toBean(i18nTextInJson, Properties.class);
-
-        if (i18nText != null) {
-            return i18nText.getProperty(locale.toString());
-        }
-
-        return null;
     }
 
     public static String httpUrlConcat(String baseUrl, String path) {

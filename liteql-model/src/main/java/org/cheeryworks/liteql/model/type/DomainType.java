@@ -5,36 +5,15 @@ import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Index;
 import org.cheeryworks.liteql.model.type.index.Unique;
 
-import java.io.Serializable;
 import java.util.List;
 
-public class DomainType implements Serializable {
-
-    private String schema;
-
-    private String name;
+public class DomainType extends DomainTypeName {
 
     private List<Field> fields;
 
     private List<Unique> uniques;
 
     private List<Index> indexes;
-
-    public String getSchema() {
-        return schema;
-    }
-
-    public void setSchema(String schema) {
-        this.schema = schema;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public List<Field> getFields() {
         return fields;

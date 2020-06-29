@@ -3,18 +3,19 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
-import org.cheeryworks.liteql.model.type.index.AbstractIndex;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
+import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.StringEncoder;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
@@ -82,14 +83,15 @@ public abstract class AbstractJooqSqlParser {
     }
 
     protected List<String> parsingIndexMigrationOperation(
-            String tableName, AbstractIndexMigrationOperation indexMigrationOperation) {
+            DomainTypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
+        String tableName = getTableName(domainTypeName.getFullname());
+
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
             for (AbstractIndex index : indexMigrationOperation.getIndexes()) {
                 String fieldsInString = Arrays.toString(
                         index.getFields().toArray(new String[index.getFields().size()]));
-                String indexName
-                        = IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX
+                String indexName = IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX
                         + StringEncoder.md5(tableName + "_" + fieldsInString).substring(0, 20);
 
                 Query query;
@@ -172,8 +174,8 @@ public abstract class AbstractJooqSqlParser {
         throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
     }
 
-    public static String getTableName(String domainTypeName) {
-        return domainTypeName.replace(".", "_").toLowerCase();
+    public static String getTableName(String domainTypeFullname) {
+        return domainTypeFullname.replace(".", "_").toLowerCase();
     }
 
 }

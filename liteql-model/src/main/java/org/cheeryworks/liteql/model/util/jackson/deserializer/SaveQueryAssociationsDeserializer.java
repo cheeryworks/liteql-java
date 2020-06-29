@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

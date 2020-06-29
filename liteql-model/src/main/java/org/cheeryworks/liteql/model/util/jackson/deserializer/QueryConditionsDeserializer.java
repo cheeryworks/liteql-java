@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.util.json;
+package org.cheeryworks.liteql.model.util.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -24,8 +24,8 @@ public class QueryConditionsDeserializer extends StdDeserializer<QueryConditions
         QueryConditions queryConditions = new QueryConditions();
 
         for (JsonNode queryConditionNode : node) {
-            QueryCondition queryCondition = LiteQLJsonUtil.toBean(
-                    queryConditionNode.toString(), QueryCondition.class);
+            QueryCondition queryCondition = jsonParser.getCodec().treeToValue(
+                    queryConditionNode, QueryCondition.class);
 
             if (queryCondition.getType() == null) {
                 queryCondition.setType(ConditionTypeUtil.getConditionTypeByValue(queryCondition.getValue()));

@@ -7,7 +7,7 @@
         {
           "name": "country",
           "type": "reference",
-          "domainType": "liteql.country"
+          "domainTypeName": "liteql.country"
         }
       ]
     }

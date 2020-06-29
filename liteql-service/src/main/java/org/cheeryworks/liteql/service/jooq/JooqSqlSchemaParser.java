@@ -1,10 +1,11 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.DomainTypeName;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.enums.Database;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.type.SqlSchemaParser;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.Field;
@@ -43,14 +44,14 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     }
 
     @Override
-    public String domainTypeToSql(String domainTypeName) {
+    public String domainTypeToSql(DomainTypeName domainTypeName) {
         return domainTypeToSql(getRepository().getDomainType(domainTypeName));
     }
 
     private String domainTypeToSql(DomainType domainType) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getTableName(domainType.getName());
+        String tableName = getTableName(domainType.getFullname());
 
         if (tableName.length() > 25) {
             throw new IllegalArgumentException("Schema or Domain Type name is too long, "
@@ -72,14 +73,14 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
         schemaSqlBuilder.append(parsingAddPrimaryKey(tableName)).append(";").append("\n\n");
 
         List<String> uniqueSqls = parsingIndexMigrationOperation(
-                tableName, new CreateUniqueMigrationOperation(domainType.getUniques()));
+                domainType, new CreateUniqueMigrationOperation(domainType.getUniques()));
 
         for (String uniqueSql : uniqueSqls) {
             schemaSqlBuilder.append(uniqueSql).append(";").append("\n\n");
         }
 
         List<String> indexSqls = parsingIndexMigrationOperation(
-                tableName, new CreateIndexMigrationOperation(domainType.getIndexes()));
+                domainType, new CreateIndexMigrationOperation(domainType.getIndexes()));
 
         for (String indexSql : indexSqls) {
             schemaSqlBuilder.append(indexSql).append(";").append("\n\n");
