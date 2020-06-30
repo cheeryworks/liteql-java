@@ -61,8 +61,14 @@ public class PathMatchingResourceRepository implements Repository {
                     String schemaRootResourcePath = schemaRootResource.getURL().getPath()
                             .substring(0, schemaRootResource.getURL().getPath().lastIndexOf("."));
 
-                    schemaDefinitions.put(schemaName, new HashMap<>());
-                    schemaPaths.put(schemaName, schemaRootResourcePath);
+                    if (schemaDefinitions.get(schemaName) == null) {
+                        schemaDefinitions.put(schemaName, new HashMap<>());
+                        schemaPaths.put(schemaName, schemaRootResourcePath);
+                    } else {
+                        throw new IllegalArgumentException("Schema [" + schemaName + "]"
+                                + " exist in path [" + schemaPaths.get(schemaName) + "]"
+                                + ", but find in another path [" + schemaRootResourcePath + "]");
+                    }
                 }
 
                 Resource[] schemaDefinitionResources
