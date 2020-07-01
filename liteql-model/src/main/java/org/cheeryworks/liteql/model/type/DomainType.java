@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Index;
@@ -39,6 +40,15 @@ public class DomainType extends DomainTypeName {
         this.indexes = indexes;
     }
 
+    public DomainType() {
+        super();
+    }
+
+    public DomainType(DomainTypeName domainTypeName) {
+        super(domainTypeName.getSchema(), domainTypeName.getName());
+    }
+
+    @JsonIgnore
     public boolean isReferenceField(String fieldName) {
         if (fields != null && fields.size() > 0) {
             for (Field field : fields) {
