@@ -4,24 +4,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.model.enums.IndexType;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractIndex implements Serializable {
 
     @JsonIgnore
     private IndexType type;
 
-    private List<String> fields;
+    private Set<String> fields;
 
     public IndexType getType() {
         return type;
     }
 
-    public List<String> getFields() {
+    public Set<String> getFields() {
         return fields;
     }
 
-    public void setFields(List<String> fields) {
+    public void setFields(Set<String> fields) {
         this.fields = fields;
     }
 
