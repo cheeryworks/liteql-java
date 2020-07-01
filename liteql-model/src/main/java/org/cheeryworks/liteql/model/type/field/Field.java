@@ -8,6 +8,8 @@ public interface Field extends Serializable {
 
     String getName();
 
+    void setName(String name);
+
     String getType();
 
 }

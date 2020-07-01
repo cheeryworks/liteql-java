@@ -16,7 +16,7 @@ public class ReferenceField extends AbstractNullableField {
     }
 
     public ReferenceField() {
-        this.setType(DataType.Reference.name().toLowerCase());
+        super(DataType.Reference.name().toLowerCase());
     }
 
 }

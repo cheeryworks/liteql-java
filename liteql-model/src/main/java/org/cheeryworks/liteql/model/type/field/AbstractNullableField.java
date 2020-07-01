@@ -23,4 +23,8 @@ public abstract class AbstractNullableField extends AbstractField {
         return nullable.booleanValue();
     }
 
+    protected AbstractNullableField(String type) {
+        super(type);
+    }
+
 }

@@ -15,7 +15,7 @@ public class StringField extends AbstractNullableField {
     }
 
     public StringField() {
-        this.setType(DataType.String.name().toLowerCase());
+        super(DataType.String.name().toLowerCase());
     }
 
 }
