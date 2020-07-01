@@ -93,7 +93,6 @@ public final class LiteQLJsonUtil {
                 SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         builder.serializationInclusion(JsonInclude.Include.NON_EMPTY);
-        builder.serializationInclusion(JsonInclude.Include.NON_NULL);
 
         builder.deserializerByType(ConditionClause.class, new ConditionClauseDeserializer());
         builder.deserializerByType(ConditionOperator.class, new ConditionOperatorDeserializer());
