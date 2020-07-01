@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public final class StringUtil {
     }
 
     public static Set<String> convertDelimitedParameterToSetOfString(String ids) {
-        Set<String> selectedIds = new HashSet<String>();
+        Set<String> selectedIds = new LinkedHashSet<>();
         if (!StringUtils.isEmpty(ids)) {
             String[] idsInArray = ids.split("[,]");
             for (String id : idsInArray) {
