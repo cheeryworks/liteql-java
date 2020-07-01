@@ -10,6 +10,8 @@ import java.util.Set;
 
 public interface Repository {
 
+    String SUFFIX_OF_SCHEMA_ROOT_FILE = ".yml";
+
     String NAME_OF_TYPES_DIRECTORY = "types";
 
     String NAME_OF_MIGRATIONS_DIRECTORY = "migrations";
