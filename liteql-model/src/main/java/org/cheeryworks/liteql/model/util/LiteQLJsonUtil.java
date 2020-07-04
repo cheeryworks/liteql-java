@@ -1,8 +1,6 @@
 package org.cheeryworks.liteql.model.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,9 +38,7 @@ import org.cheeryworks.liteql.model.util.jackson.serializer.MigrationOperationTy
 import org.cheeryworks.liteql.model.util.jackson.serializer.QueryTypeSerializer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public final class LiteQLJsonUtil {
 
@@ -62,14 +58,7 @@ public final class LiteQLJsonUtil {
 
     public static <T> String toJson(ObjectMapper objectMapper, T bean) {
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            JsonGenerator jsonGenerator = objectMapper.getFactory()
-                    .createGenerator(outputStream, JsonEncoding.UTF8).useDefaultPrettyPrinter();
-
-            jsonGenerator.writeObject(bean);
-
-            return new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+            return objectMapper.writeValueAsString(bean);
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
@@ -78,7 +67,7 @@ public final class LiteQLJsonUtil {
     public static JsonNode toJsonNode(ObjectMapper objectMapper, String content) {
         if (StringUtils.isNotBlank(content)) {
             try {
-                return objectMapper.getFactory().createParser(content).readValueAsTree();
+                return objectMapper.readTree(content);
             } catch (IOException ex) {
                 throw new IllegalArgumentException(ex.getMessage(), ex);
             }
