@@ -4,12 +4,15 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.AbstractDatabaseTest;
 import org.cheeryworks.liteql.model.query.Queries;
+import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.service.query.AuditingService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
@@ -19,10 +22,14 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
 
     private QueryService queryService;
 
+    private QueryContext queryContext = Mockito.mock(QueryContext.class);
+
     public JooqSqlQueryServiceTest() {
         super();
 
-        queryService = new JooqSqlQueryService(getRepository(), getObjectMapper(), getDataSource(), getDatabase());
+        queryService = new JooqSqlQueryService(
+                getRepository(), getObjectMapper(), getDataSource(), getDatabase(),
+                Mockito.mock(AuditingService.class));
     }
 
     @Override
@@ -55,7 +62,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
             ReadQuery readQuery = LiteQLJsonUtil.toBean(
                     getObjectMapper(), readQueryInJson, ReadQuery.class);
 
-            Object results = queryService.read(readQuery);
+            Object results = queryService.read(queryContext, readQuery);
 
             if (results instanceof Map) {
                 getLogger().info(results.toString());
@@ -77,7 +84,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
         for (String deleteQueryInJson : deleteQueryJsonFiles.values()) {
             DeleteQuery deleteQuery = LiteQLJsonUtil.toBean(getObjectMapper(), deleteQueryInJson, DeleteQuery.class);
 
-            queryService.delete(deleteQuery);
+            queryService.delete(queryContext, deleteQuery);
         }
     }
 
@@ -89,7 +96,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
         for (String queriesJsonFile : queriesJsonFiles.values()) {
             Queries queries = LiteQLJsonUtil.toBean(getObjectMapper(), queriesJsonFile, Queries.class);
 
-            Object results = queryService.execute(queries);
+            Object results = queryService.execute(queryContext, queries);
 
             getLogger().info(LiteQLJsonUtil.toJson(getObjectMapper(), results));
         }

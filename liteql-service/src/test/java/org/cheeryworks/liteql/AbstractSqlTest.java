@@ -4,7 +4,7 @@ import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.repository.PathMatchingResourceRepository;
 import org.cheeryworks.liteql.service.repository.Repository;
 
-public abstract class AbstractSqlTest extends BaseTest {
+public abstract class AbstractSqlTest extends AbstractTest {
 
     private Repository repository;
 

@@ -1,43 +1,52 @@
 package org.cheeryworks.liteql.model.type;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Index;
 import org.cheeryworks.liteql.model.type.index.Unique;
 
-import java.util.List;
+import java.util.Set;
 
 public class DomainType extends DomainTypeName {
 
-    private List<Field> fields;
+    private Set<Field> fields;
 
-    private List<Unique> uniques;
+    private Set<Unique> uniques;
 
-    private List<Index> indexes;
+    private Set<Index> indexes;
 
-    public List<Field> getFields() {
+    private Set<DomainInterfaceName> interfaces;
+
+    public Set<Field> getFields() {
         return fields;
     }
 
-    public void setFields(List<Field> fields) {
+    public void setFields(Set<Field> fields) {
         this.fields = fields;
     }
 
-    public List<Unique> getUniques() {
+    public Set<Unique> getUniques() {
         return uniques;
     }
 
-    public void setUniques(List<Unique> uniques) {
+    public void setUniques(Set<Unique> uniques) {
         this.uniques = uniques;
     }
 
-    public List<Index> getIndexes() {
+    public Set<Index> getIndexes() {
         return indexes;
     }
 
-    public void setIndexes(List<Index> indexes) {
+    public void setIndexes(Set<Index> indexes) {
         this.indexes = indexes;
+    }
+
+    public Set<DomainInterfaceName> getInterfaces() {
+        return interfaces;
+    }
+
+    public void setInterfaces(Set<DomainInterfaceName> interfaces) {
+        this.interfaces = interfaces;
     }
 
     public DomainType() {
@@ -48,12 +57,23 @@ public class DomainType extends DomainTypeName {
         super(domainTypeName.getSchema(), domainTypeName.getName());
     }
 
-    @JsonIgnore
     public boolean isReferenceField(String fieldName) {
         if (fields != null && fields.size() > 0) {
             for (Field field : fields) {
                 if (field instanceof ReferenceField
                         && field.getName().toLowerCase().equals(fieldName.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean implement(String name) {
+        if (interfaces != null && interfaces.size() > 0) {
+            for (DomainInterfaceName domainInterfaceName : interfaces) {
+                if (domainInterfaceName.getName().equals(name)) {
                     return true;
                 }
             }

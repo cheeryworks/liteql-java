@@ -5,37 +5,37 @@ import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.index.Index;
 import org.cheeryworks.liteql.model.type.index.Unique;
 
-import java.util.List;
+import java.util.Set;
 
 public class CreateTypeMigrationOperation extends AbstractMigrationOperation {
 
-    private List<Field> fields;
+    private Set<Field> fields;
 
-    private List<Unique> uniques;
+    private Set<Unique> uniques;
 
-    private List<Index> indexes;
+    private Set<Index> indexes;
 
-    public List<Field> getFields() {
+    public Set<Field> getFields() {
         return fields;
     }
 
-    public void setFields(List<Field> fields) {
+    public void setFields(Set<Field> fields) {
         this.fields = fields;
     }
 
-    public List<Unique> getUniques() {
+    public Set<Unique> getUniques() {
         return uniques;
     }
 
-    public void setUniques(List<Unique> uniques) {
+    public void setUniques(Set<Unique> uniques) {
         this.uniques = uniques;
     }
 
-    public List<Index> getIndexes() {
+    public Set<Index> getIndexes() {
         return indexes;
     }
 
-    public void setIndexes(List<Index> indexes) {
+    public void setIndexes(Set<Index> indexes) {
         this.indexes = indexes;
     }
 

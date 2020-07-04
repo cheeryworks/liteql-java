@@ -1,16 +1,18 @@
 package org.cheeryworks.liteql.model.type;
 
-import org.cheeryworks.liteql.BaseTest;
+import org.cheeryworks.liteql.AbstractTest;
 import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-public class TypeTest extends BaseTest {
+public class TypeTest extends AbstractTest {
 
     @Test
+    @Disabled
     public void testingTypeParser() {
         Map<String, String> typeInJsonFiles = FileReader.readJsonFilesRecursively(
                 getClass().getResource("/liteql").getPath());

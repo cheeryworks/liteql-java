@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
-public interface SortableEntity {
+public interface SortableEntity extends DomainInterface {
 
     String SORT_CODE_FIELD_NAME = "sortCode";
 

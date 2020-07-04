@@ -6,6 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.Queries;
+import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.PageReadQuery;
@@ -52,6 +53,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     private SqlQueryExecutor sqlQueryExecutor;
 
+    private AuditingService auditingService;
+
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
@@ -66,30 +69,32 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     public AbstractSqlQueryService(
             Repository repository, ObjectMapper objectMapper,
-            SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor) {
+            SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor,
+            AuditingService auditingService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
+        this.auditingService = auditingService;
     }
 
     @Override
-    public ReadResults read(ReadQuery readQuery) {
+    public ReadResults read(QueryContext queryContext, ReadQuery readQuery) {
         return (ReadResults) query(readQuery);
     }
 
     @Override
-    public ReadResult read(SingleReadQuery singleReadQuery) {
+    public ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery) {
         return (ReadResult) query(singleReadQuery);
     }
 
     @Override
-    public TreeReadResults read(TreeReadQuery treeReadQuery) {
+    public TreeReadResults read(QueryContext queryContext, TreeReadQuery treeReadQuery) {
         return (TreeReadResults) query(treeReadQuery);
     }
 
     @Override
-    public PageReadResults read(PageReadQuery pageReadQuery) {
+    public PageReadResults read(QueryContext queryContext, PageReadQuery pageReadQuery) {
         return (PageReadResults) query(pageReadQuery);
     }
 
@@ -170,22 +175,22 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     @Override
-    public CreateQuery create(CreateQuery createQuery) {
-        return (CreateQuery) save(Collections.singletonList(createQuery)).get(0);
+    public CreateQuery create(QueryContext queryContext, CreateQuery createQuery) {
+        return (CreateQuery) save(queryContext, Collections.singletonList(createQuery)).get(0);
     }
 
     @Override
-    public UpdateQuery update(UpdateQuery updateQuery) {
-        return (UpdateQuery) save(Collections.singletonList(updateQuery)).get(0);
+    public UpdateQuery update(QueryContext queryContext, UpdateQuery updateQuery) {
+        return (UpdateQuery) save(queryContext, Collections.singletonList(updateQuery)).get(0);
     }
 
     @Override
-    public AbstractSaveQuery save(AbstractSaveQuery saveQuery) {
-        return save(Collections.singletonList(saveQuery)).get(0);
+    public AbstractSaveQuery save(QueryContext queryContext, AbstractSaveQuery saveQuery) {
+        return save(queryContext, Collections.singletonList(saveQuery)).get(0);
     }
 
     @Override
-    public List<AbstractSaveQuery> save(List<AbstractSaveQuery> saveQueries) {
+    public List<AbstractSaveQuery> save(QueryContext queryContext, List<AbstractSaveQuery> saveQueries) {
         long currentTime = System.currentTimeMillis();
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
@@ -195,7 +200,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
                 transformingSaveQuery(sortedSaveQueries, saveQueries, 0));
 
         for (int i = 0; i < sortedSaveQueries.size(); i++) {
-            SaveQueryDiagnostic batchSaveDiagnostic = batchSave(sortedSaveQueries.get(i), i);
+            SaveQueryDiagnostic batchSaveDiagnostic = batchSave(queryContext, sortedSaveQueries.get(i), i);
 
             saveQueryDiagnostic.add(batchSaveDiagnostic);
         }
@@ -251,12 +256,12 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private SaveQueryDiagnostic batchSave(
-            Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType, int i) {
+            QueryContext queryContext, Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType, int i) {
         long currentTime = System.currentTimeMillis();
 
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
-        saveQueryDiagnostic.setAuditingEntitiesDuration(auditingEntities(saveQueriesWithType));
+        saveQueryDiagnostic.setAuditingEntitiesDuration(auditingEntities(queryContext, saveQueriesWithType));
 
 //        saveQueryDiagnostic.setBeforeSaveEventProcessingDuration(
 //                publishBeforeSaveEvent(saveQueriesWithType, queryType));
@@ -278,17 +283,22 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return saveQueryDiagnostic;
     }
 
-    private long auditingEntities(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
+    private long auditingEntities(
+            QueryContext queryContext, Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
         long currentTime = System.currentTimeMillis();
-//        for (List<SaveQuery> saveQueries : saveQueriesWithType.values()) {
-//            for (SaveQuery saveQuery : saveQueries) {
-//                if (saveQuery.isUpdating()) {
-//                    entityAuditingManager.auditingExistedEntity(saveQuery.getData(), saveQuery.getTypeClass());
-//                } else {
-//                    entityAuditingManager.auditingEntity(saveQuery.getData(), saveQuery.getTypeClass());
-//                }
-//            }
-//        }
+        for (List<AbstractSaveQuery> saveQueries : saveQueriesWithType.values()) {
+            for (AbstractSaveQuery saveQuery : saveQueries) {
+                if (saveQuery instanceof CreateQuery) {
+                    auditingService.auditingDomainObject(
+                            saveQuery.getData(), repository.getDomainType(saveQuery.getDomainTypeName()),
+                            queryContext.getUser());
+                } else {
+                    auditingService.auditingExistedDomainObject(
+                            saveQuery.getData(), repository.getDomainType(saveQuery.getDomainTypeName()),
+                            queryContext.getUser());
+                }
+            }
+        }
         return System.currentTimeMillis() - currentTime;
     }
 
@@ -448,7 +458,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     @Override
-    public int delete(DeleteQuery deleteQuery) {
+    public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
         if (!deleteQuery.isTruncated()) {
             PageReadQuery pageReadQuery = new PageReadQuery();
             pageReadQuery.setDomainTypeName(deleteQuery.getDomainTypeName());
@@ -456,7 +466,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
             pageReadQuery.setPage(1);
             pageReadQuery.setSize(10000);
 
-            PageReadResults results = read(pageReadQuery);
+            PageReadResults results = read(queryContext, pageReadQuery);
 
             if (results != null) {
                 if (results.getTotalPage() > 1) {
@@ -473,14 +483,14 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     @Override
-    public void delete(List<DeleteQuery> deleteQueries) {
+    public void delete(QueryContext queryContext, List<DeleteQuery> deleteQueries) {
         for (DeleteQuery deleteQuery : deleteQueries) {
-            delete(deleteQuery);
+            delete(queryContext, deleteQuery);
         }
     }
 
     @Override
-    public Object execute(PublicQuery query) {
+    public Object execute(QueryContext queryContext, PublicQuery query) {
         if (query instanceof AbstractTypedReadQuery) {
             AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
 
@@ -488,15 +498,15 @@ public abstract class AbstractSqlQueryService implements QueryService {
         } else if (query instanceof AbstractSaveQuery) {
             AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
 
-            return save(saveQuery);
+            return save(queryContext, saveQuery);
         } else if (query instanceof SaveQueries) {
             SaveQueries saveQueries = (SaveQueries) query;
 
-            return save(saveQueries);
+            return save(queryContext, saveQueries);
         } else if (query instanceof DeleteQuery) {
             DeleteQuery deleteQuery = (DeleteQuery) query;
 
-            return delete(deleteQuery);
+            return delete(queryContext, deleteQuery);
         } else if (query instanceof Queries) {
             Queries queries = (Queries) query;
 
@@ -507,7 +517,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
             while (fieldNamesIterator.hasNext()) {
                 String fieldName = fieldNamesIterator.next();
 
-                results.put(fieldName, execute(queries.get(fieldName)));
+                results.put(fieldName, execute(queryContext, queries.get(fieldName)));
             }
 
             return results;

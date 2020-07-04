@@ -25,4 +25,29 @@ public abstract class AbstractField implements Field {
         return type;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AbstractField)) {
+            return false;
+        }
+
+        AbstractField that = (AbstractField) o;
+
+        if (!name.equals(that.name)) {
+            return false;
+        }
+        
+        return type.equals(that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + type.hashCode();
+        return result;
+    }
+
 }

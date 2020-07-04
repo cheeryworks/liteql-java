@@ -32,6 +32,7 @@ import org.jooq.impl.DefaultDSLContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.cheeryworks.liteql.service.type.SqlSchemaParser.INDEX_KEY_PREFIX;
 import static org.cheeryworks.liteql.service.type.SqlSchemaParser.PRIMARY_KEY_PREFIX;
@@ -129,7 +130,7 @@ public abstract class AbstractJooqSqlParser {
         return sqls;
     }
 
-    protected List<org.jooq.Field> getJooqFields(List<Field> fields, Database database) {
+    protected List<org.jooq.Field> getJooqFields(Set<Field> fields, Database database) {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
         for (Field field : fields) {

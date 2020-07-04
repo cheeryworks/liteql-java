@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-public abstract class BaseTest {
+public abstract class AbstractTest {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -21,7 +21,7 @@ public abstract class BaseTest {
         return objectMapper;
     }
 
-    public BaseTest() {
+    public AbstractTest() {
         System.setProperty(LiteQLConstants.DIAGNOSTIC_ENABLED_KEY, Boolean.TRUE.toString());
 
         Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();

@@ -3,17 +3,17 @@ package org.cheeryworks.liteql.model.type.migration.operation;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 import org.cheeryworks.liteql.model.type.field.Field;
 
-import java.util.List;
+import java.util.Set;
 
 public class CreateFieldMigrationOperation extends AbstractMigrationOperation {
 
-    private List<Field> fields;
+    private Set<Field> fields;
 
-    public List<Field> getFields() {
+    public Set<Field> getFields() {
         return fields;
     }
 
-    public void setFields(List<Field> fields) {
+    public void setFields(Set<Field> fields) {
         this.fields = fields;
     }
 
