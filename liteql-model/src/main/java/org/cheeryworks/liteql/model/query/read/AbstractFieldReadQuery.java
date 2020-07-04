@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
 
 public abstract class AbstractFieldReadQuery extends AbstractConditionalQuery {
 
-    private FieldDefinitions fields = new FieldDefinitions();
+    private FieldDefinitions fields;
 
     public FieldDefinitions getFields() {
         return fields;
