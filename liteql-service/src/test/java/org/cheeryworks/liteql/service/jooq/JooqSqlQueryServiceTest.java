@@ -13,6 +13,7 @@ import org.cheeryworks.liteql.service.query.AuditingService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
@@ -29,7 +30,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
 
         queryService = new JooqSqlQueryService(
                 getRepository(), getObjectMapper(), getDataSource(), getDatabase(),
-                Mockito.mock(AuditingService.class));
+                Mockito.mock(AuditingService.class), Mockito.mock(ApplicationEventPublisher.class));
     }
 
     @Override

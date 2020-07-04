@@ -160,7 +160,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
     private List<JoinedTable> parseJoins(
             List<JoinedReadQuery> joinedReadQueries, String joinedTableAliasPrefix, SqlReadQuery sqlReadQuery) {
-        List<JoinedTable> joinedTables = new ArrayList<JoinedTable>();
+        List<JoinedTable> joinedTables = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(joinedReadQueries)) {
             for (JoinedReadQuery joinedReadQuery : joinedReadQueries) {

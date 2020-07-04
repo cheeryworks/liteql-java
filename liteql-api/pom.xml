@@ -18,6 +18,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-model</artifactId>
             <type>test-jar</type>

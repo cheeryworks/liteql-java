@@ -1,3 +1,4 @@
 {
-  "domainTypeName": "liteql.user"
+  "domainTypeName": "liteql.user",
+  "truncated": true
 }

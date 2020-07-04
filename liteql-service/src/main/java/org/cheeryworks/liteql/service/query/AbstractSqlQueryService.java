@@ -4,10 +4,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.enums.ConditionClause;
+import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.Queries;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.model.query.event.AfterCreateEvent;
+import org.cheeryworks.liteql.model.query.event.AfterDeleteEvent;
+import org.cheeryworks.liteql.model.query.event.AfterReadEvent;
+import org.cheeryworks.liteql.model.query.event.AfterUpdateEvent;
+import org.cheeryworks.liteql.model.query.event.BeforeCreateEvent;
+import org.cheeryworks.liteql.model.query.event.BeforeDeleteEvent;
+import org.cheeryworks.liteql.model.query.event.BeforeUpdateEvent;
 import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.PageReadQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
@@ -22,6 +32,7 @@ import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueries;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
@@ -29,6 +40,7 @@ import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -40,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class AbstractSqlQueryService implements QueryService {
 
@@ -54,6 +67,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
     private SqlQueryExecutor sqlQueryExecutor;
 
     private AuditingService auditingService;
+
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public void setRepository(Repository repository) {
         this.repository = repository;
@@ -70,12 +85,14 @@ public abstract class AbstractSqlQueryService implements QueryService {
     public AbstractSqlQueryService(
             Repository repository, ObjectMapper objectMapper,
             SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor,
-            AuditingService auditingService) {
+            AuditingService auditingService,
+            ApplicationEventPublisher applicationEventPublisher) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -99,7 +116,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private Object query(AbstractTypedReadQuery readQuery) {
-        ReadResults results = internalQuery(readQuery);
+        ReadResults results = internalRead(readQuery);
 
         query(readQuery.getAssociations(), results);
 
@@ -127,7 +144,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
                     throw new IllegalArgumentException("References not defined");
                 }
 
-                ReadResults associatedResults = internalQuery(readQuery);
+                ReadResults associatedResults = internalRead(readQuery);
 
                 for (Map<String, Object> result : results) {
                     for (Map<String, Object> associatedResult : associatedResults) {
@@ -151,10 +168,15 @@ public abstract class AbstractSqlQueryService implements QueryService {
         }
     }
 
-    private ReadResults internalQuery(AbstractTypedReadQuery readQuery) {
+    private ReadResults internalRead(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
         ReadResults results = getResults(sqlReadQuery);
+
+        applicationEventPublisher.publishEvent(
+                new AfterReadEvent(
+                        results.getData().stream().collect(Collectors.toList()),
+                        readQuery.getDomainTypeName()));
 
         if (readQuery instanceof PageReadQuery) {
             return new ReadResults(results, getTotal(sqlReadQuery));
@@ -263,8 +285,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
         saveQueryDiagnostic.setAuditingEntitiesDuration(auditingEntities(queryContext, saveQueriesWithType));
 
-//        saveQueryDiagnostic.setBeforeSaveEventProcessingDuration(
-//                publishBeforeSaveEvent(saveQueriesWithType, queryType));
+        saveQueryDiagnostic.setBeforeSaveEventProcessingDuration(
+                publishBeforeSaveEvent(saveQueriesWithType));
 
         long[] persistResults = persist(saveQueriesWithType);
 
@@ -272,8 +294,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
         saveQueryDiagnostic.setPersistDuration(persistResults[1]);
         saveQueryDiagnostic.setPersistCount(persistResults[2]);
 
-//        saveQueryDiagnostic.setAfterSaveEventProcessingDuration(
-//                publishAfterSaveEvent(saveQueriesWithType, queryType));
+        saveQueryDiagnostic.setAfterSaveEventProcessingDuration(
+                publishAfterSaveEvent(saveQueriesWithType));
 
         saveQueryDiagnostic.setLinkingReferencesDuration(linkingParent(saveQueriesWithType));
 
@@ -343,6 +365,72 @@ public abstract class AbstractSqlQueryService implements QueryService {
         }
 
         return System.currentTimeMillis() - currentTime;
+    }
+
+    private long publishBeforeSaveEvent(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
+        return publishSaveEvent(saveQueriesWithType, true);
+    }
+
+    private long publishAfterSaveEvent(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
+        return publishSaveEvent(saveQueriesWithType, false);
+    }
+
+    private long publishSaveEvent(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType, boolean before) {
+        long currentTime = System.currentTimeMillis();
+
+        for (List<AbstractSaveQuery> saveQueries : saveQueriesWithType.values()) {
+            Map<DomainTypeName, List<Map<String, Object>>> persistDataSet = new HashMap<>();
+            Map<DomainTypeName, List<Map<String, Object>>> updateDataSet = new HashMap<>();
+
+            separateDataSet(saveQueries, persistDataSet, updateDataSet);
+
+            for (Map.Entry<DomainTypeName, List<Map<String, Object>>> dataSetEntry : persistDataSet.entrySet()) {
+                if (before) {
+                    applicationEventPublisher.publishEvent(
+                            new BeforeCreateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
+                } else {
+                    applicationEventPublisher.publishEvent(
+                            new AfterCreateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
+                }
+            }
+
+            for (Map.Entry<DomainTypeName, List<Map<String, Object>>> dataSetEntry : updateDataSet.entrySet()) {
+                if (before) {
+                    applicationEventPublisher.publishEvent(
+                            new BeforeUpdateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
+                } else {
+                    applicationEventPublisher.publishEvent(
+                            new AfterUpdateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
+                }
+            }
+        }
+
+        return System.currentTimeMillis() - currentTime;
+    }
+
+    private void separateDataSet(
+            List<AbstractSaveQuery> saveQueries,
+            Map<DomainTypeName, List<Map<String, Object>>> persistDataSet,
+            Map<DomainTypeName, List<Map<String, Object>>> updateDataSet) {
+        for (AbstractSaveQuery saveQuery : saveQueries) {
+            if (saveQuery instanceof CreateQuery) {
+                addToDataSet(persistDataSet, saveQuery.getDomainTypeName(), saveQuery.getData());
+            } else {
+                addToDataSet(updateDataSet, saveQuery.getDomainTypeName(), saveQuery.getData());
+            }
+        }
+    }
+
+    private static <T> void addToDataSet(
+            Map<DomainTypeName, List<T>> dataSetWithKey, DomainTypeName domainTypeName, T data) {
+        List<T> dataSet = dataSetWithKey.get(domainTypeName);
+
+        if (dataSet == null) {
+            dataSet = new ArrayList<>();
+            dataSetWithKey.put(domainTypeName, dataSet);
+        }
+
+        dataSet.add(data);
     }
 
     private long[] persist(Map<DomainTypeName, List<AbstractSaveQuery>> saveQueriesWithType) {
@@ -459,27 +547,57 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     @Override
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
+        ReadResults results = null;
+
         if (!deleteQuery.isTruncated()) {
-            PageReadQuery pageReadQuery = new PageReadQuery();
-            pageReadQuery.setDomainTypeName(deleteQuery.getDomainTypeName());
-            pageReadQuery.setConditions(deleteQuery.getConditions());
-            pageReadQuery.setPage(1);
-            pageReadQuery.setSize(10000);
+            if (CollectionUtils.isEmpty(deleteQuery.getConditions())) {
+                throw new RuntimeException("For safety, delete operation requires at least one condition");
+            }
+            
+            ReadQuery readQuery = new ReadQuery();
+            readQuery.setDomainTypeName(deleteQuery.getDomainTypeName());
+            readQuery.setConditions(deleteQuery.getConditions());
 
-            PageReadResults results = read(queryContext, pageReadQuery);
+            results = read(queryContext, readQuery);
 
-            if (results != null) {
-                if (results.getTotalPage() > 1) {
-                    throw new IllegalStateException(
-                            "More than 10000 rows will be deleted, the operation is interrupted for security reasons. "
-                                    + "You can specify that the parameter `truncated` is true to continue");
-                }
+            if (CollectionUtils.isEmpty(results)
+                    && deleteQuery.getConditions() != null
+                    && deleteQuery.getConditions().size() == 1
+                    && Field.ID_FIELD_NAME.equals(
+                    deleteQuery.getConditions().get(0).getField())
+                    && ConditionClause.EQUALS.equals(deleteQuery.getConditions().get(0).getCondition())
+                    && ConditionType.String.equals(deleteQuery.getConditions().get(0).getType())) {
+                Map<String, Object> result = new HashMap<>();
+                result.put(
+                        Field.ID_FIELD_NAME,
+                        deleteQuery.getConditions().get(0).getValue());
+
+                results = new ReadResults(Collections.singletonList(new ReadResult(result)));
+            }
+
+            if (CollectionUtils.isNotEmpty(results)) {
+                applicationEventPublisher.publishEvent(
+                        new BeforeDeleteEvent(
+                                results.getData().stream().collect(Collectors.toList()),
+                                deleteQuery.getDomainTypeName(), QueryType.Delete));
             }
         }
 
         SqlDeleteQuery sqlDeleteQuery = sqlQueryParser.getSqlDeleteQuery(deleteQuery);
 
-        return sqlQueryExecutor.execute(sqlDeleteQuery.getSql(), ((List) sqlDeleteQuery.getSqlParameters()).toArray());
+        int rows = sqlQueryExecutor.execute(
+                sqlDeleteQuery.getSql(), ((List) sqlDeleteQuery.getSqlParameters()).toArray());
+
+        if (!deleteQuery.isTruncated()) {
+            if (CollectionUtils.isNotEmpty(results)) {
+                applicationEventPublisher.publishEvent(
+                        new AfterDeleteEvent(
+                                results.getData().stream().collect(Collectors.toList()),
+                                deleteQuery.getDomainTypeName(), QueryType.Delete));
+            }
+        }
+
+        return rows;
     }
 
     @Override
