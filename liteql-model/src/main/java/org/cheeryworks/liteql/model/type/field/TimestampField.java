@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.model.enums.DataType;
 public class TimestampField extends AbstractNullableField {
 
     public TimestampField() {
-        super(DataType.Timestamp.name().toLowerCase());
+        super(DataType.Timestamp);
     }
 
 }

@@ -1,0 +1,32 @@
+{
+  "fields": [
+    {
+      "name": "id",
+      "type": "id"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "code",
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    {
+      "name": "country",
+      "type": "reference",
+      "domainTypeName": "liteql_test.country"
+    }
+  ],
+  "uniques": [
+    {
+      "fields": [
+        "code"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "init_system": [
+    {
+      "queryType": "create",
+      "domainTypeName": "liteql_test.country",
+      "data": {
+        "name": "United States",
+        "code": "usa"
+      }
+    },
+    {
+      "queryType": "create",
+      "domainTypeName": "liteql_test.organization",
+      "data": {
+        "name": "test",
+        "code": "test",
+        "country": {
+          "code": "cn"
+        }
+      }
+    },
+    {
+      "queryType": "create",
+      "domainTypeName": "liteql_test.user",
+      "data": {
+        "name": "Administrator",
+        "username": "admin"
+      }
+    }
+  ],
+  "users": {
+    "queryType": "read",
+    "domainTypeName": "liteql_test.user",
+    "joins": [
+      {
+        "domainTypeName": "liteql_test.organization",
+        "fields": {
+          "name": "organizationName",
+          "code": "organizationCode"
+        }
+      },
+      {
+        "domainTypeName": "liteql_test.country",
+        "fields": {
+          "name": "countryName",
+          "code": "countryCode"
+        }
+      }
+    ]
+  }
+}

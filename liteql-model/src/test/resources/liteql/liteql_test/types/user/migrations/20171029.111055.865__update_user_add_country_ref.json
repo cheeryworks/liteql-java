@@ -1,0 +1,15 @@
+{
+  "description": "",
+  "operations": [
+    {
+      "type": "create_field",
+      "fields": [
+        {
+          "name": "country",
+          "type": "reference",
+          "domainTypeName": "liteql_test.country"
+        }
+      ]
+    }
+  ]
+}

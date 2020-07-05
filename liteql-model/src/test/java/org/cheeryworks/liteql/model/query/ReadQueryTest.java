@@ -13,7 +13,7 @@ public class ReadQueryTest extends AbstractTest {
     @Test
     public void testingReadQueryParser() {
         Map<String, String> readQueryInJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql/liteql/queries/read").getPath());
+                getClass().getResource("/liteql/liteql_test/queries/read").getPath());
 
         for (String readQueryInJson : readQueryInJsonFiles.values()) {
             ReadQuery readQuery = LiteQLJsonUtil.toBean(getObjectMapper(), readQueryInJson, ReadQuery.class);

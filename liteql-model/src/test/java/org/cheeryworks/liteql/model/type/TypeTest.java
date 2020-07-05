@@ -12,7 +12,7 @@ public class TypeTest extends AbstractTest {
     @Test
     public void testingTypeParser() {
         Map<String, String> typeInJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql").getPath());
+                getClass().getResource("/liteql/liteql_test").getPath());
 
         for (Map.Entry<String, String> typeInJsonFile : typeInJsonFiles.entrySet()) {
             if (typeInJsonFile.getKey().contains("definition.json")) {

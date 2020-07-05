@@ -57,7 +57,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
     @Test
     public void testingRead() {
         Map<String, String> readQueryJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql/liteql/queries/read").getPath());
+                getClass().getResource("/liteql/liteql_test/queries/read").getPath());
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
             ReadQuery readQuery = LiteQLJsonUtil.toBean(
@@ -80,7 +80,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
     @Test
     public void testingDelete() {
         Map<String, String> deleteQueryJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql/liteql/queries/delete").getPath());
+                getClass().getResource("/liteql/liteql_test/queries/delete").getPath());
 
         for (String deleteQueryInJson : deleteQueryJsonFiles.values()) {
             DeleteQuery deleteQuery = LiteQLJsonUtil.toBean(getObjectMapper(), deleteQueryInJson, DeleteQuery.class);
@@ -92,7 +92,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
     @Test
     public void testingQueriesExecute() {
         Map<String, String> queriesJsonFiles = FileReader.readFiles(
-                getClass().getResource("/liteql/liteql/queries").getPath(), "json", false);
+                getClass().getResource("/liteql/liteql_test/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
             Queries queries = LiteQLJsonUtil.toBean(getObjectMapper(), queriesJsonFile, Queries.class);

@@ -1,19 +1,22 @@
 package org.cheeryworks.liteql.service.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.StructType;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +30,9 @@ public class PathMatchingResourceRepository implements Repository {
 
     private String[] locationPatterns;
 
-    private Map<String, Map<String, DomainType>> schemas = new LinkedHashMap<>();
+    private Map<String, Map<String, DomainType>> domainTypeInSchemas = new LinkedHashMap<>();
+
+    private Map<String, Map<String, StructType>> structTypeInSchemas = new LinkedHashMap<>();
 
     private Map<String, Map<String, Migration>> migrations = new LinkedHashMap<>();
 
@@ -102,19 +107,23 @@ public class PathMatchingResourceRepository implements Repository {
                             continue;
                         }
 
-                        DomainTypeName domainTypeName = new DomainTypeName();
+                        TypeName domainTypeName = new TypeName();
 
                         domainTypeName.setSchema(schemaName);
                         domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
 
                         if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
-                            DomainType domainType = LiteQLJsonUtil.toBean(
-                                    objectMapper, schemaDefinitionContent.getValue(), DomainType.class);
+                            TypeName typeName = LiteQLJsonUtil.toBean(
+                                    objectMapper, schemaDefinitionContent.getValue(), TypeName.class);
 
-                            domainType.setSchema(schemaName);
-                            domainType.setName(domainTypeName.getName());
+                            typeName.setSchema(schemaName);
+                            typeName.setName(domainTypeName.getName());
 
-                            addType(domainType);
+                            if (typeName.isStruct()) {
+                                addStructType((StructType) typeName);
+                            } else {
+                                addDomainType((DomainType) typeName);
+                            }
                         }
 
                         if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
@@ -137,15 +146,26 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    private void addType(DomainType domainType) {
-        Map<String, DomainType> schema = schemas.get(domainType.getSchema());
+    private void addStructType(StructType structType) {
+        Map<String, StructType> structTypeInSchema = structTypeInSchemas.get(structType.getSchema());
 
-        if (schema == null) {
-            schema = new LinkedHashMap<>();
-            schemas.put(domainType.getSchema(), schema);
+        if (structTypeInSchema == null) {
+            structTypeInSchema = new LinkedHashMap<>();
+            structTypeInSchemas.put(structType.getSchema(), structTypeInSchema);
         }
 
-        schema.put(domainType.getName(), domainType);
+        structTypeInSchema.put(structType.getName(), structType);
+    }
+
+    private void addDomainType(DomainType domainType) {
+        Map<String, DomainType> domainTypeInSchema = domainTypeInSchemas.get(domainType.getSchema());
+
+        if (domainTypeInSchema == null) {
+            domainTypeInSchema = new LinkedHashMap<>();
+            domainTypeInSchemas.put(domainType.getSchema(), domainTypeInSchema);
+        }
+
+        domainTypeInSchema.put(domainType.getName(), domainType);
     }
 
     private void addMigration(String schemaName, String migrationName, Migration migration) {
@@ -161,24 +181,78 @@ public class PathMatchingResourceRepository implements Repository {
 
     @Override
     public Set<String> getSchemas() {
-        return schemas.keySet();
+        return domainTypeInSchemas.keySet();
+    }
+
+    @Override
+    public Map<String, StructType> getStructTypes(String schemaName) {
+        Map<String, StructType> structTypes = structTypeInSchemas.get(schemaName);
+
+        if (structTypes == null) {
+            throw new IllegalStateException("Can not get schema [" + schemaName + "]");
+        }
+
+        return structTypes;
     }
 
     @Override
     public Map<String, DomainType> getDomainTypes(String schemaName) {
-        return schemas.get(schemaName);
+        Map<String, DomainType> domainTypes = domainTypeInSchemas.get(schemaName);
+
+        if (domainTypes == null) {
+            throw new IllegalStateException("Can not get schema [" + schemaName + "]");
+        }
+
+        return domainTypes;
     }
 
     @Override
-    public DomainType getDomainType(DomainTypeName domainTypeName) {
-        return schemas.get(domainTypeName.getSchema()).get(domainTypeName.getName());
+    public StructType getStructType(TypeName typeName) {
+        Assert.notNull(typeName, "TypeName is required");
+
+        Map<String, StructType> structTypes = structTypeInSchemas.get(typeName.getSchema());
+
+        if (structTypes == null) {
+            throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
+        }
+
+        StructType structType = structTypes.get(typeName.getName());
+
+        if (structType == null) {
+            throw new IllegalStateException("Can not get struct type [" + typeName.getFullname() + "]");
+        }
+
+        return structType;
+    }
+
+    @Override
+    public DomainType getDomainType(TypeName typeName) {
+        Assert.notNull(typeName, "TypeName is required");
+
+        Map<String, DomainType> domainTypes = domainTypeInSchemas.get(typeName.getSchema());
+
+        if (domainTypes == null) {
+            throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
+        }
+
+        DomainType domainType = domainTypes.get(typeName.getName());
+
+        if (domainType == null) {
+            throw new IllegalStateException("Can not get domain type [" + typeName.getFullname() + "]");
+        }
+
+        return domainType;
     }
 
     @Override
     public List<Migration> getMigrations(String schemaName) {
-        Collection<Migration> migrationsInSchema = migrations.get(schemaName).values();
+        Map<String, Migration> migrationsInSchema = migrations.get(schemaName);
 
-        return Arrays.asList(migrationsInSchema.toArray(new Migration[migrationsInSchema.size()]));
+        if (MapUtils.isNotEmpty(migrationsInSchema)) {
+            return Arrays.asList(migrationsInSchema.values().toArray(new Migration[migrationsInSchema.size()]));
+        }
+
+        return Collections.emptyList();
     }
 
 }

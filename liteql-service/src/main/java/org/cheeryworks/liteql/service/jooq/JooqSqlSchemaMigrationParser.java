@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateFieldMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
@@ -85,7 +85,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateTypeOperation(
-            DomainTypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
+            TypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
         String tableName = getTableName(domainTypeName.getFullname());
@@ -117,7 +117,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateFieldOperation(
-            DomainTypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
+            TypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
         String tableName = getTableName(domainTypeName.getFullname());
@@ -136,7 +136,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropTypeOperation(
-            DomainTypeName domainTypeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
+            TypeName domainTypeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
         String tableName = getTableName(domainTypeName.getFullname());
@@ -161,7 +161,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropFieldOperation(
-            DomainTypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
+            TypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
         String tableName = getTableName(domainTypeName.getFullname());

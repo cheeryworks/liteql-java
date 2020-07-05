@@ -1,0 +1,47 @@
+{
+  "description": "",
+  "operations": [
+    {
+      "type": "create_type",
+      "fields": [
+        {
+          "name": "id",
+          "type": "id"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "length": 255,
+          "nullable": false
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "length": 255,
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "age",
+          "type": "integer"
+        },
+        {
+          "name": "organization",
+          "type": "reference",
+          "domainTypeName": "liteql_test.organization"
+        }
+      ],
+      "uniques": [
+        {
+          "fields": [
+            "username"
+          ]
+        }
+      ]
+    }
+  ]
+}

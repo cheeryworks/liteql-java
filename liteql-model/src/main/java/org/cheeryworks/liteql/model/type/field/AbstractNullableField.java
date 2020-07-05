@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.model.type.field;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import org.cheeryworks.liteql.model.enums.DataType;
 
 public abstract class AbstractNullableField extends AbstractField {
 
@@ -23,7 +24,7 @@ public abstract class AbstractNullableField extends AbstractField {
         return nullable.booleanValue();
     }
 
-    protected AbstractNullableField(String type) {
+    protected AbstractNullableField(DataType type) {
         super(type);
     }
 

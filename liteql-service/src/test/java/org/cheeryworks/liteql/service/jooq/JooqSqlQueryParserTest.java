@@ -22,7 +22,7 @@ public class JooqSqlQueryParserTest extends AbstractSqlTest {
     @Test
     public void testingGetSqlReadQuery() {
         Map<String, String> readQueryJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql/liteql/queries/read").getPath());
+                getClass().getResource("/liteql/liteql_test/queries/read").getPath());
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
 

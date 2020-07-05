@@ -4,6 +4,8 @@ import org.apache.commons.lang3.BooleanUtils;
 
 public abstract class LiteQLConstants {
 
+    public static final String NAMESPACE = "liteql";
+
     public static final String DIAGNOSTIC_ENABLED_KEY = "diagnostic.enabled";
 
     public static final boolean DIAGNOSTIC_ENABLED;

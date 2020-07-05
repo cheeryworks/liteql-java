@@ -1,8 +1,10 @@
 package org.cheeryworks.liteql.model.type;
 
-public interface UserEntity extends DomainInterface {
+import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
+import org.cheeryworks.liteql.model.util.LiteQLConstants;
 
-    String getId();
+@ResourceDefinition(namespace = LiteQLConstants.NAMESPACE)
+public interface UserEntity extends Entity {
 
     String getName();
 

@@ -1,0 +1,26 @@
+{
+  "queries": [
+    {
+      "queryType": "create",
+      "domainTypeName": "liteql_test.organization",
+      "data": {
+        "name": "CheeryWorks",
+        "code": "cheeryworks",
+        "country": {
+          "code": "cn"
+        }
+      }
+    },
+    {
+      "queryType": "create",
+      "domainTypeName": "liteql_test.organization",
+      "data": {
+        "name": "CheeryApp",
+        "code": "cheeryapp",
+        "country": {
+          "code": "cn"
+        }
+      }
+    }
+  ]
+}

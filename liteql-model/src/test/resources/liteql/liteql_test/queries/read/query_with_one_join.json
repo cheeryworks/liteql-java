@@ -1,0 +1,13 @@
+{
+  "queryType": "read",
+  "domainTypeName": "liteql_test.user",
+  "joins": [
+    {
+      "domainTypeName": "liteql_test.organization",
+      "fields": {
+        "name": "organizationName",
+        "code": "organizationCode"
+      }
+    }
+  ]
+}

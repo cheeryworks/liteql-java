@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
 import org.cheeryworks.liteql.service.enums.Database;
@@ -44,7 +44,7 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     }
 
     @Override
-    public String domainTypeToSql(DomainTypeName domainTypeName) {
+    public String domainTypeToSql(TypeName domainTypeName) {
         return domainTypeToSql(getRepository().getDomainType(domainTypeName));
     }
 

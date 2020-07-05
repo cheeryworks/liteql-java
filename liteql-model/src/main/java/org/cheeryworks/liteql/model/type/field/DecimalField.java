@@ -25,7 +25,7 @@ public class DecimalField extends AbstractNullableField {
     }
 
     public DecimalField() {
-        super(DataType.Decimal.name().toLowerCase());
+        super(DataType.Decimal);
     }
 
 }

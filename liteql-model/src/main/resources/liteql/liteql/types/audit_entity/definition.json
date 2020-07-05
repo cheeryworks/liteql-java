@@ -1,0 +1,52 @@
+{
+  "struct": true,
+  "fields": [
+    {
+      "name": "enabled",
+      "type": "boolean"
+    },
+    {
+      "name": "deleted",
+      "type": "boolean"
+    },
+    {
+      "name": "deletable",
+      "type": "boolean"
+    },
+    {
+      "name": "inherent",
+      "type": "boolean"
+    },
+    {
+      "name": "creatorId",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "creatorName",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "createTime",
+      "type": "timestamp"
+    },
+    {
+      "name": "lastModifierId",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "lastModifierName",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "lastModifiedTime",
+      "type": "timestamp"
+    }
+  ],
+  "structs": [
+    "liteql.entity"
+  ]
+}

@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.service.type;
 
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.TypeName;
 
 public interface SqlSchemaParser {
 
@@ -14,6 +14,6 @@ public interface SqlSchemaParser {
 
     String schemaToSql(String schemaName);
 
-    String domainTypeToSql(DomainTypeName domainTypeName);
+    String domainTypeToSql(TypeName domainTypeName);
 
 }

@@ -12,7 +12,7 @@ public class MigrationTest extends AbstractTest {
     @Test
     public void testingMigrationParser() {
         Map<String, String> migrationInJsonFiles = FileReader.readJsonFilesRecursively(
-                getClass().getResource("/liteql").getPath());
+                getClass().getResource("/liteql/liteql_test").getPath());
 
         for (Map.Entry<String, String> migrationInJsonFile : migrationInJsonFiles.entrySet()) {
             if (migrationInJsonFile.getKey().contains("/migrations/")) {

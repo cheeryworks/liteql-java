@@ -9,19 +9,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
 import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.model.enums.DataType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.QueryConditions;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.model.query.save.SaveQueryAssociations;
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.ConditionClauseDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.ConditionOperatorDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.ConditionTypeDeserializer;
-import org.cheeryworks.liteql.model.util.jackson.deserializer.DomainTypeNameDeserializer;
+import org.cheeryworks.liteql.model.util.jackson.deserializer.DataTypeDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.FieldDefinitionsDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.FieldDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.MigrationOperationDeserializer;
@@ -30,12 +31,14 @@ import org.cheeryworks.liteql.model.util.jackson.deserializer.PublicQueryDeseria
 import org.cheeryworks.liteql.model.util.jackson.deserializer.QueryConditionsDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.QueryTypeDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.SaveQueryAssociationsDeserializer;
+import org.cheeryworks.liteql.model.util.jackson.deserializer.TypeNameDeserializer;
 import org.cheeryworks.liteql.model.util.jackson.serializer.ConditionClauseSerializer;
 import org.cheeryworks.liteql.model.util.jackson.serializer.ConditionOperatorSerializer;
 import org.cheeryworks.liteql.model.util.jackson.serializer.ConditionTypeSerializer;
-import org.cheeryworks.liteql.model.util.jackson.serializer.DomainTypeNameSerializer;
+import org.cheeryworks.liteql.model.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.model.util.jackson.serializer.MigrationOperationTypeSerializer;
 import org.cheeryworks.liteql.model.util.jackson.serializer.QueryTypeSerializer;
+import org.cheeryworks.liteql.model.util.jackson.serializer.TypeNameSerializer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
@@ -83,10 +86,11 @@ public final class LiteQLJsonUtil {
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         builder.serializationInclusion(JsonInclude.Include.NON_NULL);
 
+        builder.deserializerByType(DataType.class, new DataTypeDeserializer());
         builder.deserializerByType(ConditionClause.class, new ConditionClauseDeserializer());
         builder.deserializerByType(ConditionOperator.class, new ConditionOperatorDeserializer());
         builder.deserializerByType(ConditionType.class, new ConditionTypeDeserializer());
-        builder.deserializerByType(DomainTypeName.class, new DomainTypeNameDeserializer());
+        builder.deserializerByType(TypeName.class, new TypeNameDeserializer());
         builder.deserializerByType(FieldDefinitions.class, new FieldDefinitionsDeserializer());
         builder.deserializerByType(Field.class, new FieldDeserializer());
         builder.deserializerByType(MigrationOperation.class, new MigrationOperationDeserializer());
@@ -96,10 +100,11 @@ public final class LiteQLJsonUtil {
         builder.deserializerByType(QueryType.class, new QueryTypeDeserializer());
         builder.deserializerByType(SaveQueryAssociations.class, new SaveQueryAssociationsDeserializer());
 
+        builder.serializerByType(DataType.class, new DataTypeSerializer());
         builder.serializerByType(ConditionClause.class, new ConditionClauseSerializer());
         builder.serializerByType(ConditionOperator.class, new ConditionOperatorSerializer());
         builder.serializerByType(ConditionType.class, new ConditionTypeSerializer());
-        builder.serializerByType(DomainTypeName.class, new DomainTypeNameSerializer());
+        builder.serializerByType(TypeName.class, new TypeNameSerializer());
         builder.serializerByType(MigrationOperationType.class, new MigrationOperationTypeSerializer());
         builder.serializerByType(QueryType.class, new QueryTypeSerializer());
     }

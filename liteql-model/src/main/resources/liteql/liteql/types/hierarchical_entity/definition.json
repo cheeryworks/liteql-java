@@ -1,0 +1,21 @@
+{
+  "struct": true,
+  "fields": [
+    {
+      "name": "sortCode",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "priority",
+      "type": "integer"
+    },
+    {
+      "name": "leaf",
+      "type": "boolean"
+    }
+  ],
+  "structs": [
+    "liteql.entity"
+  ]
+}

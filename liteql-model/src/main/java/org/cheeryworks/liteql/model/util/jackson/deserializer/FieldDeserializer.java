@@ -59,7 +59,7 @@ public class FieldDeserializer extends StdDeserializer<Field> {
                         throw new IllegalArgumentException("Unsupported field type: " + dataTypeInString);
                 }
             } catch (Exception ex) {
-                throw new IllegalArgumentException("Unsupported field type: " + dataTypeInString);
+                throw new IllegalArgumentException(ex.getMessage(), ex);
             }
         } else {
             throw new IllegalArgumentException("Field type name not specified");

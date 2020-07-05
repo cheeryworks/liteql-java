@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.service.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionType;
+import org.cheeryworks.liteql.model.enums.DataType;
 import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.QueryConditions;
 import org.cheeryworks.liteql.model.query.read.result.ReadResult;
@@ -12,7 +13,6 @@ import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.query.condition.ConditionValueConverter;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.impl.DSL;
 
 import java.math.BigDecimal;
@@ -338,7 +338,7 @@ public abstract class SqlQueryServiceUtil {
         }
     }
 
-    public static DataType getJOOQDataType(ConditionType conditionType, JOOQDataType jooqDataType) {
+    public static org.jooq.DataType getJOOQDataType(ConditionType conditionType, JOOQDataType jooqDataType) {
         if (conditionType == null) {
             conditionType = ConditionType.String;
         }
@@ -369,8 +369,8 @@ public abstract class SqlQueryServiceUtil {
         return fieldDefinitions;
     }
 
-    private static Class getDataType(String dataType) {
-        switch (org.cheeryworks.liteql.model.enums.DataType.valueOf(StringUtils.capitalize(dataType))) {
+    private static Class getDataType(DataType dataType) {
+        switch (dataType) {
             case Id:
             case Reference:
             case String:

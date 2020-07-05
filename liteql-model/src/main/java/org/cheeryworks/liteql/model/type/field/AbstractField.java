@@ -1,12 +1,14 @@
 package org.cheeryworks.liteql.model.type.field;
 
+import org.cheeryworks.liteql.model.enums.DataType;
+
 public abstract class AbstractField implements Field {
 
     private String name;
 
-    private String type;
+    private DataType type;
 
-    protected AbstractField(String type) {
+    protected AbstractField(DataType type) {
         this.type = type;
     }
 
@@ -21,7 +23,7 @@ public abstract class AbstractField implements Field {
     }
 
     @Override
-    public String getType() {
+    public DataType getType() {
         return type;
     }
 
@@ -39,7 +41,7 @@ public abstract class AbstractField implements Field {
         if (!name.equals(that.name)) {
             return false;
         }
-        
+
         return type.equals(that.type);
     }
 

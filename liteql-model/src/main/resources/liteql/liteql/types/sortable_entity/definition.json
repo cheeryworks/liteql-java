@@ -1,0 +1,12 @@
+{
+  "struct": true,
+  "fields": [
+    {
+      "name": "parentId",
+      "type": "id"
+    }
+  ],
+  "structs": [
+    "liteql.sortable_entity"
+  ]
+}

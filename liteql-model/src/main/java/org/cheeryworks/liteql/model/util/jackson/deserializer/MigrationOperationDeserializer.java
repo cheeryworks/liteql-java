@@ -52,8 +52,7 @@ public class MigrationOperationDeserializer extends StdDeserializer<MigrationOpe
                                 "Unsupported migration operation: " + migrationOperationTypeInString);
                 }
             } catch (Exception ex) {
-                throw new IllegalArgumentException(
-                        "Unsupported migration operation: " + migrationOperationTypeInString);
+                throw new IllegalArgumentException(ex.getMessage(), ex);
             }
         } else {
             throw new IllegalArgumentException("Migration operation name not specified");

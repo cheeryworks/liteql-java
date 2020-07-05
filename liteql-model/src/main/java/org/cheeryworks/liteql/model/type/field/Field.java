@@ -1,5 +1,7 @@
 package org.cheeryworks.liteql.model.type.field;
 
+import org.cheeryworks.liteql.model.enums.DataType;
+
 import java.io.Serializable;
 
 public interface Field extends Serializable {
@@ -10,6 +12,6 @@ public interface Field extends Serializable {
 
     void setName(String name);
 
-    String getType();
+    DataType getType();
 
 }

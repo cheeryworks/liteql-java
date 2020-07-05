@@ -3,12 +3,15 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
-import org.cheeryworks.liteql.model.type.DomainTypeName;
+import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.field.BlobField;
+import org.cheeryworks.liteql.model.type.field.ClobField;
+import org.cheeryworks.liteql.model.type.field.DecimalField;
 import org.cheeryworks.liteql.model.type.field.Field;
-import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
+import org.cheeryworks.liteql.model.type.field.TimestampField;
 import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
@@ -84,7 +87,7 @@ public abstract class AbstractJooqSqlParser {
     }
 
     protected List<String> parsingIndexMigrationOperation(
-            DomainTypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
+            TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
         String tableName = getTableName(domainTypeName.getFullname());
 
         List<String> sqls = new ArrayList<>();
@@ -147,32 +150,56 @@ public abstract class AbstractJooqSqlParser {
     }
 
     private DataType getJooqDataType(Field field, Database database) {
-        if (field instanceof IdField) {
-            return JOOQDataTypeUtil.getInstance(database).getStringDataType().length(128).nullable(false);
-        } else if (field instanceof ReferenceField) {
-            return JOOQDataTypeUtil.getInstance(database).getStringDataType()
-                    .length(128)
-                    .nullable(((ReferenceField) field).isNullable());
-        } else if (field instanceof StringField) {
-            StringField stringField = (StringField) field;
-            DataType dataType = JOOQDataTypeUtil
-                    .getInstance(database)
-                    .getStringDataType()
-                    .length(stringField.getLength())
-                    .nullable(stringField.isNullable());
+        switch (field.getType()) {
+            case Id:
+                return JOOQDataTypeUtil.getInstance(database).getStringDataType().length(128).nullable(false);
+            case String:
+                StringField stringField = (StringField) field;
 
-            return dataType;
-        } else if (field instanceof IntegerField) {
-            IntegerField integerField = (IntegerField) field;
-            DataType dataType = JOOQDataTypeUtil
-                    .getInstance(database)
-                    .getIntegerDataType()
-                    .nullable(integerField.isNullable());
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getStringDataType()
+                        .length(stringField.getLength())
+                        .nullable(stringField.isNullable());
+            case Integer:
+                IntegerField integerField = (IntegerField) field;
 
-            return dataType;
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getIntegerDataType(integerField.isNullable());
+            case Timestamp:
+                TimestampField timestampField = (TimestampField) field;
+
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getTimestampDataType(timestampField.isNullable());
+            case Boolean:
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getBooleanDataType();
+            case Decimal:
+                DecimalField decimalField = (DecimalField) field;
+
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getBigDecimalDataType(decimalField.isNullable());
+            case Clob:
+                ClobField clobField = (ClobField) field;
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getClobDataType(clobField.isNullable());
+            case Blob:
+                BlobField blobField = (BlobField) field;
+                return JOOQDataTypeUtil
+                        .getInstance(database)
+                        .getBlobDataType(blobField.isNullable());
+            case Reference:
+                return JOOQDataTypeUtil.getInstance(database).getStringDataType()
+                        .length(128)
+                        .nullable(((ReferenceField) field).isNullable());
+            default:
+                throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
         }
-
-        throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
     }
 
     public static String getTableName(String domainTypeFullname) {

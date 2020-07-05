@@ -41,8 +41,6 @@ public interface JOOQDataType {
 
     DataType<Boolean> getBooleanDataType();
 
-    DataType<Boolean> getBooleanDataType(boolean nullable);
-
     DataType<BigDecimal> getBigDecimalDataType();
 
     DataType<BigDecimal> getBigDecimalDataType(boolean nullable);
@@ -55,7 +53,11 @@ public interface JOOQDataType {
 
     DataType<String> getClobDataType();
 
+    DataType<String> getClobDataType(boolean nullable);
+
     DataType<byte[]> getBlobDataType();
+
+    DataType<byte[]> getBlobDataType(boolean nullable);
 
     <T> DataType<T> getDataType(Class<T> type);
 

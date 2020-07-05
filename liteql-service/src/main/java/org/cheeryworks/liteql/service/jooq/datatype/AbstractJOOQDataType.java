@@ -63,12 +63,7 @@ public abstract class AbstractJOOQDataType implements JOOQDataType {
 
     @Override
     public DataType<Boolean> getBooleanDataType() {
-        return getBooleanDataType(true);
-    }
-
-    @Override
-    public DataType<Boolean> getBooleanDataType(boolean nullable) {
-        return getJOOQBooleanDataType().nullable(nullable);
+        return getJOOQBooleanDataType().nullable(false);
     }
 
     protected abstract DataType<BigDecimal> getJOOQBigDecimalDataType();
@@ -104,14 +99,24 @@ public abstract class AbstractJOOQDataType implements JOOQDataType {
 
     @Override
     public DataType<String> getClobDataType() {
-        return getJOOQClobDataType();
+        return getClobDataType(true);
+    }
+
+    @Override
+    public DataType<String> getClobDataType(boolean nullable) {
+        return getJOOQClobDataType().nullable(nullable);
     }
 
     protected abstract DataType<byte[]> getJOOQBlobDataType();
 
     @Override
     public DataType<byte[]> getBlobDataType() {
-        return getJOOQBlobDataType();
+        return getBlobDataType(true);
+    }
+
+    @Override
+    public DataType<byte[]> getBlobDataType(boolean nullable) {
+        return getJOOQBlobDataType().nullable(nullable);
     }
 
     @Override
