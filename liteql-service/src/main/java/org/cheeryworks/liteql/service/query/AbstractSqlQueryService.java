@@ -32,7 +32,7 @@ import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.SaveQueries;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
@@ -563,13 +563,13 @@ public abstract class AbstractSqlQueryService implements QueryService {
             if (CollectionUtils.isEmpty(results)
                     && deleteQuery.getConditions() != null
                     && deleteQuery.getConditions().size() == 1
-                    && Field.ID_FIELD_NAME.equals(
+                    && IdField.ID_FIELD_NAME.equals(
                     deleteQuery.getConditions().get(0).getField())
                     && ConditionClause.EQUALS.equals(deleteQuery.getConditions().get(0).getCondition())
                     && ConditionType.String.equals(deleteQuery.getConditions().get(0).getType())) {
                 Map<String, Object> result = new HashMap<>();
                 result.put(
-                        Field.ID_FIELD_NAME,
+                        IdField.ID_FIELD_NAME,
                         deleteQuery.getConditions().get(0).getValue());
 
                 results = new ReadResults(Collections.singletonList(new ReadResult(result)));

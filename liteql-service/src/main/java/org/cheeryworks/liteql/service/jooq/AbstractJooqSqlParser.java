@@ -8,6 +8,7 @@ import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.ClobField;
 import org.cheeryworks.liteql.model.type.field.DecimalField;
 import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
@@ -81,7 +82,7 @@ public abstract class AbstractJooqSqlParser {
         AlterTableFinalStep alterTableFinalStep = getDslContext()
                 .alterTable(tableName)
                 .add(constraint(PRIMARY_KEY_PREFIX + tableName).
-                        primaryKey(DSL.field(Field.ID_FIELD_NAME)));
+                        primaryKey(DSL.field(IdField.ID_FIELD_NAME)));
 
         return alterTableFinalStep.getSQL();
     }
@@ -140,7 +141,7 @@ public abstract class AbstractJooqSqlParser {
             String fieldName = field.getName();
 
             if (field instanceof ReferenceField) {
-                fieldName += "_" + Field.ID_FIELD_NAME;
+                fieldName += "_" + IdField.ID_FIELD_NAME;
             }
 
             jooqFields.add(DSL.field(fieldName, getJooqDataType(field, database)));
@@ -151,16 +152,24 @@ public abstract class AbstractJooqSqlParser {
 
     private DataType getJooqDataType(Field field, Database database) {
         switch (field.getType()) {
-            case Id:
-                return JOOQDataTypeUtil.getInstance(database).getStringDataType().length(128).nullable(false);
             case String:
-                StringField stringField = (StringField) field;
+                if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
+                    IdField idField = (IdField) field;
 
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getStringDataType()
-                        .length(stringField.getLength())
-                        .nullable(stringField.isNullable());
+                    return JOOQDataTypeUtil
+                            .getInstance(database)
+                            .getStringDataType()
+                            .length(idField.getLength())
+                            .nullable(idField.isNullable());
+                } else {
+                    StringField stringField = (StringField) field;
+
+                    return JOOQDataTypeUtil
+                            .getInstance(database)
+                            .getStringDataType()
+                            .length(stringField.getLength())
+                            .nullable(stringField.isNullable());
+                }
             case Integer:
                 IntegerField integerField = (IntegerField) field;
 

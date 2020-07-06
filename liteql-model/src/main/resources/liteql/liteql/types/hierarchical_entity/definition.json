@@ -2,13 +2,8 @@
   "struct": true,
   "fields": [
     {
-      "name": "sortCode",
-      "type": "string",
-      "length": 255
-    },
-    {
-      "name": "priority",
-      "type": "integer"
+      "name": "parentId",
+      "type": "string"
     },
     {
       "name": "leaf",
@@ -16,6 +11,6 @@
     }
   ],
   "structs": [
-    "liteql.entity"
+    "liteql.sortable_entity"
   ]
 }

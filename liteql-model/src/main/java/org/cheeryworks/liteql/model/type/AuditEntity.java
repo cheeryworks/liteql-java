@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
+import org.cheeryworks.liteql.model.annotation.Position;
 import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 
@@ -28,44 +29,34 @@ public interface AuditEntity extends Entity {
 
     String LAST_MODIFIED_TIME_FIELD_NAME = "lastModifiedTime";
 
+    @Position(1)
     boolean isEnabled();
 
-    void setEnabled(boolean enabled);
-
+    @Position(2)
     boolean isDeleted();
 
-    void setDeleted(boolean deleted);
-
+    @Position(3)
     boolean isDeletable();
 
-    void setDeletable(boolean deletable);
-
+    @Position(4)
     boolean isInherent();
 
-    void setInherent(boolean inherent);
-
+    @Position(5)
     String getCreatorId();
 
-    void setCreatorId(String creatorId);
-
+    @Position(6)
     String getCreatorName();
 
-    void setCreatorName(String creatorName);
-
+    @Position(7)
     Date getCreateTime();
 
-    void setCreateTime(Date createTime);
-
+    @Position(8)
     String getLastModifierId();
 
-    void setLastModifierId(String lastModifierId);
-
+    @Position(9)
     String getLastModifierName();
 
-    void setLastModifierName(String lastModifierName);
-
+    @Position(10)
     Date getLastModifiedTime();
-
-    void setLastModifiedTime(Date lastModifiedTime);
 
 }

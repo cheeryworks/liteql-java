@@ -19,13 +19,11 @@
     },
     {
       "name": "creatorId",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "creatorName",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "createTime",
@@ -33,13 +31,11 @@
     },
     {
       "name": "lastModifierId",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "lastModifierName",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "lastModifiedTime",

@@ -6,7 +6,7 @@
       "fields": [
         {
           "name": "id",
-          "type": "id"
+          "type": "string"
         },
         {
           "name": "name",

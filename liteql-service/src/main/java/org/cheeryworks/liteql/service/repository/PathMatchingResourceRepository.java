@@ -146,34 +146,46 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    private void addStructType(StructType structType) {
-        Map<String, StructType> structTypeInSchema = structTypeInSchemas.get(structType.getSchema());
+    protected Map<String, Map<String, DomainType>> getDomainTypeInSchemas() {
+        return domainTypeInSchemas;
+    }
+
+    protected Map<String, Map<String, StructType>> getStructTypeInSchemas() {
+        return structTypeInSchemas;
+    }
+
+    protected Map<String, Map<String, Migration>> getMigrations() {
+        return migrations;
+    }
+
+    protected void addStructType(StructType structType) {
+        Map<String, StructType> structTypeInSchema = getStructTypeInSchemas().get(structType.getSchema());
 
         if (structTypeInSchema == null) {
             structTypeInSchema = new LinkedHashMap<>();
-            structTypeInSchemas.put(structType.getSchema(), structTypeInSchema);
+            getStructTypeInSchemas().put(structType.getSchema(), structTypeInSchema);
         }
 
         structTypeInSchema.put(structType.getName(), structType);
     }
 
-    private void addDomainType(DomainType domainType) {
-        Map<String, DomainType> domainTypeInSchema = domainTypeInSchemas.get(domainType.getSchema());
+    protected void addDomainType(DomainType domainType) {
+        Map<String, DomainType> domainTypeInSchema = getDomainTypeInSchemas().get(domainType.getSchema());
 
         if (domainTypeInSchema == null) {
             domainTypeInSchema = new LinkedHashMap<>();
-            domainTypeInSchemas.put(domainType.getSchema(), domainTypeInSchema);
+            getDomainTypeInSchemas().put(domainType.getSchema(), domainTypeInSchema);
         }
 
         domainTypeInSchema.put(domainType.getName(), domainType);
     }
 
     private void addMigration(String schemaName, String migrationName, Migration migration) {
-        Map<String, Migration> migrationsInSchema = migrations.get(schemaName);
+        Map<String, Migration> migrationsInSchema = getMigrations().get(schemaName);
 
         if (migrationsInSchema == null) {
             migrationsInSchema = new TreeMap<>(String::compareToIgnoreCase);
-            migrations.put(schemaName, migrationsInSchema);
+            getMigrations().put(schemaName, migrationsInSchema);
         }
 
         migrationsInSchema.put(migrationName, migration);
@@ -181,12 +193,12 @@ public class PathMatchingResourceRepository implements Repository {
 
     @Override
     public Set<String> getSchemas() {
-        return domainTypeInSchemas.keySet();
+        return getDomainTypeInSchemas().keySet();
     }
 
     @Override
     public Map<String, StructType> getStructTypes(String schemaName) {
-        Map<String, StructType> structTypes = structTypeInSchemas.get(schemaName);
+        Map<String, StructType> structTypes = getStructTypeInSchemas().get(schemaName);
 
         if (structTypes == null) {
             throw new IllegalStateException("Can not get schema [" + schemaName + "]");
@@ -197,7 +209,7 @@ public class PathMatchingResourceRepository implements Repository {
 
     @Override
     public Map<String, DomainType> getDomainTypes(String schemaName) {
-        Map<String, DomainType> domainTypes = domainTypeInSchemas.get(schemaName);
+        Map<String, DomainType> domainTypes = getDomainTypeInSchemas().get(schemaName);
 
         if (domainTypes == null) {
             throw new IllegalStateException("Can not get schema [" + schemaName + "]");
@@ -210,7 +222,7 @@ public class PathMatchingResourceRepository implements Repository {
     public StructType getStructType(TypeName typeName) {
         Assert.notNull(typeName, "TypeName is required");
 
-        Map<String, StructType> structTypes = structTypeInSchemas.get(typeName.getSchema());
+        Map<String, StructType> structTypes = getStructTypeInSchemas().get(typeName.getSchema());
 
         if (structTypes == null) {
             throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
@@ -229,7 +241,7 @@ public class PathMatchingResourceRepository implements Repository {
     public DomainType getDomainType(TypeName typeName) {
         Assert.notNull(typeName, "TypeName is required");
 
-        Map<String, DomainType> domainTypes = domainTypeInSchemas.get(typeName.getSchema());
+        Map<String, DomainType> domainTypes = getDomainTypeInSchemas().get(typeName.getSchema());
 
         if (domainTypes == null) {
             throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
@@ -246,7 +258,7 @@ public class PathMatchingResourceRepository implements Repository {
 
     @Override
     public List<Migration> getMigrations(String schemaName) {
-        Map<String, Migration> migrationsInSchema = migrations.get(schemaName);
+        Map<String, Migration> migrationsInSchema = getMigrations().get(schemaName);
 
         if (MapUtils.isNotEmpty(migrationsInSchema)) {
             return Arrays.asList(migrationsInSchema.values().toArray(new Migration[migrationsInSchema.size()]));

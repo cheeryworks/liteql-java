@@ -24,6 +24,10 @@ public class TypeNameSerializer extends StdSerializer<TypeName> {
         if (value instanceof StructType) {
             gen.writeStartObject();
 
+            if (value.isStruct()) {
+                gen.writeObjectField("struct", true);
+            }
+
             List<Field> fields = FieldUtils.getAllFieldsList(value.getClass());
 
             for (Field field : fields) {
@@ -42,6 +46,7 @@ public class TypeNameSerializer extends StdSerializer<TypeName> {
 
                     if (fieldValue != null) {
                         gen.writeObjectField(field.getName(), fieldValue);
+
                     }
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex.getMessage(), ex);

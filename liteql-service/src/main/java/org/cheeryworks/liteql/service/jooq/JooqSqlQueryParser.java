@@ -174,9 +174,9 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
                 QueryConditions joinConditions = new QueryConditions();
                 joinConditions.add(new QueryCondition(
-                        Field.ID_FIELD_NAME,
+                        IdField.ID_FIELD_NAME,
                         ConditionClause.EQUALS, ConditionType.Field,
-                        joinedReadQuery.getDomainTypeName().getName() + StringUtils.capitalize(Field.ID_FIELD_NAME)));
+                        joinedReadQuery.getDomainTypeName().getName() + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
                 joinedTable.setJoinCondition(
                         getCondition(
                                 joinConditions,
@@ -260,7 +260,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                     .insertInto(table(getTableName(saveQuery.getDomainTypeName().getFullname())));
 
             DataType<String> dataType = jooqDataType.getDataType(
-                    fieldDefinitions.get(Field.ID_FIELD_NAME));
+                    fieldDefinitions.get(IdField.ID_FIELD_NAME));
 
             InsertSetMoreStep insertSetMoreStep = insertSetStep.set(
                     field("id", dataType),
@@ -271,7 +271,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
                     String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
-                            + StringUtils.capitalize(Field.ID_FIELD_NAME));
+                            + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
@@ -311,7 +311,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 } else {
                     if (domainType.isReferenceField(dataEntry.getKey())) {
                         String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
-                                + StringUtils.capitalize(Field.ID_FIELD_NAME));
+                                + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(

@@ -2,35 +2,31 @@
   "struct": true,
   "fields": [
     {
-      "name": "username",
-      "type": "string",
-      "nullable": false,
-      "length": 255
+      "name": "name",
+      "type": "string"
     },
     {
-      "name": "name",
-      "type": "string",
-      "nullable": false,
-      "length": 255
+      "name": "username",
+      "type": "string"
     },
     {
       "name": "email",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "phone",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "avatarUrl",
-      "type": "string",
-      "length": 255
+      "type": "string"
     },
     {
       "name": "enabled",
       "type": "boolean"
     }
+  ],
+  "structs": [
+    "liteql.entity"
   ]
 }

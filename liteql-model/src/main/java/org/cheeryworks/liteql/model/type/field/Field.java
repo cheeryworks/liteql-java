@@ -6,8 +6,6 @@ import java.io.Serializable;
 
 public interface Field extends Serializable {
 
-    String ID_FIELD_NAME = "id";
-
     String getName();
 
     void setName(String name);

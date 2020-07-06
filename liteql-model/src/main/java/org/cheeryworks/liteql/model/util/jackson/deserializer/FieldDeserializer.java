@@ -38,9 +38,12 @@ public class FieldDeserializer extends StdDeserializer<Field> {
 
                 switch (dataType) {
                     case Id:
-                        return jsonParser.getCodec().treeToValue(node, IdField.class);
                     case String:
-                        return jsonParser.getCodec().treeToValue(node, StringField.class);
+                        if (IdField.ID_FIELD_NAME.equalsIgnoreCase(node.get("name").asText())) {
+                            return jsonParser.getCodec().treeToValue(node, IdField.class);
+                        } else {
+                            return jsonParser.getCodec().treeToValue(node, StringField.class);
+                        }
                     case Integer:
                         return jsonParser.getCodec().treeToValue(node, IntegerField.class);
                     case Timestamp:

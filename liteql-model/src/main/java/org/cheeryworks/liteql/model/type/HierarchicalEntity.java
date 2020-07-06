@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
+import org.cheeryworks.liteql.model.annotation.Position;
 import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 
@@ -12,8 +13,10 @@ public interface HierarchicalEntity<T> extends SortableEntity {
 
     String ROOT_PARENT_ID = "ROOT";
 
+    @Position(1)
     String getParentId();
 
+    @Position(2)
     boolean isLeaf();
 
 }
