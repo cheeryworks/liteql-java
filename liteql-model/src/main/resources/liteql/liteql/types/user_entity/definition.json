@@ -1,5 +1,5 @@
 {
-  "struct": true,
+  "trait": true,
   "fields": [
     {
       "name": "name",
@@ -26,7 +26,7 @@
       "type": "boolean"
     }
   ],
-  "structs": [
+  "traits": [
     "liteql.entity"
   ]
 }

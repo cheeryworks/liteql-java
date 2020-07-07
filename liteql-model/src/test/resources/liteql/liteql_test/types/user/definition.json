@@ -28,12 +28,12 @@
     {
       "name": "organization",
       "type": "reference",
-      "domainTypeName": "liteql_test.organization"
+      "domainType": "liteql_test.organization"
     },
     {
       "name": "country",
       "type": "reference",
-      "domainTypeName": "liteql_test.country"
+      "domainType": "liteql_test.country"
     }
   ],
   "uniques": [

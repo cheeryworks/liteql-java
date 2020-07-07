@@ -11,7 +11,7 @@ public class LiteQLSaveQueryBuilder<T extends AbstractSaveQuery> {
     protected T getQuery(LiteQLSaveQuery<T> liteQLSaveQuery) {
         T saveQuery = liteQLSaveQuery.getSaveQuery();
 
-        saveQuery.setDomainTypeName(liteQLSaveQuery.getDomainType());
+        saveQuery.setDomainType(liteQLSaveQuery.getDomainType());
         saveQuery.setData(liteQLSaveQuery.getData());
 
         if (liteQLSaveQuery.getReferences() != null && liteQLSaveQuery.getReferences().size() > 0) {

@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Type;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
 import org.cheeryworks.liteql.service.enums.Database;
@@ -11,7 +11,7 @@ import org.jooq.CreateTableColumnStep;
 import org.jooq.Field;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSchemaParser {
 
@@ -23,7 +23,7 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     public String repositoryToSql() {
         StringBuilder repositorySqlBuilder = new StringBuilder();
 
-        for (String schemaName : getRepository().getSchemas()) {
+        for (String schemaName : getRepository().getSchemaNames()) {
             repositorySqlBuilder.append(schemaToSql(schemaName)).append("\n\n");
         }
 
@@ -32,11 +32,11 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
 
     @Override
     public String schemaToSql(String schemaName) {
-        Map<String, DomainType> domainTypes = getRepository().getDomainTypes(schemaName);
+        Set<DomainType> domainTypes = getRepository().getDomainTypes(schemaName);
 
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        for (DomainType domainType : domainTypes.values()) {
+        for (DomainType domainType : domainTypes) {
             schemaSqlBuilder.append(domainTypeToSql(domainType));
         }
 
@@ -44,8 +44,8 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     }
 
     @Override
-    public String domainTypeToSql(TypeName domainTypeName) {
-        return domainTypeToSql(getRepository().getDomainType(domainTypeName));
+    public String domainTypeToSql(Type domainType) {
+        return domainTypeToSql(getRepository().getDomainType(domainType));
     }
 
     private String domainTypeToSql(DomainType domainType) {

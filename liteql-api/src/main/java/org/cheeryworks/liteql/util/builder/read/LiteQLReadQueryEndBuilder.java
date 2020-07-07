@@ -26,7 +26,7 @@ public class LiteQLReadQueryEndBuilder<T extends AbstractReadQuery> {
     }
 
     public T getQuery() {
-        this.query.setDomainTypeName(liteQLReadQuery.getDomainType());
+        this.query.setDomainType(liteQLReadQuery.getDomainType());
         this.query.setFields(liteQLReadQuery.getFields());
 
         if (ArrayUtils.isNotEmpty(liteQLReadQuery.getLiteQLReadQueryJoins())) {

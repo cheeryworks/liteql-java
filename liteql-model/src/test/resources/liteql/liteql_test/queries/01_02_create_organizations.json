@@ -2,7 +2,7 @@
   "queries": [
     {
       "queryType": "create",
-      "domainTypeName": "liteql_test.organization",
+      "domainType": "liteql_test.organization",
       "data": {
         "name": "CheeryWorks",
         "code": "cheeryworks",
@@ -13,7 +13,7 @@
     },
     {
       "queryType": "create",
-      "domainTypeName": "liteql_test.organization",
+      "domainType": "liteql_test.organization",
       "data": {
         "name": "CheeryApp",
         "code": "cheeryapp",

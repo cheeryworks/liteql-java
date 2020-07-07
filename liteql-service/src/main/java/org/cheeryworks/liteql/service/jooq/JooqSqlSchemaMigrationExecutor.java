@@ -47,7 +47,7 @@ public class JooqSqlSchemaMigrationExecutor extends AbstractJooqSqlExecutor impl
     public void migrate() {
         isDatabaseReady();
 
-        for (String schema : this.repository.getSchemas()) {
+        for (String schema : this.repository.getSchemaNames()) {
 
             String schemaVersionTableName = schema + SCHEMA_VERSION_TABLE_SUFFIX;
 

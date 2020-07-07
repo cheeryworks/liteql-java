@@ -1,18 +1,18 @@
 package org.cheeryworks.liteql.model.type.field;
 
 import org.cheeryworks.liteql.model.enums.DataType;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Type;
 
 public class ReferenceField extends AbstractNullableField {
 
-    private TypeName domainTypeName;
+    private Type domainType;
 
-    public TypeName getDomainTypeName() {
-        return domainTypeName;
+    public Type getDomainType() {
+        return domainType;
     }
 
-    public void setDomainTypeName(TypeName domainTypeName) {
-        this.domainTypeName = domainTypeName;
+    public void setDomainType(Type domainType) {
+        this.domainType = domainType;
     }
 
     public ReferenceField() {

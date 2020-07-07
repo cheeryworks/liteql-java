@@ -1,12 +1,11 @@
 package org.cheeryworks.liteql.service.repository;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.StructType;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.TraitType;
+import org.cheeryworks.liteql.model.type.Type;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface Repository {
@@ -21,15 +20,15 @@ public interface Repository {
 
     String NAME_OF_TYPE_DEFINITION = "definition" + SUFFIX_OF_CONFIGURATION_FILE;
 
-    Set<String> getSchemas();
+    Set<String> getSchemaNames();
 
-    Map<String, DomainType> getDomainTypes(String schemaName);
+    Set<DomainType> getDomainTypes(String schemaName);
 
-    Map<String, StructType> getStructTypes(String schemaName);
+    Set<TraitType> getTraitTypes(String schemaName);
 
-    DomainType getDomainType(TypeName typeName);
+    DomainType getDomainType(Type type);
 
-    StructType getStructType(TypeName typeName);
+    TraitType getTraitType(Type type);
 
     List<Migration> getMigrations(String schemaName);
 

@@ -2,7 +2,7 @@
   "queries": [
     {
       "queryType": "create",
-      "domainTypeName": "liteql_test.user",
+      "domainType": "liteql_test.user",
       "data": {
         "name": "Carr Chang",
         "username": "carrchang"

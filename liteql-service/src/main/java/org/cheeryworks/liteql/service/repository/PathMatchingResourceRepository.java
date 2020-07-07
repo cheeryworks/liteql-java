@@ -5,8 +5,9 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.StructType;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Schema;
+import org.cheeryworks.liteql.model.type.TraitType;
+import org.cheeryworks.liteql.model.type.Type;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.springframework.core.io.Resource;
@@ -15,14 +16,17 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class PathMatchingResourceRepository implements Repository {
 
@@ -30,11 +34,7 @@ public class PathMatchingResourceRepository implements Repository {
 
     private String[] locationPatterns;
 
-    private Map<String, Map<String, DomainType>> domainTypeInSchemas = new LinkedHashMap<>();
-
-    private Map<String, Map<String, StructType>> structTypeInSchemas = new LinkedHashMap<>();
-
-    private Map<String, Map<String, Migration>> migrations = new LinkedHashMap<>();
+    private List<Schema> schemas = new ArrayList<>();
 
     public PathMatchingResourceRepository(ObjectMapper objectMapper, String... locationPatterns) {
         this.objectMapper = objectMapper;
@@ -107,23 +107,19 @@ public class PathMatchingResourceRepository implements Repository {
                             continue;
                         }
 
-                        TypeName domainTypeName = new TypeName();
+                        Type domainType = new Type();
 
-                        domainTypeName.setSchema(schemaName);
-                        domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
+                        domainType.setSchema(schemaName);
+                        domainType.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
 
                         if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
-                            TypeName typeName = LiteQLJsonUtil.toBean(
-                                    objectMapper, schemaDefinitionContent.getValue(), TypeName.class);
+                            Type type = LiteQLJsonUtil.toBean(
+                                    objectMapper, schemaDefinitionContent.getValue(), Type.class);
 
-                            typeName.setSchema(schemaName);
-                            typeName.setName(domainTypeName.getName());
+                            type.setSchema(schemaName);
+                            type.setName(domainType.getName());
 
-                            if (typeName.isStruct()) {
-                                addStructType((StructType) typeName);
-                            } else {
-                                addDomainType((DomainType) typeName);
-                            }
+                            addType(type);
                         }
 
                         if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
@@ -133,9 +129,9 @@ public class PathMatchingResourceRepository implements Repository {
                             Migration migration = LiteQLJsonUtil.toBean(
                                     objectMapper, schemaDefinitionContent.getValue(), Migration.class);
                             migration.setName(migrationName);
-                            migration.setDomainTypeName(domainTypeName);
+                            migration.setDomainType(domainType);
 
-                            addMigration(schemaName, migrationName, migration);
+                            addMigration(migration);
                         }
                     }
                 }
@@ -146,125 +142,137 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    protected Map<String, Map<String, DomainType>> getDomainTypeInSchemas() {
-        return domainTypeInSchemas;
-    }
+    protected void addType(Type type) {
+        Schema schema = null;
 
-    protected Map<String, Map<String, StructType>> getStructTypeInSchemas() {
-        return structTypeInSchemas;
-    }
-
-    protected Map<String, Map<String, Migration>> getMigrations() {
-        return migrations;
-    }
-
-    protected void addStructType(StructType structType) {
-        Map<String, StructType> structTypeInSchema = getStructTypeInSchemas().get(structType.getSchema());
-
-        if (structTypeInSchema == null) {
-            structTypeInSchema = new LinkedHashMap<>();
-            getStructTypeInSchemas().put(structType.getSchema(), structTypeInSchema);
+        try {
+            schema = getSchema(type.getSchema());
+        } catch (Exception ex) {
         }
 
-        structTypeInSchema.put(structType.getName(), structType);
-    }
-
-    protected void addDomainType(DomainType domainType) {
-        Map<String, DomainType> domainTypeInSchema = getDomainTypeInSchemas().get(domainType.getSchema());
-
-        if (domainTypeInSchema == null) {
-            domainTypeInSchema = new LinkedHashMap<>();
-            getDomainTypeInSchemas().put(domainType.getSchema(), domainTypeInSchema);
+        if (schema == null) {
+            schema = new Schema(type.getSchema());
+            this.schemas.add(schema);
         }
 
-        domainTypeInSchema.put(domainType.getName(), domainType);
+        if (type instanceof DomainType) {
+            Set<DomainType> domainTypes = schema.getDomainTypes();
+
+            if (domainTypes == null) {
+                domainTypes = new TreeSet<>(
+                        (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
+
+                schema.setDomainTypes(domainTypes);
+            }
+
+            domainTypes.add((DomainType) type);
+
+        } else if (type instanceof TraitType) {
+            Set<TraitType> traitTypes = schema.getTraitTypes();
+
+            if (traitTypes == null) {
+                traitTypes = new TreeSet<>(
+                        (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
+
+                schema.setTraitTypes(traitTypes);
+            }
+
+            traitTypes.add((TraitType) type);
+        }
     }
 
-    private void addMigration(String schemaName, String migrationName, Migration migration) {
-        Map<String, Migration> migrationsInSchema = getMigrations().get(schemaName);
+    private void addMigration(Migration migration) {
+        Schema schema = getSchema(migration.getDomainType().getSchema());
 
-        if (migrationsInSchema == null) {
-            migrationsInSchema = new TreeMap<>(String::compareToIgnoreCase);
-            getMigrations().put(schemaName, migrationsInSchema);
+        Map<Type, Map<String, Migration>> migrationsOfSchema = schema.getMigrations();
+
+        if (migrationsOfSchema == null) {
+            migrationsOfSchema = new HashMap<>();
+            schema.setMigrations(migrationsOfSchema);
         }
 
-        migrationsInSchema.put(migrationName, migration);
+        Map<String, Migration> migrations = migrationsOfSchema.get(migration.getDomainType());
+
+        if (migrations == null) {
+            migrations = new TreeMap<>(String::compareToIgnoreCase);
+        }
+
+        migrations.put(migration.getName(), migration);
     }
 
     @Override
-    public Set<String> getSchemas() {
-        return getDomainTypeInSchemas().keySet();
+    public Set<String> getSchemaNames() {
+        Set<String> schemaNames = this.schemas
+                .stream()
+                .map(schema -> schema.getName())
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return schemaNames;
     }
 
     @Override
-    public Map<String, StructType> getStructTypes(String schemaName) {
-        Map<String, StructType> structTypes = getStructTypeInSchemas().get(schemaName);
-
-        if (structTypes == null) {
-            throw new IllegalStateException("Can not get schema [" + schemaName + "]");
-        }
-
-        return structTypes;
+    public Set<TraitType> getTraitTypes(String schemaName) {
+        return Optional.ofNullable(getSchema(schemaName).getTraitTypes()).orElse(Collections.EMPTY_SET);
     }
 
     @Override
-    public Map<String, DomainType> getDomainTypes(String schemaName) {
-        Map<String, DomainType> domainTypes = getDomainTypeInSchemas().get(schemaName);
+    public Set<DomainType> getDomainTypes(String schemaName) {
+        return Optional.ofNullable(getSchema(schemaName).getDomainTypes()).orElse(Collections.EMPTY_SET);
+    }
 
-        if (domainTypes == null) {
-            throw new IllegalStateException("Can not get schema [" + schemaName + "]");
-        }
-
-        return domainTypes;
+    private Schema getSchema(String schemaName) {
+        return this.schemas
+                .stream()
+                .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
+                .findFirst()
+                .orElseThrow(() -> {
+                    throw new IllegalStateException("Can not get schema [" + schemaName + "]");
+                });
     }
 
     @Override
-    public StructType getStructType(TypeName typeName) {
-        Assert.notNull(typeName, "TypeName is required");
+    public TraitType getTraitType(Type type) {
+        Assert.notNull(type, "Type is required");
 
-        Map<String, StructType> structTypes = getStructTypeInSchemas().get(typeName.getSchema());
-
-        if (structTypes == null) {
-            throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
-        }
-
-        StructType structType = structTypes.get(typeName.getName());
-
-        if (structType == null) {
-            throw new IllegalStateException("Can not get struct type [" + typeName.getFullname() + "]");
-        }
-
-        return structType;
+        return getSchema(type.getSchema())
+                .getTraitTypes()
+                .stream()
+                .filter(traitType -> traitType.getName().equalsIgnoreCase(type.getName()))
+                .findFirst()
+                .orElseThrow(() -> {
+                    throw new IllegalStateException("Can not get trait type [" + type.getFullname() + "]");
+                });
     }
 
     @Override
-    public DomainType getDomainType(TypeName typeName) {
-        Assert.notNull(typeName, "TypeName is required");
+    public DomainType getDomainType(Type type) {
+        Assert.notNull(type, "Type is required");
 
-        Map<String, DomainType> domainTypes = getDomainTypeInSchemas().get(typeName.getSchema());
-
-        if (domainTypes == null) {
-            throw new IllegalStateException("Can not get schema [" + typeName.getSchema() + "]");
-        }
-
-        DomainType domainType = domainTypes.get(typeName.getName());
-
-        if (domainType == null) {
-            throw new IllegalStateException("Can not get domain type [" + typeName.getFullname() + "]");
-        }
-
-        return domainType;
+        return getSchema(type.getSchema())
+                .getDomainTypes()
+                .stream()
+                .filter(domainType -> domainType.getName().equalsIgnoreCase(type.getName()))
+                .findFirst()
+                .orElseThrow(() -> {
+                    throw new IllegalStateException("Can not get domain type [" + type.getFullname() + "]");
+                });
     }
 
     @Override
     public List<Migration> getMigrations(String schemaName) {
-        Map<String, Migration> migrationsInSchema = getMigrations().get(schemaName);
+        List<Migration> migrations = new ArrayList<>();
 
-        if (MapUtils.isNotEmpty(migrationsInSchema)) {
-            return Arrays.asList(migrationsInSchema.values().toArray(new Migration[migrationsInSchema.size()]));
+        Schema schema = getSchema(schemaName);
+
+        if (MapUtils.isNotEmpty(schema.getMigrations())) {
+            for (Map.Entry<Type, Map<String, Migration>> migrationOfDomainType
+                    : schema.getMigrations().entrySet()) {
+                migrations.addAll(migrationOfDomainType.getValue().values());
+            }
         }
 
-        return Collections.emptyList();
+        return Collections.unmodifiableList(migrations);
     }
 
 }

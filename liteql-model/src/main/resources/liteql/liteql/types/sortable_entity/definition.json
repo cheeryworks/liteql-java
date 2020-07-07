@@ -1,5 +1,5 @@
 {
-  "struct": true,
+  "trait": true,
   "fields": [
     {
       "name": "sortCode",
@@ -10,7 +10,7 @@
       "type": "integer"
     }
   ],
-  "structs": [
+  "traits": [
     "liteql.entity"
   ]
 }

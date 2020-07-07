@@ -1,5 +1,5 @@
 {
-  "struct": true,
+  "trait": true,
   "fields": [
     {
       "name": "parentId",
@@ -10,7 +10,7 @@
       "type": "boolean"
     }
   ],
-  "structs": [
+  "traits": [
     "liteql.sortable_entity"
   ]
 }

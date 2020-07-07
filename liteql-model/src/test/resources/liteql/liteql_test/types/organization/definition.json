@@ -19,7 +19,7 @@
     {
       "name": "country",
       "type": "reference",
-      "domainTypeName": "liteql_test.country"
+      "domainType": "liteql_test.country"
     }
   ],
   "uniques": [

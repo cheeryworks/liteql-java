@@ -21,7 +21,7 @@ public class JooqSqlSchemaMigrationParserTest extends AbstractSqlTest {
 
     @Test
     public void testingMigrationsToSql() {
-        for (String schemaName : getRepository().getSchemas()) {
+        for (String schemaName : getRepository().getSchemaNames()) {
             List<String> migrationsInSql = jooqSqlSchemaMigrationParser.migrationsToSql(schemaName);
 
             for (String sql : migrationsInSql) {

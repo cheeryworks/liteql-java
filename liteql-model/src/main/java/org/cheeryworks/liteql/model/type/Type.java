@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class TypeName implements Serializable {
-
-    public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
+public class Type implements Serializable {
 
     @JsonIgnore
     private String schema;
@@ -40,11 +38,11 @@ public class TypeName implements Serializable {
         return name;
     }
 
-    public TypeName() {
+    public Type() {
 
     }
 
-    public TypeName(String schema, String name) {
+    public Type(String schema, String name) {
         this.schema = schema;
         this.name = name;
     }
@@ -59,11 +57,11 @@ public class TypeName implements Serializable {
             return true;
         }
 
-        if (!(o instanceof TypeName)) {
+        if (!(o instanceof Type)) {
             return false;
         }
 
-        TypeName that = (TypeName) o;
+        Type that = (Type) o;
 
         return Objects.equals(schema, that.schema) && name.equals(that.name);
     }

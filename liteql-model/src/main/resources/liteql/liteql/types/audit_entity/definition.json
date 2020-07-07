@@ -1,5 +1,5 @@
 {
-  "struct": true,
+  "trait": true,
   "fields": [
     {
       "name": "enabled",
@@ -42,7 +42,7 @@
       "type": "timestamp"
     }
   ],
-  "structs": [
+  "traits": [
     "liteql.entity"
   ]
 }

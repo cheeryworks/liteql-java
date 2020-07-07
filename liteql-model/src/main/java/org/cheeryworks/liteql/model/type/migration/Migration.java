@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.model.type.migration;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Type;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 
 import java.io.Serializable;
@@ -17,7 +17,7 @@ public class Migration implements Serializable {
 
     private String name;
 
-    private TypeName domainTypeName;
+    private Type domainType;
 
     private String description;
 
@@ -39,12 +39,12 @@ public class Migration implements Serializable {
         return null;
     }
 
-    public TypeName getDomainTypeName() {
-        return domainTypeName;
+    public Type getDomainType() {
+        return domainType;
     }
 
-    public void setDomainTypeName(TypeName domainTypeName) {
-        this.domainTypeName = domainTypeName;
+    public void setDomainType(Type domainType) {
+        this.domainType = domainType;
     }
 
     public String getDescription() {

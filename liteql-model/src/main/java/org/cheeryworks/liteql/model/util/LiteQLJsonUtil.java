@@ -16,7 +16,7 @@ import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.QueryConditions;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.model.query.save.SaveQueryAssociations;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Type;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.model.util.jackson.deserializer.ConditionClauseDeserializer;
@@ -90,7 +90,7 @@ public final class LiteQLJsonUtil {
         builder.deserializerByType(ConditionClause.class, new ConditionClauseDeserializer());
         builder.deserializerByType(ConditionOperator.class, new ConditionOperatorDeserializer());
         builder.deserializerByType(ConditionType.class, new ConditionTypeDeserializer());
-        builder.deserializerByType(TypeName.class, new TypeNameDeserializer());
+        builder.deserializerByType(Type.class, new TypeNameDeserializer());
         builder.deserializerByType(FieldDefinitions.class, new FieldDefinitionsDeserializer());
         builder.deserializerByType(Field.class, new FieldDeserializer());
         builder.deserializerByType(MigrationOperation.class, new MigrationOperationDeserializer());
@@ -104,7 +104,7 @@ public final class LiteQLJsonUtil {
         builder.serializerByType(ConditionClause.class, new ConditionClauseSerializer());
         builder.serializerByType(ConditionOperator.class, new ConditionOperatorSerializer());
         builder.serializerByType(ConditionType.class, new ConditionTypeSerializer());
-        builder.serializerByType(TypeName.class, new TypeNameSerializer());
+        builder.serializerByType(Type.class, new TypeNameSerializer());
         builder.serializerByType(MigrationOperationType.class, new MigrationOperationTypeSerializer());
         builder.serializerByType(QueryType.class, new QueryTypeSerializer());
     }

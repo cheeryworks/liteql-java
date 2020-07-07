@@ -33,7 +33,7 @@ public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery> impleme
     }
 
     public PageReadQuery(ReadQuery readQuery, Integer page, Integer size) {
-        setDomainTypeName(readQuery.getDomainTypeName());
+        setDomainType(readQuery.getDomainType());
         setFields(readQuery.getFields());
         setJoins(readQuery.getJoins());
         setConditions(readQuery.getConditions());

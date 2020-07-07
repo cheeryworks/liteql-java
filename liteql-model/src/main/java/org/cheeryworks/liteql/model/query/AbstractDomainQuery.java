@@ -2,22 +2,22 @@ package org.cheeryworks.liteql.model.query;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.Type;
 
 public abstract class AbstractDomainQuery implements Query {
 
     @JsonProperty(required = true)
-    private TypeName domainTypeName;
+    private Type domainType;
 
     @JsonIgnore
     private QueryConditions accessDecisionConditions;
 
-    public TypeName getDomainTypeName() {
-        return domainTypeName;
+    public Type getDomainType() {
+        return domainType;
     }
 
-    public void setDomainTypeName(TypeName domainTypeName) {
-        this.domainTypeName = domainTypeName;
+    public void setDomainType(Type domainType) {
+        this.domainType = domainType;
     }
 
     public QueryConditions getAccessDecisionConditions() {
