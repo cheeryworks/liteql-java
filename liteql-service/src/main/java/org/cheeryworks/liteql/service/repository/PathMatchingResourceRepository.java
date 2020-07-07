@@ -194,7 +194,7 @@ public class PathMatchingResourceRepository implements Repository {
         Map<String, Migration> migrations = migrationsOfSchema.get(migration.getDomainType());
 
         if (migrations == null) {
-            migrations = new TreeMap<>(String::compareToIgnoreCase);
+            migrations = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         }
 
         migrations.put(migration.getName(), migration);
