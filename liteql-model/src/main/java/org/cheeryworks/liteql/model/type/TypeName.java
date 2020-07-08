@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Type implements Serializable {
+public class TypeName implements Serializable {
 
     @JsonIgnore
     private String schema;
@@ -38,17 +38,13 @@ public class Type implements Serializable {
         return name;
     }
 
-    public Type() {
+    public TypeName() {
 
     }
 
-    public Type(String schema, String name) {
+    public TypeName(String schema, String name) {
         this.schema = schema;
         this.name = name;
-    }
-
-    public boolean isStruct() {
-        return false;
     }
 
     @Override
@@ -57,11 +53,11 @@ public class Type implements Serializable {
             return true;
         }
 
-        if (!(o instanceof Type)) {
+        if (!(o instanceof TypeName)) {
             return false;
         }
 
-        Type that = (Type) o;
+        TypeName that = (TypeName) o;
 
         return Objects.equals(schema, that.schema) && name.equals(that.name);
     }

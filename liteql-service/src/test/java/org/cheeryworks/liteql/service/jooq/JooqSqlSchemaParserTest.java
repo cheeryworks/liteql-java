@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.AbstractSqlTest;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class JooqSqlSchemaParserTest extends AbstractSqlTest {
 
     @Test
     public void testingTypeToSql() {
-        logger.info("\n" + jooqSqlSchemaParser.domainTypeToSql(new Type("liteql_test", "user")));
+        logger.info("\n" + jooqSqlSchemaParser.domainTypeToSql(new TypeName("liteql_test", "user")));
     }
 
 }

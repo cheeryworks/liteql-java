@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.model.query.event;
 
 import org.cheeryworks.liteql.model.enums.QueryType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -15,8 +15,8 @@ public abstract class AbstractWritableDomainEvent extends AbstractListMapDomainE
         return queryType;
     }
 
-    public AbstractWritableDomainEvent(List<Map<String, Object>> source, Type type, QueryType queryType) {
-        super(source, type);
+    public AbstractWritableDomainEvent(List<Map<String, Object>> source, TypeName typeName, QueryType queryType) {
+        super(source, typeName);
 
         Assert.notNull(queryType, "QueryType can not be null");
 

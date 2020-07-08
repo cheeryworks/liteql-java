@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.Schema;
 import org.cheeryworks.liteql.model.type.TraitType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.springframework.core.io.Resource;
@@ -107,19 +107,19 @@ public class PathMatchingResourceRepository implements Repository {
                             continue;
                         }
 
-                        Type domainType = new Type();
+                        TypeName domainTypeName = new TypeName();
 
-                        domainType.setSchema(schemaName);
-                        domainType.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
+                        domainTypeName.setSchema(schemaName);
+                        domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
 
                         if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
-                            Type type = LiteQLJsonUtil.toBean(
-                                    objectMapper, schemaDefinitionContent.getValue(), Type.class);
+                            TypeName typeName = LiteQLJsonUtil.toBean(
+                                    objectMapper, schemaDefinitionContent.getValue(), TypeName.class);
 
-                            type.setSchema(schemaName);
-                            type.setName(domainType.getName());
+                            typeName.setSchema(schemaName);
+                            typeName.setName(domainTypeName.getName());
 
-                            addType(type);
+                            addType(typeName);
                         }
 
                         if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
@@ -129,7 +129,7 @@ public class PathMatchingResourceRepository implements Repository {
                             Migration migration = LiteQLJsonUtil.toBean(
                                     objectMapper, schemaDefinitionContent.getValue(), Migration.class);
                             migration.setName(migrationName);
-                            migration.setDomainType(domainType);
+                            migration.setDomainTypeName(domainTypeName);
 
                             addMigration(migration);
                         }
@@ -142,20 +142,20 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    protected void addType(Type type) {
+    protected void addType(TypeName typeName) {
         Schema schema = null;
 
         try {
-            schema = getSchema(type.getSchema());
+            schema = getSchema(typeName.getSchema());
         } catch (Exception ex) {
         }
 
         if (schema == null) {
-            schema = new Schema(type.getSchema());
+            schema = new Schema(typeName.getSchema());
             this.schemas.add(schema);
         }
 
-        if (type instanceof DomainType) {
+        if (typeName instanceof DomainType) {
             Set<DomainType> domainTypes = schema.getDomainTypes();
 
             if (domainTypes == null) {
@@ -165,9 +165,9 @@ public class PathMatchingResourceRepository implements Repository {
                 schema.setDomainTypes(domainTypes);
             }
 
-            domainTypes.add((DomainType) type);
+            domainTypes.add((DomainType) typeName);
 
-        } else if (type instanceof TraitType) {
+        } else if (typeName instanceof TraitType) {
             Set<TraitType> traitTypes = schema.getTraitTypes();
 
             if (traitTypes == null) {
@@ -177,21 +177,21 @@ public class PathMatchingResourceRepository implements Repository {
                 schema.setTraitTypes(traitTypes);
             }
 
-            traitTypes.add((TraitType) type);
+            traitTypes.add((TraitType) typeName);
         }
     }
 
     private void addMigration(Migration migration) {
-        Schema schema = getSchema(migration.getDomainType().getSchema());
+        Schema schema = getSchema(migration.getDomainTypeName().getSchema());
 
-        Map<Type, Map<String, Migration>> migrationsOfSchema = schema.getMigrations();
+        Map<TypeName, Map<String, Migration>> migrationsOfSchema = schema.getMigrations();
 
         if (migrationsOfSchema == null) {
             migrationsOfSchema = new HashMap<>();
             schema.setMigrations(migrationsOfSchema);
         }
 
-        Map<String, Migration> migrations = migrationsOfSchema.get(migration.getDomainType());
+        Map<String, Migration> migrations = migrationsOfSchema.get(migration.getDomainTypeName());
 
         if (migrations == null) {
             migrations = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -232,30 +232,30 @@ public class PathMatchingResourceRepository implements Repository {
     }
 
     @Override
-    public TraitType getTraitType(Type type) {
-        Assert.notNull(type, "Type is required");
+    public TraitType getTraitType(TypeName typeName) {
+        Assert.notNull(typeName, "TypeName is required");
 
-        return getSchema(type.getSchema())
+        return getSchema(typeName.getSchema())
                 .getTraitTypes()
                 .stream()
-                .filter(traitType -> traitType.getName().equalsIgnoreCase(type.getName()))
+                .filter(traitType -> traitType.getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
                 .orElseThrow(() -> {
-                    throw new IllegalStateException("Can not get trait type [" + type.getFullname() + "]");
+                    throw new IllegalStateException("Can not get trait typeName [" + typeName.getFullname() + "]");
                 });
     }
 
     @Override
-    public DomainType getDomainType(Type type) {
-        Assert.notNull(type, "Type is required");
+    public DomainType getDomainType(TypeName typeName) {
+        Assert.notNull(typeName, "TypeName is required");
 
-        return getSchema(type.getSchema())
+        return getSchema(typeName.getSchema())
                 .getDomainTypes()
                 .stream()
-                .filter(domainType -> domainType.getName().equalsIgnoreCase(type.getName()))
+                .filter(domainType -> domainType.getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
                 .orElseThrow(() -> {
-                    throw new IllegalStateException("Can not get domain type [" + type.getFullname() + "]");
+                    throw new IllegalStateException("Can not get domain typeName [" + typeName.getFullname() + "]");
                 });
     }
 
@@ -266,7 +266,7 @@ public class PathMatchingResourceRepository implements Repository {
         Schema schema = getSchema(schemaName);
 
         if (MapUtils.isNotEmpty(schema.getMigrations())) {
-            for (Map.Entry<Type, Map<String, Migration>> migrationOfDomainType
+            for (Map.Entry<TypeName, Map<String, Migration>> migrationOfDomainType
                     : schema.getMigrations().entrySet()) {
                 migrations.addAll(migrationOfDomainType.getValue().values());
             }

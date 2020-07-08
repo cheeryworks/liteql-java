@@ -89,7 +89,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         Condition condition = getCondition(readQuery.getConditions(), null, TABLE_ALIAS_PREFIX);
 
         List<org.jooq.Field<Object>> fields = getSelectFields(
-                getRepository().getDomainType(readQuery.getDomainType()),
+                getRepository().getDomainType(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
         List<JoinedTable> joinedTables = parseJoins(readQuery.getJoins(), TABLE_ALIAS_PREFIX, sqlReadQuery);
@@ -110,7 +110,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         SelectJoinStep selectJoinStep = getDslContext()
                 .select(fields)
-                .from(table(getTableName(readQuery.getDomainType().getFullname())).as(TABLE_ALIAS_PREFIX));
+                .from(table(getTableName(readQuery.getDomainTypeName().getFullname())).as(TABLE_ALIAS_PREFIX));
 
         if (CollectionUtils.isNotEmpty(joinedTables)) {
             for (JoinedTable joinedTable : joinedTables) {
@@ -165,18 +165,18 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         if (CollectionUtils.isNotEmpty(joinedReadQueries)) {
             for (JoinedReadQuery joinedReadQuery : joinedReadQueries) {
                 JoinedTable joinedTable = new JoinedTable();
-                joinedTable.setTableName(getTableName(joinedReadQuery.getDomainType().getFullname()));
+                joinedTable.setTableName(getTableName(joinedReadQuery.getDomainTypeName().getFullname()));
                 joinedTable.setTableAlias(joinedTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
                         getSelectFields(
-                                getRepository().getDomainType(joinedReadQuery.getDomainType()),
+                                getRepository().getDomainType(joinedReadQuery.getDomainTypeName()),
                                 joinedReadQuery.getFields(), joinedTable.getTableAlias(), sqlReadQuery));
 
                 QueryConditions joinConditions = new QueryConditions();
                 joinConditions.add(new QueryCondition(
                         IdField.ID_FIELD_NAME,
                         ConditionClause.EQUALS, ConditionType.Field,
-                        joinedReadQuery.getDomainType().getName() + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
+                        joinedReadQuery.getDomainTypeName().getName() + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
                 joinedTable.setJoinCondition(
                         getCondition(
                                 joinConditions,
@@ -257,7 +257,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         if (saveQuery instanceof CreateQuery) {
             InsertSetStep insertSetStep = getDslContext()
-                    .insertInto(table(getTableName(saveQuery.getDomainType().getFullname())));
+                    .insertInto(table(getTableName(saveQuery.getDomainTypeName().getFullname())));
 
             DataType<String> dataType = jooqDataType.getDataType(
                     fieldDefinitions.get(IdField.ID_FIELD_NAME));
@@ -293,7 +293,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
             sqlSaveQuery.setSqlParameters(insertFinalStep.getBindValues());
         } else if (saveQuery instanceof UpdateQuery) {
             UpdateSetStep updateSetStep = getDslContext()
-                    .update(table(getTableName(saveQuery.getDomainType().getFullname())));
+                    .update(table(getTableName(saveQuery.getDomainTypeName().getFullname())));
 
             Unique uniqueKey = getUniqueKey(domainType, data);
 
@@ -379,7 +379,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     @Override
     public SqlDeleteQuery getSqlDeleteQuery(DeleteQuery deleteQuery) {
         DeleteFinalStep deleteFinalStep = getDslContext()
-                .deleteFrom(table(getTableName(deleteQuery.getDomainType().getFullname())))
+                .deleteFrom(table(getTableName(deleteQuery.getDomainTypeName().getFullname())))
                 .where(getCondition(deleteQuery.getConditions(), null, null));
 
         InlineSqlDeleteQuery sqlDeleteQuery = new InlineSqlDeleteQuery();

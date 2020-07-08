@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class DomainType extends TraitType {
 
-    public static final String DOMAIN_TYPE_NAME_KEY = "domainType";
+    public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
 
     private Set<Unique> uniques;
 
@@ -35,8 +35,8 @@ public class DomainType extends TraitType {
     public DomainType() {
     }
 
-    public DomainType(Type type) {
-        super(type);
+    public DomainType(TypeName typeName) {
+        super(typeName);
     }
 
     public DomainType(String schema, String name) {

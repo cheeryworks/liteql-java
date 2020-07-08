@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
 import org.cheeryworks.liteql.service.enums.Database;
@@ -44,8 +44,8 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     }
 
     @Override
-    public String domainTypeToSql(Type domainType) {
-        return domainTypeToSql(getRepository().getDomainType(domainType));
+    public String domainTypeToSql(TypeName domainTypeName) {
+        return domainTypeToSql(getRepository().getDomainType(domainTypeName));
     }
 
     private String domainTypeToSql(DomainType domainType) {
@@ -54,7 +54,7 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
         String tableName = getTableName(domainType.getFullname());
 
         if (tableName.length() > 25) {
-            throw new IllegalArgumentException("Schema or Domain Type name is too long, "
+            throw new IllegalArgumentException("Schema or Domain TypeName name is too long, "
                     + "max length of table name[schemaName + '_' + domainTypeName] is 25 chars");
         }
 

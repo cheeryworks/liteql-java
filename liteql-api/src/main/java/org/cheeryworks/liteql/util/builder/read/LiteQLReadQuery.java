@@ -85,7 +85,7 @@ public class LiteQLReadQuery extends AbstractLiteQLReadQuery {
     public JoinedReadQuery getJoinedQuery(LiteQLReadQueryJoin liteQLReadQueryJoin) {
         JoinedReadQuery joinedReadQuery = new JoinedReadQuery();
 
-        joinedReadQuery.setDomainType(liteQLReadQueryJoin.getDomainType());
+        joinedReadQuery.setDomainTypeName(liteQLReadQueryJoin.getDomainType());
         joinedReadQuery.setFields(liteQLReadQueryJoin.getFields());
         joinedReadQuery.setConditions(liteQLReadQueryJoin.getConditions());
 

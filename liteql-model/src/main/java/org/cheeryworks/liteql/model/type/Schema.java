@@ -14,7 +14,7 @@ public class Schema implements Serializable {
 
     private Set<TraitType> traitTypes;
 
-    private Map<Type, Map<String, Migration>> migrations;
+    private Map<TypeName, Map<String, Migration>> migrations;
 
     public String getName() {
         return name;
@@ -40,11 +40,11 @@ public class Schema implements Serializable {
         this.traitTypes = traitTypes;
     }
 
-    public Map<Type, Map<String, Migration>> getMigrations() {
+    public Map<TypeName, Map<String, Migration>> getMigrations() {
         return migrations;
     }
 
-    public void setMigrations(Map<Type, Map<String, Migration>> migrations) {
+    public void setMigrations(Map<TypeName, Map<String, Migration>> migrations) {
         this.migrations = migrations;
     }
 

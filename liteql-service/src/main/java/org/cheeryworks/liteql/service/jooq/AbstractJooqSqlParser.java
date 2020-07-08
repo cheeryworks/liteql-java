@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.ClobField;
 import org.cheeryworks.liteql.model.type.field.DecimalField;
@@ -88,8 +88,8 @@ public abstract class AbstractJooqSqlParser {
     }
 
     protected List<String> parsingIndexMigrationOperation(
-            Type domainType, AbstractIndexMigrationOperation indexMigrationOperation) {
-        String tableName = getTableName(domainType.getFullname());
+            TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
+        String tableName = getTableName(domainTypeName.getFullname());
 
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {

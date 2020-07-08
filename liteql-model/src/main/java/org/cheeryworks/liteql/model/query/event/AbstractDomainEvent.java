@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.model.query.event;
 
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 
 import java.io.Serializable;
 
@@ -8,15 +8,15 @@ public abstract class AbstractDomainEvent<T> implements Serializable {
 
     private T source;
 
-    private Type type;
+    private TypeName typeName;
 
-    public Type getType() {
-        return type;
+    public TypeName getTypeName() {
+        return typeName;
     }
 
-    public AbstractDomainEvent(T source, Type type) {
+    public AbstractDomainEvent(T source, TypeName typeName) {
         this.source = source;
-        this.type = type;
+        this.typeName = typeName;
     }
 
     public T getSource() {
@@ -26,7 +26,7 @@ public abstract class AbstractDomainEvent<T> implements Serializable {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "{"
-                + "type=" + type
+                + "typeName=" + typeName
                 + ", source=" + source
                 + '}';
     }

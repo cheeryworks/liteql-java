@@ -7,7 +7,7 @@ public class LiteQLDeleteQueryBuilder {
     protected DeleteQuery getQuery(LiteQLDeleteQuery liteQLDeleteQuery) {
         DeleteQuery deleteQuery = new DeleteQuery();
 
-        deleteQuery.setDomainType(liteQLDeleteQuery.getDomainType());
+        deleteQuery.setDomainTypeName(liteQLDeleteQuery.getDomainType());
         deleteQuery.setTruncated(liteQLDeleteQuery.isTruncated());
         deleteQuery.setConditions(liteQLDeleteQuery.getConditions());
 

@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.service.repository;
 
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TraitType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 
 import java.util.List;
@@ -26,9 +26,9 @@ public interface Repository {
 
     Set<TraitType> getTraitTypes(String schemaName);
 
-    DomainType getDomainType(Type type);
+    DomainType getDomainType(TypeName typeName);
 
-    TraitType getTraitType(Type type);
+    TraitType getTraitType(TypeName typeName);
 
     List<Migration> getMigrations(String schemaName);
 

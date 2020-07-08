@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.Type;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateFieldMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
@@ -49,35 +49,35 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             if (operation instanceof CreateTypeMigrationOperation) {
                 migrationInSql.addAll(
                         parsingCreateTypeOperation(
-                                migration.getDomainType(), (CreateTypeMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateTypeMigrationOperation) operation));
             } else if (operation instanceof CreateFieldMigrationOperation) {
                 migrationInSql.addAll(
                         parsingCreateFieldOperation(
-                                migration.getDomainType(), (CreateFieldMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateFieldMigrationOperation) operation));
             } else if (operation instanceof CreateUniqueMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (CreateUniqueMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateUniqueMigrationOperation) operation));
             } else if (operation instanceof CreateIndexMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (CreateIndexMigrationOperation) operation));
+                                migration.getDomainTypeName(), (CreateIndexMigrationOperation) operation));
             } else if (operation instanceof DropTypeMigrationOperation) {
                 migrationInSql.addAll(
                         parsingDropTypeOperation(
-                                migration.getDomainType(), (DropTypeMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropTypeMigrationOperation) operation));
             } else if (operation instanceof DropFieldMigrationOperation) {
                 migrationInSql.addAll(
                         parsingDropFieldOperation(
-                                migration.getDomainType(), (DropFieldMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropFieldMigrationOperation) operation));
             } else if (operation instanceof DropUniqueMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (DropUniqueMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropUniqueMigrationOperation) operation));
             } else if (operation instanceof DropIndexMigrationOperation) {
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
-                                migration.getDomainType(), (DropIndexMigrationOperation) operation));
+                                migration.getDomainTypeName(), (DropIndexMigrationOperation) operation));
             }
         }
 
@@ -85,10 +85,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingCreateTypeOperation(
-            Type domainType, CreateTypeMigrationOperation createTypeMigrationOperation) {
+            TypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainType.getFullname());
+        String tableName = getTableName(domainTypeName.getFullname());
 
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
@@ -107,20 +107,20 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        domainType, new CreateUniqueMigrationOperation(createTypeMigrationOperation.getUniques())));
+                        domainTypeName, new CreateUniqueMigrationOperation(createTypeMigrationOperation.getUniques())));
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        domainType, new CreateIndexMigrationOperation(createTypeMigrationOperation.getIndexes())));
+                        domainTypeName, new CreateIndexMigrationOperation(createTypeMigrationOperation.getIndexes())));
 
         return operationsInSql;
     }
 
     private List<String> parsingCreateFieldOperation(
-            Type domainType, CreateFieldMigrationOperation createFieldMigrationOperation) {
+            TypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainType.getFullname());
+        String tableName = getTableName(domainTypeName.getFullname());
 
         List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields(), getDatabase());
 
@@ -136,20 +136,20 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropTypeOperation(
-            Type type, DropTypeMigrationOperation dropTypeMigrationOperation) {
+            TypeName typeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(type.getFullname());
+        String tableName = getTableName(typeName.getFullname());
 
-        DomainType domainType = getRepository().getDomainType(type);
-
-        operationsInSql.addAll(
-                parsingIndexMigrationOperation(
-                        type, new DropUniqueMigrationOperation(domainType.getUniques())));
+        DomainType domainType = getRepository().getDomainType(typeName);
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        type, new DropIndexMigrationOperation(domainType.getIndexes())));
+                        typeName, new DropUniqueMigrationOperation(domainType.getUniques())));
+
+        operationsInSql.addAll(
+                parsingIndexMigrationOperation(
+                        typeName, new DropIndexMigrationOperation(domainType.getIndexes())));
 
         DropTableFinalStep dropTableFinalStep = getDslContext()
                 .dropTable(tableName)
@@ -161,10 +161,10 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
     }
 
     private List<String> parsingDropFieldOperation(
-            Type domainType, DropFieldMigrationOperation dropFieldMigrationOperation) {
+            TypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainType.getFullname());
+        String tableName = getTableName(domainTypeName.getFullname());
 
         for (String field : dropFieldMigrationOperation.getFields()) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()

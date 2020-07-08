@@ -20,7 +20,7 @@ public class TreeReadQuery extends AbstractTypedReadQuery<ReadQuery> implements 
     }
 
     public TreeReadQuery(ReadQuery readQuery) {
-        setDomainType(readQuery.getDomainType());
+        setDomainTypeName(readQuery.getDomainTypeName());
         setFields(readQuery.getFields());
         setJoins(readQuery.getJoins());
         setConditions(readQuery.getConditions());

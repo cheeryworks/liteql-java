@@ -2,7 +2,7 @@
   "queries": [
     {
       "queryType": "update",
-      "domainType": "liteql_test.user",
+      "domainTypeName": "liteql_test.user",
       "data": {
         "email": "carr.z.chang@outlook.com",
         "username": "carrchang"

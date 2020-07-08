@@ -1,6 +1,6 @@
 {
   "queryType": "read",
-  "domainType": "liteql_test.user",
+  "domainTypeName": "liteql_test.user",
   "conditions": [
     {
       "field": "age",
