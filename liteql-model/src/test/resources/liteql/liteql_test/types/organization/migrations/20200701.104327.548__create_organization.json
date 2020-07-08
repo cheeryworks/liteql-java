@@ -1,0 +1,104 @@
+{
+  "operations": [
+    {
+      "type": "create_type",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false,
+          "length": 128
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "parentId",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "sortCode",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "leaf",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "deleted",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "deletable",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "inherent",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "creatorId",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "creatorName",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "createTime",
+          "type": "timestamp"
+        },
+        {
+          "name": "lastModifierId",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "lastModifierName",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "lastModifiedTime",
+          "type": "timestamp"
+        }
+      ],
+      "uniques": [
+        {
+          "fields": [
+            "code"
+          ]
+        }
+      ]
+    }
+  ]
+}

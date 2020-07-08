@@ -1,0 +1,110 @@
+{
+  "description": "",
+  "operations": [
+    {
+      "type": "create_type",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false,
+          "length": 128
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false,
+          "length": 255
+        },
+        {
+          "name": "age",
+          "type": "integer"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "avatarUrl",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "organization",
+          "type": "reference",
+          "domainTypeName": "liteql_test.organization"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean"
+        },
+        {
+          "name": "deleted",
+          "type": "boolean"
+        },
+        {
+          "name": "deletable",
+          "type": "boolean"
+        },
+        {
+          "name": "inherent",
+          "type": "boolean"
+        },
+        {
+          "name": "creatorId",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "creatorName",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "createTime",
+          "type": "timestamp"
+        },
+        {
+          "name": "lastModifierId",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "lastModifierName",
+          "type": "string",
+          "length": 255
+        },
+        {
+          "name": "lastModifiedTime",
+          "type": "timestamp"
+        }
+      ],
+      "uniques": [
+        {
+          "fields": [
+            "username"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "fields": [
+            "email"
+          ]
+        }
+      ]
+    }
+  ]
+}

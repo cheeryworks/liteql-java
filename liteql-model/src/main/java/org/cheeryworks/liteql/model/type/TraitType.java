@@ -42,10 +42,10 @@ public class TraitType extends TypeName {
         return true;
     }
 
-    public boolean implement(String name) {
+    public boolean implement(TypeName traitTypeName) {
         if (traits != null && traits.size() > 0) {
             for (TypeName trait : traits) {
-                if (trait.getName().equals(name)) {
+                if (trait.equals(traitTypeName)) {
                     return true;
                 }
             }

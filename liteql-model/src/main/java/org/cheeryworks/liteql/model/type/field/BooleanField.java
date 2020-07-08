@@ -8,4 +8,8 @@ public class BooleanField extends AbstractField {
         super(DataType.Boolean);
     }
 
+    public boolean isNullable() {
+        return false;
+    }
+
 }

@@ -16,6 +16,7 @@ import org.cheeryworks.liteql.model.type.field.TimestampField;
 import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
@@ -89,7 +90,7 @@ public abstract class AbstractJooqSqlParser {
 
     protected List<String> parsingIndexMigrationOperation(
             TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
-        String tableName = getTableName(domainTypeName.getFullname());
+        String tableName = getTableName(domainTypeName);
 
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
@@ -138,7 +139,7 @@ public abstract class AbstractJooqSqlParser {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
         for (Field field : fields) {
-            String fieldName = field.getName();
+            String fieldName = StringUtil.camelNameToLowerDashConnectedLowercaseName(field.getName());
 
             if (field instanceof ReferenceField) {
                 fieldName += "_" + IdField.ID_FIELD_NAME;
@@ -211,8 +212,8 @@ public abstract class AbstractJooqSqlParser {
         }
     }
 
-    public static String getTableName(String domainTypeFullname) {
-        return domainTypeFullname.replace(".", "_").toLowerCase();
+    public static String getTableName(TypeName domainTypeName) {
+        return domainTypeName.getFullname().replace(".", "_").toLowerCase();
     }
 
 }

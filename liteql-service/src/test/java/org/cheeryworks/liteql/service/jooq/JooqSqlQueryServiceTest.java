@@ -9,7 +9,7 @@ import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
-import org.cheeryworks.liteql.service.query.AuditingService;
+import org.cheeryworks.liteql.service.query.DefaultAuditingService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,7 +30,7 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
 
         queryService = new JooqSqlQueryService(
                 getRepository(), getObjectMapper(), getDataSource(), getDatabase(),
-                Mockito.mock(AuditingService.class), Mockito.mock(ApplicationEventPublisher.class));
+                new DefaultAuditingService(), Mockito.mock(ApplicationEventPublisher.class));
     }
 
     @Override

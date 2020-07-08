@@ -1,0 +1,32 @@
+{
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "nullable": false,
+      "length": 128
+    },
+    {
+      "name": "userId",
+      "type": "reference",
+      "domainTypeName": "soupe_ida.user"
+    },
+    {
+      "name": "organizationId",
+      "type": "reference",
+      "domainTypeName": "soupe_ida.organization"
+    },
+    {
+      "name": "master",
+      "type": "boolean"
+    },
+    {
+      "name": "domainId",
+      "type": "string",
+      "length": 255
+    }
+  ],
+  "traits": [
+    "soupe.domain_entity"
+  ]
+}

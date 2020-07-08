@@ -51,12 +51,13 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     private String domainTypeToSql(DomainType domainType) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getTableName(domainType.getFullname());
+        String tableName = getTableName(domainType);
 
-        if (tableName.length() > 25) {
-            throw new IllegalArgumentException("Schema or Domain TypeName name is too long, "
-                    + "max length of table name[schemaName + '_' + domainTypeName] is 25 chars");
-        }
+//        if (tableName.length() > 25) {
+//            throw new IllegalArgumentException("Domain type name [" + domainType.getFullname() + "] is too long, "
+//                    + "generated table name is [" + tableName + "], "
+//                    + "max length of table name is 25 chars");
+//        }
 
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 

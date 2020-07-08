@@ -16,7 +16,11 @@
         "code": "test",
         "country": {
           "code": "cn"
-        }
+        },
+        "parentId": "ROOT",
+        "priority": 0,
+        "sortCode": "1001",
+        "leaf": true
       }
     },
     {

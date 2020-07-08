@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.model.type.AuditEntity;
 import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.Trait;
 import org.cheeryworks.liteql.model.type.UserEntity;
 
 import java.sql.Timestamp;
@@ -12,7 +13,7 @@ public class DefaultAuditingService implements AuditingService {
     @Override
     public void auditingDomainObject(
             Map<String, Object> domainObject, DomainType domainType, UserEntity user) {
-        if (domainType.implement(AuditEntity.class.getSimpleName())) {
+        if (domainType.implement(Trait.getTypeName(AuditEntity.class))) {
             if (domainObject.get(AuditEntity.INHERENT_FIELD_NAME) == null) {
                 domainObject.put(AuditEntity.INHERENT_FIELD_NAME, false);
             }
@@ -52,7 +53,7 @@ public class DefaultAuditingService implements AuditingService {
     @Override
     public void auditingExistedDomainObject(
             Map<String, Object> domainObject, DomainType domainType, UserEntity user) {
-        if (domainType.implement(AuditEntity.class.getSimpleName())) {
+        if (domainType.implement(Trait.getTypeName(AuditEntity.class))) {
             Timestamp currentDate = new Timestamp(System.currentTimeMillis());
 
             domainObject.put(AuditEntity.LAST_MODIFIED_TIME_FIELD_NAME, currentDate);

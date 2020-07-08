@@ -8,7 +8,11 @@
         "code": "cheeryworks",
         "country": {
           "code": "cn"
-        }
+        },
+        "parentId": "ROOT",
+        "priority": 0,
+        "sortCode": "1001",
+        "leaf": true
       }
     },
     {
@@ -19,7 +23,11 @@
         "code": "cheeryapp",
         "country": {
           "code": "cn"
-        }
+        },
+        "parentId": "ROOT",
+        "priority": 1,
+        "sortCode": "1002",
+        "leaf": true
       }
     }
   ]

@@ -88,7 +88,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             TypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName.getFullname());
+        String tableName = getTableName(domainTypeName);
 
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
@@ -120,7 +120,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             TypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName.getFullname());
+        String tableName = getTableName(domainTypeName);
 
         List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields(), getDatabase());
 
@@ -139,7 +139,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             TypeName typeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(typeName.getFullname());
+        String tableName = getTableName(typeName);
 
         DomainType domainType = getRepository().getDomainType(typeName);
 
@@ -164,7 +164,7 @@ public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implemen
             TypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName.getFullname());
+        String tableName = getTableName(domainTypeName);
 
         for (String field : dropFieldMigrationOperation.getFields()) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()

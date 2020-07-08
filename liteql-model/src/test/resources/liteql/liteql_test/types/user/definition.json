@@ -2,19 +2,21 @@
   "fields": [
     {
       "name": "id",
-      "type": "string"
-    },
-    {
-      "name": "name",
       "type": "string",
-      "length": 255,
-      "nullable": false
+      "nullable": false,
+      "length": 128
     },
     {
       "name": "username",
       "type": "string",
-      "length": 255,
-      "nullable": false
+      "nullable": false,
+      "length": 255
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "nullable": false,
+      "length": 255
     },
     {
       "name": "age",
@@ -22,6 +24,16 @@
     },
     {
       "name": "email",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "phone",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "avatarUrl",
       "type": "string",
       "length": 255
     },
@@ -34,6 +46,50 @@
       "name": "country",
       "type": "reference",
       "domainTypeName": "liteql_test.country"
+    },
+    {
+      "name": "enabled",
+      "type": "boolean"
+    },
+    {
+      "name": "deleted",
+      "type": "boolean"
+    },
+    {
+      "name": "deletable",
+      "type": "boolean"
+    },
+    {
+      "name": "inherent",
+      "type": "boolean"
+    },
+    {
+      "name": "creatorId",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "creatorName",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "createTime",
+      "type": "timestamp"
+    },
+    {
+      "name": "lastModifierId",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "lastModifierName",
+      "type": "string",
+      "length": 255
+    },
+    {
+      "name": "lastModifiedTime",
+      "type": "timestamp"
     }
   ],
   "uniques": [
@@ -42,5 +98,16 @@
         "username"
       ]
     }
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "email"
+      ]
+    }
+  ],
+  "traits": [
+    "liteql.audit_entity",
+    "liteql.user_entity"
   ]
 }
