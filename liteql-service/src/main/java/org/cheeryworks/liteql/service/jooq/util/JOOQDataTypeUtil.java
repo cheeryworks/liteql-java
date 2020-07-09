@@ -5,6 +5,7 @@ import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.datatype.H2JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.datatype.HSQLJOOQDataType;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
+import org.cheeryworks.liteql.service.jooq.datatype.MariaDBJOOQDataType;
 import org.cheeryworks.liteql.service.jooq.datatype.MySQLJOOQDataType;
 import org.cheeryworks.liteql.service.jooq.datatype.PostgreSQLJOOQDataType;
 import org.jooq.SQLDialect;
@@ -22,9 +23,11 @@ public abstract class JOOQDataTypeUtil {
 
     private static final JOOQDataType HSQL_JOOQ_DATA_TYPE = new HSQLJOOQDataType();
 
-    private static final JOOQDataType MY_SQL_JOOQ_DATA_TYPE = new MySQLJOOQDataType();
+    private static final JOOQDataType MYSQL_JOOQ_DATA_TYPE = new MySQLJOOQDataType();
 
-    private static final JOOQDataType POSTGRE_SQL_JOOQ_DATA_TYPE = new PostgreSQLJOOQDataType();
+    private static final JOOQDataType MARIADB_JOOQ_DATA_TYPE = new MariaDBJOOQDataType();
+
+    private static final JOOQDataType POSTGRESQL_JOOQ_DATA_TYPE = new PostgreSQLJOOQDataType();
 
     public static final Map<Integer, Class> SUPPORTED_DATA_TYPES;
 
@@ -49,9 +52,11 @@ public abstract class JOOQDataTypeUtil {
         } else if (SQLDialect.HSQLDB.equals(sqlDialect)) {
             return HSQL_JOOQ_DATA_TYPE;
         } else if (SQLDialect.MYSQL.equals(sqlDialect)) {
-            return MY_SQL_JOOQ_DATA_TYPE;
+            return MYSQL_JOOQ_DATA_TYPE;
+        } else if (SQLDialect.MARIADB.equals(sqlDialect)) {
+            return MARIADB_JOOQ_DATA_TYPE;
         } else if (SQLDialect.POSTGRES.equals(sqlDialect)) {
-            return POSTGRE_SQL_JOOQ_DATA_TYPE;
+            return POSTGRESQL_JOOQ_DATA_TYPE;
         }
 
         throw new IllegalArgumentException("Database " + database.name() + " not supported");
