@@ -9,8 +9,8 @@ import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.util.FileReader;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.query.DefaultAuditingService;
-import org.cheeryworks.liteql.service.query.QueryService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,14 +29,14 @@ public class JooqSqlQueryServiceTest extends AbstractDatabaseTest {
         super();
 
         queryService = new JooqSqlQueryService(
-                getRepository(), getObjectMapper(), getDataSource(), getDatabase(),
+                getRepository(), getObjectMapper(), getDataSource(), getDatabase(), null,
                 new DefaultAuditingService(), Mockito.mock(ApplicationEventPublisher.class));
     }
 
     @Override
     protected String[] getInitSqls() {
         try {
-            JooqSqlSchemaParser jooqSqlSchemaParser = new JooqSqlSchemaParser(getRepository(), getDatabase());
+            JooqSqlSchemaParser jooqSqlSchemaParser = new JooqSqlSchemaParser(getRepository(), getDatabase(), null);
 
             String schemaSqls = jooqSqlSchemaParser.repositoryToSql().replaceAll("\n", "");
 

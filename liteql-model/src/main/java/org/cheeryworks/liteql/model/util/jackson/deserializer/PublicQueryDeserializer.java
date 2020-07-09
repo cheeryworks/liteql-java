@@ -33,39 +33,39 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
     @Override
     public PublicQuery deserialize(
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        JsonNode cql = jsonParser.readValueAsTree();
+        JsonNode query = jsonParser.readValueAsTree();
 
-        return getQuery(cql, jsonParser);
+        return getQuery(query, jsonParser);
     }
 
-    private PublicQuery getQuery(JsonNode cql, JsonParser jsonParser) throws JsonProcessingException {
-        if (cql instanceof ObjectNode) {
-            if (cql.get(TypedQuery.QUERY_TYPE_KEY) != null) {
-                JsonNode queryTypeNode = cql.get(TypedQuery.QUERY_TYPE_KEY);
+    private PublicQuery getQuery(JsonNode query, JsonParser jsonParser) throws JsonProcessingException {
+        if (query instanceof ObjectNode) {
+            if (query.get(TypedQuery.QUERY_TYPE_KEY) != null) {
+                JsonNode queryTypeNode = query.get(TypedQuery.QUERY_TYPE_KEY);
 
                 if (queryTypeNode != null) {
                     QueryType queryType = jsonParser.getCodec().treeToValue(
-                            cql.get(TypedQuery.QUERY_TYPE_KEY), QueryType.class);
+                            query.get(TypedQuery.QUERY_TYPE_KEY), QueryType.class);
 
-                    if (cql.get(DomainType.DOMAIN_TYPE_NAME_KEY) == null) {
+                    if (query.get(DomainType.DOMAIN_TYPE_NAME_KEY) == null) {
                         throw new IllegalArgumentException("Required field domainType is not specified");
                     }
 
                     switch (queryType) {
                         case SingleRead:
-                            return jsonParser.getCodec().treeToValue(cql, SingleReadQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, SingleReadQuery.class);
                         case TreeRead:
-                            return jsonParser.getCodec().treeToValue(cql, TreeReadQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, TreeReadQuery.class);
                         case PageRead:
-                            return jsonParser.getCodec().treeToValue(cql, PageReadQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, PageReadQuery.class);
                         case Read:
-                            return jsonParser.getCodec().treeToValue(cql, ReadQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, ReadQuery.class);
                         case Create:
-                            return jsonParser.getCodec().treeToValue(cql, CreateQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, CreateQuery.class);
                         case Update:
-                            return jsonParser.getCodec().treeToValue(cql, UpdateQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, UpdateQuery.class);
                         case Delete:
-                            return jsonParser.getCodec().treeToValue(cql, DeleteQuery.class);
+                            return jsonParser.getCodec().treeToValue(query, DeleteQuery.class);
                         default:
                             throw new IllegalArgumentException(
                                     "Unsupported QueryType [" + queryTypeNode.asText() + "]");
@@ -76,22 +76,22 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
             } else {
                 Queries queries = new Queries();
 
-                Iterator<String> fieldNamesIterator = cql.fieldNames();
+                Iterator<String> fieldNamesIterator = query.fieldNames();
 
                 while (fieldNamesIterator.hasNext()) {
                     String fieldName = fieldNamesIterator.next();
 
-                    queries.put(fieldName, getQuery(cql.get(fieldName), jsonParser));
+                    queries.put(fieldName, getQuery(query.get(fieldName), jsonParser));
                 }
 
                 return queries;
             }
-        } else if (cql instanceof ArrayNode) {
-            ArrayNode cqlInArray = (ArrayNode) cql;
+        } else if (query instanceof ArrayNode) {
+            ArrayNode queryInArray = (ArrayNode) query;
 
             SaveQueries saveQueries = new SaveQueries();
 
-            Iterator<JsonNode> saveQueryNodeIterator = cqlInArray.iterator();
+            Iterator<JsonNode> saveQueryNodeIterator = queryInArray.iterator();
 
             while (saveQueryNodeIterator.hasNext()) {
                 JsonNode saveQueryNode = saveQueryNodeIterator.next();
@@ -117,7 +117,7 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
             return saveQueries;
         }
 
-        throw new UnsupportedOperationException(cql.toString());
+        throw new UnsupportedOperationException(query.toString());
     }
 
 }

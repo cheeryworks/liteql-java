@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service.repository;
+package org.cheeryworks.liteql.service;
 
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TraitType;

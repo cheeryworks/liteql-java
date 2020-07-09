@@ -1,16 +1,17 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDDLUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
-import org.cheeryworks.liteql.service.type.migration.SqlSchemaMigrationExecutor;
-import org.cheeryworks.liteql.service.type.migration.SqlSchemaMigrationParser;
+import org.cheeryworks.liteql.service.migration.SqlMigrationExecutor;
+import org.cheeryworks.liteql.service.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.util.DatabaseTypeUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableFinalStep;
 import org.jooq.InsertFinalStep;
@@ -26,21 +27,22 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.table;
 
-public class JooqSqlSchemaMigrationExecutor extends AbstractJooqSqlExecutor implements SqlSchemaMigrationExecutor {
+public class JooqSqlMigrationExecutor extends AbstractJooqSqlExecutor implements SqlMigrationExecutor {
 
     private static final String SCHEMA_VERSION_TABLE_SUFFIX = "_schema_version";
 
-    private static Logger logger = LoggerFactory.getLogger(JooqSqlSchemaMigrationExecutor.class);
+    private static Logger logger = LoggerFactory.getLogger(JooqSqlMigrationExecutor.class);
 
     private Repository repository;
 
-    private SqlSchemaMigrationParser sqlSchemaMigrationParser;
+    private SqlMigrationParser sqlMigrationParser;
 
-    public JooqSqlSchemaMigrationExecutor(Repository repository, DataSource dataSource, Database database) {
+    public JooqSqlMigrationExecutor(
+            Repository repository, DataSource dataSource, Database database, SqlCustomizer sqlCustomizer) {
         super(dataSource, database);
 
         this.repository = repository;
-        this.sqlSchemaMigrationParser = new JooqSqlSchemaMigrationParser(repository, database);
+        this.sqlMigrationParser = new JooqSqlMigrationParser(repository, database, sqlCustomizer);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class JooqSqlSchemaMigrationExecutor extends AbstractJooqSqlExecutor impl
 
                         insertFinalStep.execute();
 
-                        for (String sql : sqlSchemaMigrationParser.migrationToSql(schema, migration)) {
+                        for (String sql : sqlMigrationParser.migrationToSql(schema, migration)) {
                             getDslContext().execute(sql);
 
                             if (LiteQLConstants.DIAGNOSTIC_ENABLED) {

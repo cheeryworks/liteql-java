@@ -1,0 +1,47 @@
+enum ConditionOperator {
+    AND
+    OR
+}
+
+enum ConditionClause {
+    EQUALS
+    NOT_EQUALS
+    LESS_THAN
+    LESS_OR_EQUALS
+    GREATER_THAN
+    GREATER_OR_EQUALS
+    STARTS_WITH
+    CONTAINS
+    BETWEEN
+    IN
+    NULL
+    NOT_NULL
+    LENGTH
+}
+
+enum SortDirection {
+    ASC
+    DESC
+}
+
+scalar Long
+
+scalar Decimal
+
+scalar Date
+
+scalar ConditionValue
+
+input Condition {
+    operator: ConditionOperator
+    field: String!
+    clause: ConditionClause
+    type: String
+    value: ConditionValue
+    conditions: [Condition]
+}
+
+input Sort {
+    field: String!
+    direction: SortDirection!
+}

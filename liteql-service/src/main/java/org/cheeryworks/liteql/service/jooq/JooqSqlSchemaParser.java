@@ -4,9 +4,10 @@ import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
+import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
-import org.cheeryworks.liteql.service.repository.Repository;
-import org.cheeryworks.liteql.service.type.SqlSchemaParser;
+import org.cheeryworks.liteql.service.schema.SqlSchemaParser;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.Field;
 
@@ -15,8 +16,8 @@ import java.util.Set;
 
 public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSchemaParser {
 
-    public JooqSqlSchemaParser(Repository repository, Database database) {
-        super(repository, database);
+    public JooqSqlSchemaParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
+        super(repository, database, sqlCustomizer);
     }
 
     @Override
@@ -52,12 +53,6 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
         String tableName = getTableName(domainType);
-
-//        if (tableName.length() > 25) {
-//            throw new IllegalArgumentException("Domain type name [" + domainType.getFullname() + "] is too long, "
-//                    + "generated table name is [" + tableName + "], "
-//                    + "max length of table name is 25 chars");
-//        }
 
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 

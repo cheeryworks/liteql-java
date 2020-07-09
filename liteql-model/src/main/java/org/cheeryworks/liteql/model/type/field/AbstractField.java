@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.model.type.field;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import org.cheeryworks.liteql.model.enums.DataType;
 
 public abstract class AbstractField implements Field {
@@ -7,6 +8,8 @@ public abstract class AbstractField implements Field {
     private String name;
 
     private DataType type;
+
+    private Boolean graphQLField;
 
     protected AbstractField(DataType type) {
         this.type = type;
@@ -25,6 +28,25 @@ public abstract class AbstractField implements Field {
     @Override
     public DataType getType() {
         return type;
+    }
+
+    @JsonGetter
+    private Boolean graphQLField() {
+        return graphQLField;
+    }
+
+    @Override
+    public boolean isGraphQLField() {
+        if (graphQLField == null) {
+            return true;
+        }
+
+        return graphQLField.booleanValue();
+    }
+
+    @Override
+    public void setGraphQLField(Boolean graphQLField) {
+        this.graphQLField = graphQLField;
     }
 
     @Override

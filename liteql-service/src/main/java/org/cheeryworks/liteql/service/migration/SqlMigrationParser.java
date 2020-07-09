@@ -1,10 +1,11 @@
-package org.cheeryworks.liteql.service.type.migration;
+package org.cheeryworks.liteql.service.migration;
 
 import org.cheeryworks.liteql.model.type.migration.Migration;
+import org.cheeryworks.liteql.service.SqlParser;
 
 import java.util.List;
 
-public interface SqlSchemaMigrationParser {
+public interface SqlMigrationParser extends SqlParser {
 
     List<String> migrationsToSql(String schemaName);
 

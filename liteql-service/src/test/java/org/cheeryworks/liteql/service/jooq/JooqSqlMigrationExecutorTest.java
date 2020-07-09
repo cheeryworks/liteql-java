@@ -6,15 +6,15 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class JooqSqlSchemaMigrationExecutorTest extends AbstractDatabaseTest {
+public class JooqSqlMigrationExecutorTest extends AbstractDatabaseTest {
 
-    private JooqSqlSchemaMigrationExecutor jooqSqlSchemaMigrationExecutor;
+    private JooqSqlMigrationExecutor jooqSqlSchemaMigrationExecutor;
 
-    public JooqSqlSchemaMigrationExecutorTest() {
+    public JooqSqlMigrationExecutorTest() {
         super();
 
-        jooqSqlSchemaMigrationExecutor = new JooqSqlSchemaMigrationExecutor(
-                getRepository(), getDataSource(), getDatabase());
+        jooqSqlSchemaMigrationExecutor = new JooqSqlMigrationExecutor(
+                getRepository(), getDataSource(), getDatabase(), null);
     }
 
     @Test

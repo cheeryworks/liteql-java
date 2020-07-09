@@ -9,6 +9,7 @@ import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.Queries;
+import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.event.AfterCreateEvent;
@@ -35,8 +36,9 @@ import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.service.QueryService;
+import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,28 +99,28 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     @Override
     public ReadResults read(QueryContext queryContext, ReadQuery readQuery) {
-        return (ReadResults) query(readQuery);
+        return (ReadResults) query(queryContext, readQuery);
     }
 
     @Override
     public ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery) {
-        return (ReadResult) query(singleReadQuery);
+        return (ReadResult) query(queryContext, singleReadQuery);
     }
 
     @Override
     public TreeReadResults read(QueryContext queryContext, TreeReadQuery treeReadQuery) {
-        return (TreeReadResults) query(treeReadQuery);
+        return (TreeReadResults) query(queryContext, treeReadQuery);
     }
 
     @Override
     public PageReadResults read(QueryContext queryContext, PageReadQuery pageReadQuery) {
-        return (PageReadResults) query(pageReadQuery);
+        return (PageReadResults) query(queryContext, pageReadQuery);
     }
 
-    private Object query(AbstractTypedReadQuery readQuery) {
-        ReadResults results = internalRead(readQuery);
+    private Object query(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
+        ReadResults results = internalRead(queryContext, readQuery);
 
-        query(readQuery.getAssociations(), results);
+        query(queryContext, readQuery.getAssociations(), results);
 
         if (readQuery instanceof SingleReadQuery) {
             return results.get(0);
@@ -136,15 +138,14 @@ public abstract class AbstractSqlQueryService implements QueryService {
         return results;
     }
 
-    private void query(
-            List<ReadQuery> readQueries, ReadResults results) {
+    private void query(QueryContext queryContext, List<ReadQuery> readQueries, ReadResults results) {
         if (CollectionUtils.isNotEmpty(readQueries)) {
             for (ReadQuery readQuery : readQueries) {
                 if (readQuery.getReferences() == null) {
                     throw new IllegalArgumentException("References not defined");
                 }
 
-                ReadResults associatedResults = internalRead(readQuery);
+                ReadResults associatedResults = internalRead(queryContext, readQuery);
 
                 for (Map<String, Object> result : results) {
                     for (Map<String, Object> associatedResult : associatedResults) {
@@ -163,12 +164,14 @@ public abstract class AbstractSqlQueryService implements QueryService {
                     }
                 }
 
-                query(readQuery.getAssociations(), results);
+                query(queryContext, readQuery.getAssociations(), results);
             }
         }
     }
 
-    private ReadResults internalRead(AbstractTypedReadQuery readQuery) {
+    private ReadResults internalRead(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
+        normalize(readQuery.getConditions(), queryContext);
+
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
         ReadResults results = getResults(sqlReadQuery);
@@ -547,6 +550,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     @Override
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
+        normalize(deleteQuery.getConditions(), queryContext);
+
         ReadResults results = null;
 
         if (!deleteQuery.isTruncated()) {
@@ -612,7 +617,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
         if (query instanceof AbstractTypedReadQuery) {
             AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
 
-            return query(readQuery);
+            return query(queryContext, readQuery);
         } else if (query instanceof AbstractSaveQuery) {
             AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
 
@@ -642,5 +647,19 @@ public abstract class AbstractSqlQueryService implements QueryService {
         }
 
         throw new UnsupportedOperationException(LiteQLJsonUtil.toJson(this.objectMapper, query));
+    }
+
+    private void normalize(List<QueryCondition> conditions, QueryContext queryContext) {
+        if (conditions != null) {
+            for (QueryCondition condition : conditions) {
+                if (condition.getValue() != null && condition.getValue().equals("$userId")) {
+                    condition.setValue(queryContext.getUser().getId());
+                }
+
+                if (condition.getConditions() != null) {
+                    normalize(condition.getConditions(), queryContext);
+                }
+            }
+        }
     }
 }

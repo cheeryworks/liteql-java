@@ -17,10 +17,12 @@ import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.StringUtil;
+import org.cheeryworks.liteql.service.AbstractSqlParser;
+import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.StringEncoder;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
@@ -39,12 +41,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static org.cheeryworks.liteql.service.type.SqlSchemaParser.INDEX_KEY_PREFIX;
-import static org.cheeryworks.liteql.service.type.SqlSchemaParser.PRIMARY_KEY_PREFIX;
-import static org.cheeryworks.liteql.service.type.SqlSchemaParser.UNIQUE_KEY_PREFIX;
+import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.INDEX_KEY_PREFIX;
+import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.PRIMARY_KEY_PREFIX;
+import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.UNIQUE_KEY_PREFIX;
 import static org.jooq.impl.DSL.constraint;
 
-public abstract class AbstractJooqSqlParser {
+public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
     private Repository repository;
 
@@ -52,9 +54,12 @@ public abstract class AbstractJooqSqlParser {
 
     private DSLContext dslContext;
 
-    public AbstractJooqSqlParser(Repository repository, Database database) {
+    private SqlCustomizer sqlCustomizer;
+
+    public AbstractJooqSqlParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
         this.repository = repository;
         this.database = database;
+        this.sqlCustomizer = sqlCustomizer;
 
         Settings settings = SettingsTools.defaultSettings();
         settings.setRenderQuotedNames(RenderQuotedNames.NEVER);
@@ -212,7 +217,12 @@ public abstract class AbstractJooqSqlParser {
         }
     }
 
-    public static String getTableName(TypeName domainTypeName) {
+    @Override
+    public String getTableName(TypeName domainTypeName) {
+        if (sqlCustomizer != null) {
+            return sqlCustomizer.getTableName(domainTypeName);
+        }
+
         return domainTypeName.getFullname().replace(".", "_").toLowerCase();
     }
 

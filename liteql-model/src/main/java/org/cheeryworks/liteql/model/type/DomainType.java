@@ -62,4 +62,14 @@ public class DomainType extends TraitType {
         return false;
     }
 
+    public ReferenceField getReferenceField(String referenceFieldName) {
+        for (Field field : getFields()) {
+            if (field instanceof ReferenceField && field.getName().equalsIgnoreCase(referenceFieldName)) {
+                return (ReferenceField) field;
+            }
+        }
+
+        return null;
+    }
+
 }

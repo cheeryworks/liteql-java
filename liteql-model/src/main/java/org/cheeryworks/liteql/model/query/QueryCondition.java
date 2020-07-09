@@ -108,12 +108,12 @@ public class QueryCondition implements Serializable {
     }
 
     public QueryCondition conditions(QueryCondition... queryConditions) {
-        for (QueryCondition cqlQueryCondition : queryConditions) {
+        for (QueryCondition queryCondition : queryConditions) {
             if (this.getConditions() == null) {
                 this.setConditions(new QueryConditions());
             }
 
-            this.getConditions().add(cqlQueryCondition);
+            this.getConditions().add(queryCondition);
         }
 
         return this;

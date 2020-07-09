@@ -13,6 +13,10 @@ public abstract class LiteQLConstants {
 
     public static final String NAMESPACE = "liteql";
 
+    public static final String WORD_CONCAT = "_";
+
+    public static final String NAME_CONCAT = ".";
+
     public static final String DIAGNOSTIC_ENABLED_KEY = "diagnostic.enabled";
 
     public static final boolean DIAGNOSTIC_ENABLED;

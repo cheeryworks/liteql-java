@@ -12,4 +12,8 @@ public interface Field extends Serializable {
 
     DataType getType();
 
+    boolean isGraphQLField();
+
+    void setGraphQLField(Boolean graphQLField);
+
 }

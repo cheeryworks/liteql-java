@@ -7,16 +7,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class JooqSqlSchemaMigrationParserTest extends AbstractSqlTest {
+public class JooqSqlMigrationParserTest extends AbstractSqlTest {
 
-    private Logger logger = LoggerFactory.getLogger(JooqSqlSchemaMigrationParserTest.class);
+    private Logger logger = LoggerFactory.getLogger(JooqSqlMigrationParserTest.class);
 
-    private JooqSqlSchemaMigrationParser jooqSqlSchemaMigrationParser;
+    private JooqSqlMigrationParser jooqSqlSchemaMigrationParser;
 
-    public JooqSqlSchemaMigrationParserTest() {
+    public JooqSqlMigrationParserTest() {
         super();
 
-        jooqSqlSchemaMigrationParser = new JooqSqlSchemaMigrationParser(getRepository(), getDatabase());
+        jooqSqlSchemaMigrationParser = new JooqSqlMigrationParser(getRepository(), getDatabase(), null);
     }
 
     @Test

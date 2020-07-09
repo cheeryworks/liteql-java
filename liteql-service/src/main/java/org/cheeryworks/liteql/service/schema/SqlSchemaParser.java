@@ -1,8 +1,9 @@
-package org.cheeryworks.liteql.service.type;
+package org.cheeryworks.liteql.service.schema;
 
 import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.service.SqlParser;
 
-public interface SqlSchemaParser {
+public interface SqlSchemaParser extends SqlParser {
 
     String PRIMARY_KEY_PREFIX = "pk_";
 

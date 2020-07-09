@@ -28,6 +28,8 @@ import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
@@ -40,7 +42,6 @@ import org.cheeryworks.liteql.service.query.SqlQueryParser;
 import org.cheeryworks.liteql.service.query.SqlReadQuery;
 import org.cheeryworks.liteql.service.query.SqlSaveQuery;
 import org.cheeryworks.liteql.service.query.join.JoinedTable;
-import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -69,18 +70,14 @@ import static org.jooq.impl.DSL.table;
 
 public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQueryParser {
 
-    private static final int DEFAULT_PAGE = 1;
-
-    private static final int DEFAULT_PAGE_SIZE = 20;
-
     private static final String TABLE_ALIAS_PREFIX = "a";
 
     private static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlQueryParser.class);
 
-    public JooqSqlQueryParser(Repository repository, Database database) {
-        super(repository, database);
+    public JooqSqlQueryParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
+        super(repository, database, sqlCustomizer);
     }
 
     @Override

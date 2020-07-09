@@ -16,7 +16,7 @@ public class JooqSqlQueryParserTest extends AbstractSqlTest {
     public JooqSqlQueryParserTest() {
         super();
 
-        jooqSqlQueryParser = new JooqSqlQueryParser(getRepository(), getDatabase());
+        jooqSqlQueryParser = new JooqSqlQueryParser(getRepository(), getDatabase(), null);
     }
 
     @Test

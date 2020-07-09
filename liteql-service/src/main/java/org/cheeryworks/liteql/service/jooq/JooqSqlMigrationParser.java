@@ -12,9 +12,10 @@ import org.cheeryworks.liteql.model.type.migration.operation.DropIndexMigrationO
 import org.cheeryworks.liteql.model.type.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
+import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
-import org.cheeryworks.liteql.service.repository.Repository;
-import org.cheeryworks.liteql.service.type.migration.SqlSchemaMigrationParser;
+import org.cheeryworks.liteql.service.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableColumnStep;
@@ -24,10 +25,10 @@ import org.jooq.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JooqSqlSchemaMigrationParser extends AbstractJooqSqlParser implements SqlSchemaMigrationParser {
+public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements SqlMigrationParser {
 
-    public JooqSqlSchemaMigrationParser(Repository repository, Database database) {
-        super(repository, database);
+    public JooqSqlMigrationParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
+        super(repository, database, sqlCustomizer);
     }
 
     @Override

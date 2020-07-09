@@ -1,7 +1,9 @@
 package org.cheeryworks.liteql.model.type;
 
 import org.cheeryworks.liteql.model.annotation.Position;
+import org.cheeryworks.liteql.model.annotation.ReferenceField;
 import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
+import org.cheeryworks.liteql.model.annotation.graphql.GraphQLField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 
 import java.util.Date;
@@ -42,18 +44,24 @@ public interface AuditEntity extends Entity {
     boolean isInherent();
 
     @Position(5)
+    @GraphQLField(name = "creator", reference = true)
+    @ReferenceField(targetDomainType = UserEntity.class)
     String getCreatorId();
 
     @Position(6)
+    @GraphQLField(ignore = true)
     String getCreatorName();
 
     @Position(7)
     Date getCreateTime();
 
     @Position(8)
+    @GraphQLField(name = "lastModifier", reference = true)
+    @ReferenceField(targetDomainType = UserEntity.class)
     String getLastModifierId();
 
     @Position(9)
+    @GraphQLField(ignore = true)
     String getLastModifierName();
 
     @Position(10)
