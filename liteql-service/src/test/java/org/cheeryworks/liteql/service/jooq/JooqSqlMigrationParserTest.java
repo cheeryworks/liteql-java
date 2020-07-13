@@ -16,7 +16,7 @@ public class JooqSqlMigrationParserTest extends AbstractSqlTest {
     public JooqSqlMigrationParserTest() {
         super();
 
-        jooqSqlSchemaMigrationParser = new JooqSqlMigrationParser(getRepository(), getDatabase(), null);
+        jooqSqlSchemaMigrationParser = new JooqSqlMigrationParser(getRepository(), getDslContext(), null);
     }
 
     @Test

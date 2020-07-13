@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.graphql;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import org.cheeryworks.liteql.model.query.QueryContext;
@@ -17,13 +18,15 @@ import java.util.Map;
 public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
     public GraphQLMutationDataFetcher(
-            Repository repository, QueryContext queryContext, QueryService queryService,
+            Repository repository, ObjectMapper objectMapper, QueryService queryService,
             Map<Class, Map<String, String>> graphQLFieldReferences) {
-        super(repository, queryContext, queryService, graphQLFieldReferences);
+        super(repository, objectMapper, queryService, graphQLFieldReferences);
     }
 
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
+        QueryContext queryContext = environment.getContext();
+
         String mutationName = environment.getFieldDefinition().getDefinition().getName();
 
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
@@ -33,13 +36,13 @@ public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
             saveQuery.setDomainTypeName(LiteQLUtil.getTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());
 
-            return getQueryService().save(getQueryContext(), saveQuery).getData();
+            return getQueryService().save(queryContext, saveQuery).getData();
         } else if (mutationName.startsWith(GraphQLConstants.MUTATION_NAME_PREFIX_UPDATE)) {
             AbstractSaveQuery saveQuery = new UpdateQuery();
             saveQuery.setDomainTypeName(LiteQLUtil.getTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());
 
-            return getQueryService().save(getQueryContext(), saveQuery).getData();
+            return getQueryService().save(queryContext, saveQuery).getData();
         } else {
             return super.get(environment);
         }

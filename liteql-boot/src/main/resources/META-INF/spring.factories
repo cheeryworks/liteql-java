@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.cheeryworks.liteql.spring.LiteQLSpringJpaAutoConfiguration,\
+  org.cheeryworks.liteql.spring.LiteQLSpringSecurityAutoConfiguration,\
+  org.cheeryworks.liteql.boot.LiteQLAutoConfiguration
+

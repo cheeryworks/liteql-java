@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.graphql;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -75,7 +76,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
     private Repository repository;
 
-    private QueryContext queryContext;
+    private ObjectMapper objectMapper;
 
     private QueryService queryService;
 
@@ -105,13 +106,13 @@ public class DefaultGraphQLService implements GraphQLService {
     }
 
     public DefaultGraphQLService(
-            Repository repository, QueryContext queryContext, QueryService queryService,
+            Repository repository, ObjectMapper objectMapper, QueryService queryService,
             boolean annotationBasedGraphQLSchemaEnabled) {
         this.repository = repository;
-        this.queryContext = queryContext;
+        this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.annotationBasedGraphQLSchemaEnabled = annotationBasedGraphQLSchemaEnabled;
-        this.scalars = new Scalars(queryContext.getObjectMapper());
+        this.scalars = new Scalars(objectMapper);
 
         try {
             GraphQLSchema graphQLSchema = buildingSchema();
@@ -794,8 +795,7 @@ public class DefaultGraphQLService implements GraphQLService {
                         typeRuntimeWiringBuilder.dataFetcher(
                                 complexField,
                                 new GraphQLQueryDataFetcher(
-                                        repository, queryContext, queryService,
-                                        graphQLFieldReferencesWithDomainType));
+                                        repository, objectMapper, queryService, graphQLFieldReferencesWithDomainType));
                     }
 
                     builder.type(typeRuntimeWiringBuilder.build());
@@ -806,36 +806,43 @@ public class DefaultGraphQLService implements GraphQLService {
         builder.type(newTypeWiring(GraphQLConstants.QUERY_TYPE_NAME)
                 .defaultDataFetcher(
                         new GraphQLQueryDataFetcher(
-                                repository, queryContext, queryService, graphQLFieldReferencesWithDomainType))
+                                repository, objectMapper, queryService, graphQLFieldReferencesWithDomainType))
                 .build());
 
         builder.type(newTypeWiring(GraphQLConstants.MUTATION_TYPE_NAME)
                 .defaultDataFetcher(
                         new GraphQLMutationDataFetcher(
-                                repository, queryContext, queryService, graphQLFieldReferencesWithDomainType))
+                                repository, objectMapper, queryService, graphQLFieldReferencesWithDomainType))
                 .build());
 
         return builder.build();
     }
 
     @Override
-    public ExecutionResult graphQL(String query) {
-        return this.graphQL.execute(query);
+    public ExecutionResult graphQL(QueryContext queryContext, String query) {
+        ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+                .query(query)
+                .context(queryContext)
+                .build();
+        return this.graphQL.execute(executionInput);
     }
 
     @Override
-    public ExecutionResult graphQL(String query, String operationName, Map<String, Object> variables) {
+    public ExecutionResult graphQL(
+            QueryContext queryContext, String query, String operationName, Map<String, Object> variables) {
         DataLoader<String, Map<String, Object>> defaultDataLoader = DataLoader.newDataLoader(
-                new GraphQLBatchLoader(queryContext),
+                new GraphQLBatchLoader(queryService),
                 DataLoaderOptions
                         .newOptions()
-                        .setBatchLoaderContextProvider(new GraphQLBatchLoaderContextProvider(queryService)));
+                        .setBatchLoaderContextProvider(
+                                new GraphQLBatchLoaderContextProvider(queryContext)));
 
         DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
         dataLoaderRegistry.register(GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY, defaultDataLoader);
 
         ExecutionInput executionInput = ExecutionInput.newExecutionInput()
                 .query(query)
+                .context(queryContext)
                 .operationName(operationName)
                 .variables(variables)
                 .dataLoaderRegistry(dataLoaderRegistry)

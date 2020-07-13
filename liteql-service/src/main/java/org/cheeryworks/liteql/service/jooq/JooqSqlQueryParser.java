@@ -30,7 +30,6 @@ import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
-import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQPageUtil;
@@ -44,6 +43,7 @@ import org.cheeryworks.liteql.service.query.SqlSaveQuery;
 import org.cheeryworks.liteql.service.query.join.JoinedTable;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.DeleteFinalStep;
 import org.jooq.InsertFinalStep;
@@ -76,8 +76,8 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlQueryParser.class);
 
-    public JooqSqlQueryParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
-        super(repository, database, sqlCustomizer);
+    public JooqSqlQueryParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(repository, dslContext, sqlCustomizer);
     }
 
     @Override

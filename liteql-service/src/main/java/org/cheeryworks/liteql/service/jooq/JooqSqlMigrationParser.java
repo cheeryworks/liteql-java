@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.apache.commons.collections.MapUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
@@ -14,29 +15,36 @@ import org.cheeryworks.liteql.model.type.migration.operation.DropUniqueMigration
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
-import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableColumnStep;
+import org.jooq.DSLContext;
 import org.jooq.DropTableFinalStep;
 import org.jooq.Field;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements SqlMigrationParser {
 
-    public JooqSqlMigrationParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
-        super(repository, database, sqlCustomizer);
+    public JooqSqlMigrationParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(repository, dslContext, sqlCustomizer);
     }
 
     @Override
     public List<String> migrationsToSql(String schemaName) {
         List<String> migrationsInSql = new ArrayList<>();
 
-        for (Migration migration : getRepository().getMigrations(schemaName)) {
-            migrationsInSql.addAll(migrationToSql(schemaName, migration));
+        Map<TypeName, Map<String, Migration>> migrations = getRepository().getMigrations(schemaName);
+
+        if (MapUtils.isNotEmpty(migrations)) {
+            for (Map.Entry<TypeName, Map<String, Migration>> migrationsEntry : migrations.entrySet()) {
+                for (Map.Entry<String, Migration> migrationOfDomainType : migrationsEntry.getValue().entrySet()) {
+                    migrationsInSql.addAll(migrationToSql(schemaName, migrationOfDomainType.getValue()));
+                }
+            }
         }
 
         return migrationsInSql;

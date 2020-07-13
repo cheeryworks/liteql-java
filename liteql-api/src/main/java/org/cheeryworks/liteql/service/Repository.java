@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.model.type.TraitType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface Repository {
@@ -30,6 +30,6 @@ public interface Repository {
 
     TraitType getTraitType(TypeName typeName);
 
-    List<Migration> getMigrations(String schemaName);
+    Map<TypeName, Map<String, Migration>> getMigrations(String schemaName);
 
 }

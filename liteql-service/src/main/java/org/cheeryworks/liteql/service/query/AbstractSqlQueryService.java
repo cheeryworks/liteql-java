@@ -653,7 +653,11 @@ public abstract class AbstractSqlQueryService implements QueryService {
         if (conditions != null) {
             for (QueryCondition condition : conditions) {
                 if (condition.getValue() != null && condition.getValue().equals("$userId")) {
-                    condition.setValue(queryContext.getUser().getId());
+                    if (queryContext.getUser() != null) {
+                        condition.setValue(queryContext.getUser().getId());
+                    } else {
+                        throw new IllegalStateException("Can not get user from QueryContext");
+                    }
                 }
 
                 if (condition.getConditions() != null) {

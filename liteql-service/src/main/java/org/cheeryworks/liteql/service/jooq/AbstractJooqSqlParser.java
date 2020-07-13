@@ -15,7 +15,6 @@ import org.cheeryworks.liteql.model.type.field.StringField;
 import org.cheeryworks.liteql.model.type.field.TimestampField;
 import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.service.AbstractSqlParser;
 import org.cheeryworks.liteql.service.Repository;
@@ -29,12 +28,7 @@ import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Query;
 import org.jooq.conf.ParamType;
-import org.jooq.conf.RenderNameCase;
-import org.jooq.conf.RenderQuotedNames;
-import org.jooq.conf.Settings;
-import org.jooq.conf.SettingsTools;
 import org.jooq.impl.DSL;
-import org.jooq.impl.DefaultDSLContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,26 +44,17 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
     private Repository repository;
 
-    private Database database;
-
     private DSLContext dslContext;
+
+    private Database database;
 
     private SqlCustomizer sqlCustomizer;
 
-    public AbstractJooqSqlParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
+    public AbstractJooqSqlParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
         this.repository = repository;
-        this.database = database;
+        this.dslContext = dslContext;
+        this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
         this.sqlCustomizer = sqlCustomizer;
-
-        Settings settings = SettingsTools.defaultSettings();
-        settings.setRenderQuotedNames(RenderQuotedNames.NEVER);
-        settings.setRenderNameCase(RenderNameCase.LOWER);
-
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
-            settings.withRenderFormatted(true);
-        }
-
-        this.dslContext = new DefaultDSLContext(JOOQDatabaseTypeUtil.getSqlDialect(database), settings);
     }
 
     protected Repository getRepository() {

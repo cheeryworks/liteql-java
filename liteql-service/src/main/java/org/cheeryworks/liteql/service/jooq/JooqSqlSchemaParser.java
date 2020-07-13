@@ -6,9 +6,9 @@ import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigratio
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
-import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.schema.SqlSchemaParser;
 import org.jooq.CreateTableColumnStep;
+import org.jooq.DSLContext;
 import org.jooq.Field;
 
 import java.util.List;
@@ -16,8 +16,8 @@ import java.util.Set;
 
 public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSchemaParser {
 
-    public JooqSqlSchemaParser(Repository repository, Database database, SqlCustomizer sqlCustomizer) {
-        super(repository, database, sqlCustomizer);
+    public JooqSqlSchemaParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(repository, dslContext, sqlCustomizer);
     }
 
     @Override

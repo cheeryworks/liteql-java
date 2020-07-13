@@ -36,4 +36,28 @@ public class JOOQDatabaseTypeUtil {
         throw new SQLDialectNotSupportedException(database.name());
     }
 
+    public static Database getDatabase(SQLDialect dialect) {
+        if (dialect.equals(SQLDialect.H2)) {
+            return Database.H2;
+        }
+
+        if (dialect.equals(SQLDialect.HSQLDB)) {
+            return Database.HSQL;
+        }
+
+        if (dialect.equals(SQLDialect.MYSQL)) {
+            return Database.MYSQL;
+        }
+
+        if (dialect.equals(SQLDialect.MARIADB)) {
+            return Database.MARIA_DB;
+        }
+
+        if (dialect.equals(SQLDialect.POSTGRES)) {
+            return Database.POSTGRESQL;
+        }
+
+        return null;
+    }
+
 }

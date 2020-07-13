@@ -1,7 +1,6 @@
 package org.cheeryworks.liteql.service.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.DomainType;
@@ -261,19 +260,8 @@ public class PathMatchingResourceRepository implements Repository {
     }
 
     @Override
-    public List<Migration> getMigrations(String schemaName) {
-        List<Migration> migrations = new ArrayList<>();
-
-        Schema schema = getSchema(schemaName);
-
-        if (MapUtils.isNotEmpty(schema.getMigrations())) {
-            for (Map.Entry<TypeName, Map<String, Migration>> migrationOfDomainType
-                    : schema.getMigrations().entrySet()) {
-                migrations.addAll(migrationOfDomainType.getValue().values());
-            }
-        }
-
-        return Collections.unmodifiableList(migrations);
+    public Map<TypeName, Map<String, Migration>> getMigrations(String schemaName) {
+        return getSchema(schemaName).getMigrations();
     }
 
 }

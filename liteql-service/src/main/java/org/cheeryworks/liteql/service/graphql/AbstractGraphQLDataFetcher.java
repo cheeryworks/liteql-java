@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.graphql;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -44,18 +45,17 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
     private Repository repository;
 
-    private QueryContext queryContext;
+    private ObjectMapper objectMapper;
 
     private QueryService queryService;
 
     private Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType;
 
     public AbstractGraphQLDataFetcher(
-            Repository repository,
-            QueryContext queryContext, QueryService queryService,
+            Repository repository, ObjectMapper objectMapper, QueryService queryService,
             Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
         this.repository = repository;
-        this.queryContext = queryContext;
+        this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.graphQLFieldReferencesWithDomainType = graphQLFieldReferencesWithDomainType;
     }
@@ -64,23 +64,21 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         return this.repository;
     }
 
-    protected QueryContext getQueryContext() {
-        return this.queryContext;
-    }
-
     protected QueryService getQueryService() {
         return this.queryService;
     }
 
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
+        QueryContext queryContext = environment.getContext();
+
         Object data = null;
 
         if (environment.getSource() == null) {
             if (isListOutputType(environment.getFieldType())) {
-                data = getByConditions(environment);
+                data = getByConditions(queryContext, environment);
             } else if (environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_ID) != null) {
-                data = getById(environment);
+                data = getById(queryContext, environment);
             } else {
                 throw new UnsupportedGraphQLOutputTypeException(environment.getFieldType());
             }
@@ -102,9 +100,11 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
             if (isListOutputType(environment.getFieldType())) {
                 Map<String, Object> childrenContext = getChildrenContext(
+                        queryContext,
                         source.get(GraphQLConstants.QUERY_ARGUMENT_NAME_ID).toString(),
                         environment.getField().getName(),
-                        ((GraphQLObjectType) environment.getParentType()).getName(), outputType.getName(), keyContext);
+                        ((GraphQLObjectType) environment.getParentType()).getName(),
+                        outputType.getName(), keyContext);
                 data = defaultDataLoader.loadMany(
                         Arrays.asList(childrenContext.keySet().toArray()),
                         Arrays.asList(childrenContext.values().toArray()));
@@ -133,7 +133,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         return false;
     }
 
-    private Object getById(DataFetchingEnvironment environment) {
+    private Object getById(QueryContext queryContext, DataFetchingEnvironment environment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
         String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
@@ -156,7 +156,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         return queryService.read(queryContext, singleReadQuery);
     }
 
-    private List<ReadResult> getByConditions(DataFetchingEnvironment environment) {
+    private List<ReadResult> getByConditions(QueryContext queryContext, DataFetchingEnvironment environment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
         String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
@@ -170,10 +170,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 outputType, environment.getField().getSelectionSet().getSelections());
 
         GraphQLServiceUtil.parseConditions(
-                readQuery, fields, environment, getQueryContext().getObjectMapper());
+                readQuery, fields, environment, objectMapper);
 
         GraphQLServiceUtil.parseSorts(
-                readQuery, fields, environment, getQueryContext().getObjectMapper());
+                readQuery, fields, environment, objectMapper);
 
         readQuery.setFields(fields);
 
@@ -196,9 +196,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         return ((ReadResultsData<ReadResult>) queryService.execute(queryContext, query)).getData();
     }
 
-    private Map<String, Object> getChildrenContext(
-            String parentId, String fieldName, String parentTypeName,
-            String childTypeName, Map<String, Object> keyContext) {
+    private Map<String, Object> getChildrenContext(QueryContext queryContext,
+                                                   String parentId, String fieldName, String parentTypeName,
+                                                   String childTypeName, Map<String, Object> keyContext) {
         Map<String, Object> childrenContext = new LinkedHashMap<>();
 
         TypeName domainTypeName = LiteQLUtil.getTypeName(
@@ -225,10 +225,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         FieldDefinitions fields = readQuery.getFields();
 
         GraphQLServiceUtil.parseConditions(
-                readQuery, fields, dataFetchingEnvironment, getQueryContext().getObjectMapper());
+                readQuery, fields, dataFetchingEnvironment, objectMapper);
 
         GraphQLServiceUtil.parseSorts(
-                readQuery, fields, dataFetchingEnvironment, getQueryContext().getObjectMapper());
+                readQuery, fields, dataFetchingEnvironment, objectMapper);
 
         readQuery.setFields(fields);
 

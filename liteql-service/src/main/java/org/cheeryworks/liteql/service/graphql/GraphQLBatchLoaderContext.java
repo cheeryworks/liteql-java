@@ -1,17 +1,17 @@
 package org.cheeryworks.liteql.service.graphql;
 
-import org.cheeryworks.liteql.service.QueryService;
+import org.cheeryworks.liteql.model.query.QueryContext;
 
 public class GraphQLBatchLoaderContext {
 
-    private QueryService queryService;
+    private QueryContext queryContext;
 
-    public GraphQLBatchLoaderContext(QueryService queryService) {
-        this.queryService = queryService;
+    public GraphQLBatchLoaderContext(QueryContext queryContext) {
+        this.queryContext = queryContext;
     }
 
-    public QueryService getQueryService() {
-        return this.queryService;
+    public QueryContext getQueryContext() {
+        return queryContext;
     }
 
 }

@@ -2,12 +2,12 @@ package org.cheeryworks.liteql.service.graphql;
 
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.util.LiteQLUtil;
 import org.cheeryworks.liteql.model.util.builder.LiteQLBuilder;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.BatchLoaderEnvironment;
 import org.dataloader.BatchLoaderWithContext;
@@ -25,10 +25,10 @@ import static org.cheeryworks.liteql.model.util.builder.LiteQLBuilderUtil.condit
 
 public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<String, Object>> {
 
-    private QueryContext queryContext;
+    private QueryService queryService;
 
-    public GraphQLBatchLoader(QueryContext queryContext) {
-        this.queryContext = queryContext;
+    public GraphQLBatchLoader(QueryService queryService) {
+        this.queryService = queryService;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
                     )
                     .getQuery();
 
-            ReadResults dataSubSet = context.getQueryService().read(queryContext, readQuery);
+            ReadResults dataSubSet = queryService.read(context.getQueryContext(), readQuery);
 
             dataSet.addAll(dataSubSet);
         }

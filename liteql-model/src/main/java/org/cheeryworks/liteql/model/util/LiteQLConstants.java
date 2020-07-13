@@ -4,6 +4,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -11,11 +12,21 @@ import java.util.Set;
 
 public abstract class LiteQLConstants {
 
+    public static final String SPECIFICATION_VERSION = "1.0.0";
+
     public static final String NAMESPACE = "liteql";
 
     public static final String WORD_CONCAT = "_";
 
     public static final String NAME_CONCAT = ".";
+
+    public static final String DEFAULT_CUSTOMIZED_CONFIGURATION_PATH
+            = System.getProperty("user.home") + File.separator + ".liteql";
+
+    public static final String PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH
+            = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + SPECIFICATION_VERSION;
+
+    public static final String LITEQL_PROFILE_KEY = "liteql.profile";
 
     public static final String DIAGNOSTIC_ENABLED_KEY = "diagnostic.enabled";
 
@@ -42,7 +53,7 @@ public abstract class LiteQLConstants {
 
             Resource[] resources = pathMatchingResourcePatternResolver
                     .getResources("classpath*:META-INF/packages-to-scan-module.properties");
-            Set<String> packagesToScan = new HashSet<String>();
+            Set<String> packagesToScan = new HashSet<>();
             if (resources != null) {
                 for (Resource resource : resources) {
                     Properties properties = new Properties();

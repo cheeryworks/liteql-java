@@ -2,20 +2,12 @@ package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.service.SqlExecutor;
 
-import java.util.List;
 import java.util.Map;
 
-public interface SqlQueryExecutor {
-
-    long count(String sql, Object[] parameters);
+public interface SqlQueryExecutor extends SqlExecutor {
 
     ReadResults read(String sql, Map<String, Field> fields, Object[] parameters);
-
-    int execute(String sql, Object[] parameters);
-
-    void executeBatch(String sql, List<Object[]> parametersList);
-
-    void executeNamedBatch(String sql, List<Map<String, Object>> parametersList);
 
 }
