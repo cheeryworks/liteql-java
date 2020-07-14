@@ -26,7 +26,6 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.model.annotation.ReferenceField;
 import org.cheeryworks.liteql.model.annotation.graphql.GraphQLEntity;
 import org.cheeryworks.liteql.model.annotation.graphql.GraphQLField;
-import org.cheeryworks.liteql.model.enums.DataType;
 import org.cheeryworks.liteql.model.graphql.Scalars;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.type.DomainType;
@@ -188,8 +187,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
         for (String schema : repository.getSchemaNames()) {
             for (DomainType domainType : repository.getDomainTypes(schema)) {
-                String objectTypeName = domainType
-                        .getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
+                String objectTypeName = getObjectTypeName(domainType);
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()
@@ -198,14 +196,10 @@ public class DefaultGraphQLService implements GraphQLService {
                 objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
 
                 for (Field field : domainType.getFields()) {
-                    if (DataType.Reference.equals(field.getType())) {
-                        continue;
-                    }
-                    
                     FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
                             .newFieldDefinition()
                             .name(field.getName())
-                            .type(new TypeName(getGraphQLTypeFromDataType(field.getType())))
+                            .type(new TypeName(getGraphQLTypeFromField(field)))
                             .inputValueDefinitions(defaultFieldArguments());
 
                     FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
@@ -447,9 +441,14 @@ public class DefaultGraphQLService implements GraphQLService {
         return new TypeName(getGraphQLTypeFromPrimitiveType(method.getReturnType()));
     }
 
-    private String getGraphQLTypeFromDataType(DataType dataType) {
-        switch (dataType) {
+    private String getObjectTypeName(org.cheeryworks.liteql.model.type.TypeName typeName) {
+        return typeName.getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
+    }
+
+    private String getGraphQLTypeFromField(Field field) {
+        switch (field.getType()) {
             case Id:
+            case Clob:
             case String:
                 return graphql.Scalars.GraphQLString.getName();
             case Integer:
@@ -460,12 +459,14 @@ public class DefaultGraphQLService implements GraphQLService {
                 return graphql.Scalars.GraphQLBoolean.getName();
             case Decimal:
                 return this.scalars.getScalarBigDecimal().getName();
-            case Clob:
-                return graphql.Scalars.GraphQLString.getName();
             case Blob:
                 return graphql.Scalars.GraphQLByte.getName();
+            case Reference:
+                org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
+                        = (org.cheeryworks.liteql.model.type.field.ReferenceField) field;
+                return getObjectTypeName(referenceField.getDomainTypeName());
             default:
-                throw new IllegalArgumentException("Unsupported field type: " + dataType.name());
+                throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
         }
     }
 
@@ -894,11 +895,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
     @Override
     public ExecutionResult graphQL(QueryContext queryContext, String query) {
-        ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-                .query(query)
-                .context(queryContext)
-                .build();
-        return this.graphQL.execute(executionInput);
+        return graphQL(queryContext, query, null, null);
     }
 
     @Override
@@ -914,15 +911,20 @@ public class DefaultGraphQLService implements GraphQLService {
         DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
         dataLoaderRegistry.register(GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY, defaultDataLoader);
 
-        ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        ExecutionInput.Builder executionInputBuilder = ExecutionInput.newExecutionInput()
                 .query(query)
                 .context(queryContext)
-                .operationName(operationName)
-                .variables(variables)
-                .dataLoaderRegistry(dataLoaderRegistry)
-                .build();
+                .dataLoaderRegistry(dataLoaderRegistry);
 
-        return this.graphQL.execute(executionInput);
+        if (StringUtils.isNotBlank(operationName)) {
+            executionInputBuilder.operationName(operationName);
+        }
+
+        if (MapUtils.isNotEmpty(variables)) {
+            executionInputBuilder.variables(variables);
+        }
+
+        return this.graphQL.execute(executionInputBuilder.build());
     }
 
 }

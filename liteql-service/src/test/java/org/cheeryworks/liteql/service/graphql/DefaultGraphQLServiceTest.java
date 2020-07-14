@@ -3,6 +3,7 @@ package org.cheeryworks.liteql.service.graphql;
 import graphql.ExecutionResult;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLBuilder;
+import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLChildFieldQueryBuilder;
 import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlQueryServiceTest;
 import org.cheeryworks.liteql.service.jooq.JooqSqlSchemaParserTest;
@@ -25,7 +26,7 @@ public class DefaultGraphQLServiceTest extends AbstractJooqSqlQueryServiceTest {
     }
 
     @Test
-    public void testingQuerySingle() {
+    public void testingQuery() {
         ExecutionResult result = graphQLService.graphQL(getQueryContext(), GraphQLBuilder
                 .query()
                 .fields(
@@ -33,6 +34,10 @@ public class DefaultGraphQLServiceTest extends AbstractJooqSqlQueryServiceTest {
                                 .childField("id")
                                 .childField("name")
                                 .childField("username")
+                                .childField("organization", GraphQLChildFieldQueryBuilder.newBuilder()
+                                        .childField("id")
+                                        .childField("name")
+                                )
                                 .build()
                 )
                 .build()
