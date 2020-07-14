@@ -1,12 +1,11 @@
 package org.cheeryworks.liteql.service.jooq;
 
-import org.cheeryworks.liteql.AbstractSqlTest;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JooqSqlSchemaParserTest extends AbstractSqlTest {
+public class JooqSqlSchemaParserTest extends AbstractJooqSqlTest {
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlSchemaParserTest.class);
 

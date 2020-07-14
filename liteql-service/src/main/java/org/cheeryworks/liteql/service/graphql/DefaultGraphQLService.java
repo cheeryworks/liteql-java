@@ -26,6 +26,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.model.annotation.ReferenceField;
 import org.cheeryworks.liteql.model.annotation.graphql.GraphQLEntity;
 import org.cheeryworks.liteql.model.annotation.graphql.GraphQLField;
+import org.cheeryworks.liteql.model.enums.DataType;
 import org.cheeryworks.liteql.model.graphql.Scalars;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.type.DomainType;
@@ -69,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+import static org.cheeryworks.liteql.util.GraphQLServiceUtil.GRAPHQL_NAME_CONCAT;
 
 public class DefaultGraphQLService implements GraphQLService {
 
@@ -79,6 +81,8 @@ public class DefaultGraphQLService implements GraphQLService {
     private ObjectMapper objectMapper;
 
     private QueryService queryService;
+
+    private boolean liteQLBasedGraphQLSchemaEnabled;
 
     private boolean annotationBasedGraphQLSchemaEnabled;
 
@@ -107,10 +111,11 @@ public class DefaultGraphQLService implements GraphQLService {
 
     public DefaultGraphQLService(
             Repository repository, ObjectMapper objectMapper, QueryService queryService,
-            boolean annotationBasedGraphQLSchemaEnabled) {
+            boolean liteQLBasedGraphQLSchemaEnabled, boolean annotationBasedGraphQLSchemaEnabled) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
+        this.liteQLBasedGraphQLSchemaEnabled = liteQLBasedGraphQLSchemaEnabled;
         this.annotationBasedGraphQLSchemaEnabled = annotationBasedGraphQLSchemaEnabled;
         this.scalars = new Scalars(objectMapper);
 
@@ -127,17 +132,6 @@ public class DefaultGraphQLService implements GraphQLService {
         try {
             SchemaParser schemaParser = new SchemaParser();
             TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(EMPTY_SCHEMA);
-
-            ClassPathScanningCandidateComponentProvider scanner =
-                    new ClassPathScanningCandidateComponentProvider(false);
-
-            scanner.addIncludeFilter(new AnnotationTypeFilter(GraphQLEntity.class));
-
-            Set<BeanDefinition> graphQLBeanDefinitions = new HashSet<>();
-
-            for (String packageToScan : LiteQLConstants.getPackageToScan()) {
-                graphQLBeanDefinitions.addAll(scanner.findCandidateComponents(packageToScan));
-            }
 
             PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
                     = new PathMatchingResourcePatternResolver();
@@ -162,74 +156,12 @@ public class DefaultGraphQLService implements GraphQLService {
                 operationTypeNames.add(operationTypeDefinition.getTypeName().getName());
             }
 
+            if (liteQLBasedGraphQLSchemaEnabled) {
+                processLiteQLBasedGraphQLSchema(typeDefinitionRegistry, graphQLFieldReferencesWithDomainType);
+            }
+
             if (annotationBasedGraphQLSchemaEnabled) {
-                Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
-
-                Map<Class, String> objectImplements = new HashMap<>();
-
-                for (BeanDefinition graphQLBeanDefinition : graphQLBeanDefinitions) {
-                    Class domainType = ClassUtil.getClass(graphQLBeanDefinition.getBeanClassName());
-
-                    GraphQLEntity graphQLEntity = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
-
-                    if (graphQLEntity.extension().equals(Void.class)) {
-                        String domainTypeName = GraphQLServiceUtil.getGraphQLFieldName(domainType);
-
-                        ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
-                                .newObjectTypeDefinition()
-                                .name(domainTypeName);
-
-                        if (objectTypeDefinitions.containsKey(domainTypeName)) {
-                            throw new IllegalStateException(
-                                    "Duplicated domainType [" + domainTypeName + "] in different package");
-                        } else {
-                            objectTypeDefinitions.put(domainTypeName, objectTypeDefinitionBuilder);
-
-                            if (!graphQLEntity.implement().equals(Void.class)) {
-                                if (objectImplements.containsKey(graphQLEntity.implement())) {
-                                    throw new IllegalStateException(
-                                            "Duplicated implements of"
-                                                    + " [" + graphQLEntity.implement().getName() + "]"
-                                                    + " in different package");
-                                } else {
-                                    objectImplements.put(
-                                            graphQLEntity.implement(), domainTypeName);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                for (BeanDefinition graphQLBeanDefinition : graphQLBeanDefinitions) {
-                    Class domainType = ClassUtil.getClass(graphQLBeanDefinition.getBeanClassName());
-
-                    GraphQLEntity graphQLEntity
-                            = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
-
-                    String objectTypeName = graphQLEntity.extension().equals(Void.class)
-                            ? GraphQLServiceUtil.getGraphQLFieldName(domainType)
-                            : GraphQLServiceUtil.getGraphQLFieldName(graphQLEntity.extension());
-
-                    Map<String, String> graphQLFieldReferences = new HashMap<>();
-
-                    getFieldDefinitions(domainType, objectImplements).stream().forEach((fieldDefinition) -> {
-                        objectTypeDefinitions
-                                .get(objectTypeName)
-                                .fieldDefinition(fieldDefinition);
-
-                        String fieldName = getFieldName(domainType, fieldDefinition.getName());
-
-                        if (StringUtils.isNotBlank(fieldName)) {
-                            graphQLFieldReferences.put(fieldDefinition.getName(), fieldName);
-                        }
-                    });
-
-                    if (MapUtils.isNotEmpty(graphQLFieldReferences)) {
-                        graphQLFieldReferencesWithDomainType.put(domainType, graphQLFieldReferences);
-                    }
-                }
-
-                objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
+                processAnnotationBasedGraphQLSchema(typeDefinitionRegistry, graphQLFieldReferencesWithDomainType);
             }
 
             generateDefaultQueries(schemaParser, typeDefinitionRegistry, operationTypeNames);
@@ -247,6 +179,126 @@ public class DefaultGraphQLService implements GraphQLService {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    private void processLiteQLBasedGraphQLSchema(
+            TypeDefinitionRegistry typeDefinitionRegistry,
+            Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
+        Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
+
+        for (String schema : repository.getSchemaNames()) {
+            for (DomainType domainType : repository.getDomainTypes(schema)) {
+                String objectTypeName = domainType
+                        .getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
+
+                ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
+                        .newObjectTypeDefinition()
+                        .name(objectTypeName);
+
+                objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
+
+                for (Field field : domainType.getFields()) {
+                    if (DataType.Reference.equals(field.getType())) {
+                        continue;
+                    }
+                    
+                    FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                            .newFieldDefinition()
+                            .name(field.getName())
+                            .type(new TypeName(getGraphQLTypeFromDataType(field.getType())))
+                            .inputValueDefinitions(defaultFieldArguments());
+
+                    FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
+
+                    objectTypeDefinitionBuilder.fieldDefinition(fieldDefinition);
+                }
+            }
+        }
+
+        objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
+    }
+
+    private void processAnnotationBasedGraphQLSchema(
+            TypeDefinitionRegistry typeDefinitionRegistry,
+            Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
+        ClassPathScanningCandidateComponentProvider scanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        scanner.addIncludeFilter(new AnnotationTypeFilter(GraphQLEntity.class));
+
+        Set<BeanDefinition> graphQLBeanDefinitions = new HashSet<>();
+
+        for (String packageToScan : LiteQLConstants.getPackageToScan()) {
+            graphQLBeanDefinitions.addAll(scanner.findCandidateComponents(packageToScan));
+        }
+
+        Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
+
+        Map<Class, String> objectImplements = new HashMap<>();
+
+        for (BeanDefinition graphQLBeanDefinition : graphQLBeanDefinitions) {
+            Class domainType = ClassUtil.getClass(graphQLBeanDefinition.getBeanClassName());
+
+            GraphQLEntity graphQLEntity = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
+
+            if (graphQLEntity.extension().equals(Void.class)) {
+                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(domainType);
+
+                ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
+                        .newObjectTypeDefinition()
+                        .name(objectTypeName);
+
+                if (objectTypeDefinitions.containsKey(objectTypeName)) {
+                    throw new IllegalStateException(
+                            "Duplicated ObjectType [" + objectTypeName + "] in different package");
+                } else {
+                    objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
+
+                    if (!graphQLEntity.implement().equals(Void.class)) {
+                        if (objectImplements.containsKey(graphQLEntity.implement())) {
+                            throw new IllegalStateException(
+                                    "Duplicated implements of"
+                                            + " [" + graphQLEntity.implement().getName() + "]"
+                                            + " in different package");
+                        } else {
+                            objectImplements.put(
+                                    graphQLEntity.implement(), objectTypeName);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (BeanDefinition graphQLBeanDefinition : graphQLBeanDefinitions) {
+            Class domainType = ClassUtil.getClass(graphQLBeanDefinition.getBeanClassName());
+
+            GraphQLEntity graphQLEntity
+                    = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
+
+            String objectTypeName = graphQLEntity.extension().equals(Void.class)
+                    ? GraphQLServiceUtil.getObjectTypeName(domainType)
+                    : GraphQLServiceUtil.getObjectTypeName(graphQLEntity.extension());
+
+            Map<String, String> graphQLFieldReferences = new HashMap<>();
+
+            getFieldDefinitions(domainType, objectImplements).stream().forEach((fieldDefinition) -> {
+                objectTypeDefinitions
+                        .get(objectTypeName)
+                        .fieldDefinition(fieldDefinition);
+
+                String fieldName = getFieldName(domainType, fieldDefinition.getName());
+
+                if (StringUtils.isNotBlank(fieldName)) {
+                    graphQLFieldReferences.put(fieldDefinition.getName(), fieldName);
+                }
+            });
+
+            if (MapUtils.isNotEmpty(graphQLFieldReferences)) {
+                graphQLFieldReferencesWithDomainType.put(domainType, graphQLFieldReferences);
+            }
+        }
+
+        objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
     }
 
     private List<FieldDefinition> getFieldDefinitions(Class graphQLType, Map<Class, String> objectImplements) {
@@ -329,7 +381,7 @@ public class DefaultGraphQLService implements GraphQLService {
                 return new TypeName(objectImplements.get(referenceField.targetDomainType()));
             }
 
-            return new TypeName(GraphQLServiceUtil.getGraphQLFieldName(referenceField.targetDomainType()));
+            return new TypeName(GraphQLServiceUtil.getObjectTypeName(referenceField.targetDomainType()));
         }
 
         if (member instanceof java.lang.reflect.Field) {
@@ -358,9 +410,9 @@ public class DefaultGraphQLService implements GraphQLService {
                 return new ListType(
                         new NonNullType(
                                 new TypeName(
-                                        GraphQLServiceUtil.getGraphQLFieldName((Class) typeArgument))));
+                                        GraphQLServiceUtil.getObjectTypeName((Class) typeArgument))));
             } else {
-                String typeName = GraphQLServiceUtil.getGraphQLFieldName(
+                String typeName = GraphQLServiceUtil.getObjectTypeName(
                         ((Class) ((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments()[0]));
                 return new ListType(new NonNullType(new TypeName(typeName)));
             }
@@ -384,9 +436,9 @@ public class DefaultGraphQLService implements GraphQLService {
                 return new ListType(
                         new NonNullType(
                                 new TypeName(
-                                        GraphQLServiceUtil.getGraphQLFieldName((Class) typeArgument))));
+                                        GraphQLServiceUtil.getObjectTypeName((Class) typeArgument))));
             } else {
-                String typeName = GraphQLServiceUtil.getGraphQLFieldName(
+                String typeName = GraphQLServiceUtil.getObjectTypeName(
                         ((Class) ((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments()[0]));
                 return new ListType(new NonNullType(new TypeName(typeName)));
             }
@@ -395,19 +447,41 @@ public class DefaultGraphQLService implements GraphQLService {
         return new TypeName(getGraphQLTypeFromPrimitiveType(method.getReturnType()));
     }
 
+    private String getGraphQLTypeFromDataType(DataType dataType) {
+        switch (dataType) {
+            case Id:
+            case String:
+                return graphql.Scalars.GraphQLString.getName();
+            case Integer:
+                return graphql.Scalars.GraphQLInt.getName();
+            case Timestamp:
+                return this.scalars.getScalarDate().getName();
+            case Boolean:
+                return graphql.Scalars.GraphQLBoolean.getName();
+            case Decimal:
+                return this.scalars.getScalarBigDecimal().getName();
+            case Clob:
+                return graphql.Scalars.GraphQLString.getName();
+            case Blob:
+                return graphql.Scalars.GraphQLByte.getName();
+            default:
+                throw new IllegalArgumentException("Unsupported field type: " + dataType.name());
+        }
+    }
+
     private String getGraphQLTypeFromPrimitiveType(Class type) {
         if (String.class.isAssignableFrom(type)) {
             return graphql.Scalars.GraphQLString.getName();
         } else if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type)) {
-            return this.scalars.getScalarCQLLong().getName();
+            return this.scalars.getScalarLong().getName();
         } else if (int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)) {
             return graphql.Scalars.GraphQLInt.getName();
         } else if (boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type)) {
             return graphql.Scalars.GraphQLBoolean.getName();
         } else if (BigDecimal.class.isAssignableFrom(type)) {
-            return this.scalars.getScalarCQLBigDecimal().getName();
+            return this.scalars.getScalarBigDecimal().getName();
         } else if (Date.class.isAssignableFrom(type)) {
-            return this.scalars.getScalarCQLDate().getName();
+            return this.scalars.getScalarDate().getName();
         }
 
         throw new IllegalArgumentException(type.getName() + " not supported");
@@ -724,10 +798,10 @@ public class DefaultGraphQLService implements GraphQLService {
             Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
         RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
 
-        builder.scalar(this.scalars.getScalarCQLLong());
-        builder.scalar(this.scalars.getScalarCQLBigDecimal());
-        builder.scalar(this.scalars.getScalarCQLValue());
-        builder.scalar(this.scalars.getScalarCQLDate());
+        builder.scalar(this.scalars.getScalarLong());
+        builder.scalar(this.scalars.getScalarBigDecimal());
+        builder.scalar(this.scalars.getScalarValue());
+        builder.scalar(this.scalars.getScalarDate());
 
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitions.entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition

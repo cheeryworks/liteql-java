@@ -23,34 +23,34 @@ public class Scalars {
 
     private ObjectMapper objectMapper;
 
-    private GraphQLScalarType scalarCQLLong;
-    private GraphQLScalarType scalarCQLBigDecimal;
-    private GraphQLScalarType scalarCQLValue;
-    private GraphQLScalarType scalarCQLDate;
+    private GraphQLScalarType scalarLong;
+    private GraphQLScalarType scalarBigDecimal;
+    private GraphQLScalarType scalarValue;
+    private GraphQLScalarType scalarDate;
 
     public Scalars(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
 
-        this.scalarCQLLong = buildScalarCQLLong();
-        this.scalarCQLBigDecimal = buildScalarCQLBigDecimal();
-        this.scalarCQLValue = buildScalarCQLValue();
-        this.scalarCQLDate = buildScalarCQLDate();
+        this.scalarLong = buildScalarCQLLong();
+        this.scalarBigDecimal = buildScalarCQLBigDecimal();
+        this.scalarValue = buildScalarCQLValue();
+        this.scalarDate = buildScalarCQLDate();
     }
 
-    public GraphQLScalarType getScalarCQLLong() {
-        return scalarCQLLong;
+    public GraphQLScalarType getScalarLong() {
+        return scalarLong;
     }
 
-    public GraphQLScalarType getScalarCQLBigDecimal() {
-        return scalarCQLBigDecimal;
+    public GraphQLScalarType getScalarBigDecimal() {
+        return scalarBigDecimal;
     }
 
-    public GraphQLScalarType getScalarCQLValue() {
-        return scalarCQLValue;
+    public GraphQLScalarType getScalarValue() {
+        return scalarValue;
     }
 
-    public GraphQLScalarType getScalarCQLDate() {
-        return scalarCQLDate;
+    public GraphQLScalarType getScalarDate() {
+        return scalarDate;
     }
 
     private boolean isNumberIsh(Object input) {

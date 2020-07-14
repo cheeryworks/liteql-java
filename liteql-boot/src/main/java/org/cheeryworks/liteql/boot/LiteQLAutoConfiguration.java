@@ -73,6 +73,7 @@ public class LiteQLAutoConfiguration {
             LiteQLProperties liteQLProperties) {
         return new DefaultGraphQLService(
                 repository, objectMapper, queryService,
+                liteQLProperties.isLiteQLBasedGraphQLSchemaEnabled(),
                 liteQLProperties.isAnnotationBasedGraphQLSchemaEnabled());
     }
 

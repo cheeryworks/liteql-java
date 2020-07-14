@@ -30,12 +30,12 @@ public abstract class GraphQLServiceUtil {
 
     public static final String GRAPHQL_NAME_CONCAT = "__";
 
-    public static String getGraphQLFieldName(Class<?> domainType) {
+    public static String getObjectTypeName(Class<?> domainType) {
         ResourceDefinition resourceDefinition = domainType.getAnnotation(ResourceDefinition.class);
 
         return resourceDefinition.namespace().toLowerCase()
                 .replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT)
-                + "__"
+                + GRAPHQL_NAME_CONCAT
                 + StringUtil.camelNameToLowerDashConnectedLowercaseName(domainType.getSimpleName());
     }
 

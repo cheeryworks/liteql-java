@@ -9,6 +9,8 @@ public class LiteQLProperties {
 
     private boolean enabled = true;
 
+    private boolean liteQLBasedGraphQLSchemaEnabled = false;
+
     private boolean annotationBasedGraphQLSchemaEnabled = true;
 
     public boolean isEnabled() {
@@ -17,6 +19,14 @@ public class LiteQLProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isLiteQLBasedGraphQLSchemaEnabled() {
+        return liteQLBasedGraphQLSchemaEnabled;
+    }
+
+    public void setLiteQLBasedGraphQLSchemaEnabled(boolean liteQLBasedGraphQLSchemaEnabled) {
+        this.liteQLBasedGraphQLSchemaEnabled = liteQLBasedGraphQLSchemaEnabled;
     }
 
     public boolean isAnnotationBasedGraphQLSchemaEnabled() {

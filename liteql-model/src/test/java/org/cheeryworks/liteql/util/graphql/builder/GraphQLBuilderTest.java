@@ -50,7 +50,7 @@ public class GraphQLBuilderTest {
                                         ))
                                 .build()
                 )
-                .getQuery();
+                .build();
 
         logger.info(query.toString());
     }

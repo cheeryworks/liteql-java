@@ -85,5 +85,4 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
         return schemaSqlBuilder.toString();
     }
 
-
 }

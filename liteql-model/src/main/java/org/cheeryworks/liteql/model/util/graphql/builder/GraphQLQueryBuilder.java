@@ -36,7 +36,7 @@ public class GraphQLQueryBuilder {
         return new GraphQLVariableQueryBuilder(graphQLQueryBuilder);
     }
 
-    public GraphQLQuery getQuery() {
+    public GraphQLQuery build() {
         GraphQLQuery graphQLQuery = new GraphQLQuery();
 
         graphQLQuery.setOperationName(OPERATION_NAME);
