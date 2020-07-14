@@ -13,6 +13,7 @@ import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.query.condition.ConditionValueConverter;
 import org.jooq.Condition;
+import org.jooq.Configuration;
 import org.jooq.impl.DSL;
 
 import java.math.BigDecimal;
@@ -158,8 +159,7 @@ public abstract class SqlQueryServiceUtil {
     }
 
     public static Condition getConditions(
-            QueryConditions queryConditions, JOOQDataType jooqDataType,
-            String parentTableAlias, String tableAlias) {
+            Configuration configuration, QueryConditions queryConditions, String parentTableAlias, String tableAlias) {
         Condition condition = null;
 
         if (queryConditions != null && queryConditions.size() > 0) {
@@ -179,7 +179,7 @@ public abstract class SqlQueryServiceUtil {
 
                     org.jooq.Field field = (ConditionType.Field.equals(queryCondition.getType()))
                             ? DSL.field(leftClause)
-                            : DSL.field(leftClause, getJOOQDataType(queryCondition.getType(), jooqDataType));
+                            : DSL.field(leftClause, JOOQDataType.getDataType(queryCondition.getType()));
 
                     switch (queryCondition.getCondition()) {
                         case LESS_THAN:
@@ -276,22 +276,22 @@ public abstract class SqlQueryServiceUtil {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = condition.or(getConditions(
-                                        queryCondition.getConditions(), jooqDataType, parentTableAlias, tableAlias));
+                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                             default:
                                 condition = condition.and(getConditions(
-                                        queryCondition.getConditions(), jooqDataType, parentTableAlias, tableAlias));
+                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                         }
                     } else {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = DSL.or(getConditions(
-                                        queryCondition.getConditions(), jooqDataType, parentTableAlias, tableAlias));
+                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                             default:
                                 condition = DSL.and(getConditions(
-                                        queryCondition.getConditions(), jooqDataType, parentTableAlias, tableAlias));
+                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                         }
                     }
@@ -336,27 +336,6 @@ public abstract class SqlQueryServiceUtil {
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
-    }
-
-    public static org.jooq.DataType getJOOQDataType(ConditionType conditionType, JOOQDataType jooqDataType) {
-        if (conditionType == null) {
-            conditionType = ConditionType.String;
-        }
-
-        if (conditionType.equals(ConditionType.Integer)) {
-            return jooqDataType.getIntegerDataType();
-        } else if (conditionType.equals(ConditionType.Boolean)) {
-            return jooqDataType.getBooleanDataType();
-        } else if (conditionType.equals(ConditionType.Decimal)) {
-            return jooqDataType.getBigDecimalDataType();
-        } else if (conditionType.equals(ConditionType.Timestamp)) {
-            return jooqDataType.getTimestampDataType();
-        } else if (conditionType.equals(ConditionType.String)) {
-            return jooqDataType.getStringDataType();
-        }
-
-        throw new IllegalArgumentException(
-                "Condition type " + conditionType.name() + " not mapping with JOOQ DataType");
     }
 
     public static Map<String, Class> getFieldDefinitions(DomainType domainType) {

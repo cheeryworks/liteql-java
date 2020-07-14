@@ -1,64 +1,158 @@
 package org.cheeryworks.liteql.service.jooq.datatype;
 
+import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.jooq.DataType;
+import org.jooq.impl.SQLDataType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-public interface JOOQDataType {
+public class JOOQDataType {
 
-    int STRING_DEFAULT_LENGTH = 255;
+    public static final int STRING_DEFAULT_LENGTH = 255;
 
-    int STRING_MAX_LENGTH = 4000;
+    public static final int STRING_MAX_LENGTH = 4000;
 
-    int LONG_LENGTH = 19;
+    public static final int LONG_LENGTH = 19;
 
-    int INTEGER_MAX_LENGTH = 10;
+    public static final int INTEGER_MAX_LENGTH = 10;
 
-    int BIG_DECIMAL_PRECISION = 19;
+    public static final int BIG_DECIMAL_PRECISION = 19;
 
-    int BIG_DECIMAL_MIN_SCALE = 2;
+    public static final int BIG_DECIMAL_MIN_SCALE = 2;
 
-    int BIG_DECIMAL_MAX_SCALE = 6;
+    public static final int BIG_DECIMAL_MAX_SCALE = 6;
 
-    DataType<String> getStringDataType();
+    public static final Map<Integer, Class> SUPPORTED_DATA_TYPES = new HashMap<>();
 
-    DataType<String> getStringDataType(boolean nullable);
+    static {
+        SUPPORTED_DATA_TYPES.put(Types.VARCHAR, String.class);
+        SUPPORTED_DATA_TYPES.put(Types.BIGINT, Long.class);
+        SUPPORTED_DATA_TYPES.put(Types.INTEGER, Integer.class);
+        SUPPORTED_DATA_TYPES.put(Types.BOOLEAN, Boolean.class);
+        SUPPORTED_DATA_TYPES.put(Types.NUMERIC, BigDecimal.class);
+        SUPPORTED_DATA_TYPES.put(Types.TIMESTAMP, Timestamp.class);
+        SUPPORTED_DATA_TYPES.put(Types.CLOB, String.class);
+        SUPPORTED_DATA_TYPES.put(Types.BLOB, byte[].class);
+    }
 
-    DataType<String> getStringDataType(int length, boolean nullable);
+    public static DataType<String> getStringDataType() {
+        return SQLDataType.VARCHAR;
+    }
 
-    DataType<Long> getLongDataType();
+    public static DataType<String> getStringDataType(boolean nullable) {
+        return getStringDataType().nullable(nullable);
+    }
 
-    DataType<Long> getLongDataType(boolean nullable);
+    public static DataType<String> getStringDataType(boolean nullable, int length) {
+        return getStringDataType(nullable).length(length);
+    }
 
-    DataType<Long> getLongDataType(int length, boolean nullable);
+    public static DataType<Long> getLongDataType() {
+        return SQLDataType.BIGINT;
+    }
 
-    DataType<Integer> getIntegerDataType();
+    public static DataType<Long> getLongDataType(boolean nullable) {
+        return getLongDataType().nullable(nullable);
+    }
 
-    DataType<Integer> getIntegerDataType(boolean nullable);
+    public static DataType<Long> getLongDataType(boolean nullable, int length) {
+        return getLongDataType(nullable).length(length);
+    }
 
-    DataType<Integer> getIntegerDataType(int length, boolean nullable);
+    public static DataType<Integer> getIntegerDataType() {
+        return SQLDataType.INTEGER;
+    }
 
-    DataType<Boolean> getBooleanDataType();
+    public static DataType<Integer> getIntegerDataType(boolean nullable) {
+        return getIntegerDataType().nullable(nullable);
+    }
 
-    DataType<BigDecimal> getBigDecimalDataType();
+    public static DataType<Integer> getIntegerDataType(boolean nullable, int length) {
+        return getIntegerDataType(nullable).length(length);
+    }
 
-    DataType<BigDecimal> getBigDecimalDataType(boolean nullable);
+    public static DataType<Boolean> getBooleanDataType() {
+        return SQLDataType.BOOLEAN.nullable(false);
+    }
 
-    DataType<BigDecimal> getBigDecimalDataType(int precision, int scale, boolean nullable);
+    public static DataType<BigDecimal> getBigDecimalDataType() {
+        return SQLDataType.DECIMAL(BIG_DECIMAL_PRECISION, BIG_DECIMAL_MIN_SCALE);
+    }
 
-    DataType<Timestamp> getTimestampDataType();
+    public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable) {
+        return getBigDecimalDataType().nullable(nullable);
+    }
 
-    DataType<Timestamp> getTimestampDataType(boolean nullable);
+    public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable, int precision, int scale) {
+        return getBigDecimalDataType(nullable).precision(precision).scale(scale);
+    }
 
-    DataType<String> getClobDataType();
+    public static DataType<Timestamp> getTimestampDataType() {
+        return SQLDataType.TIMESTAMP;
+    }
 
-    DataType<String> getClobDataType(boolean nullable);
+    public static DataType<Timestamp> getTimestampDataType(boolean nullable) {
+        return getTimestampDataType().nullable(nullable);
+    }
 
-    DataType<byte[]> getBlobDataType();
+    public static DataType<String> getClobDataType() {
+        return SQLDataType.CLOB;
+    }
 
-    DataType<byte[]> getBlobDataType(boolean nullable);
+    public static DataType<String> getClobDataType(boolean nullable) {
+        return getClobDataType().nullable(nullable);
+    }
 
-    <T> DataType<T> getDataType(Class<T> type);
+    public static DataType<byte[]> getBlobDataType() {
+        return SQLDataType.BLOB;
+    }
+
+    public static DataType<byte[]> getBlobDataType(boolean nullable) {
+        return getBlobDataType().nullable(nullable);
+    }
+
+    public static DataType<?> getDataType(Class<?> type) {
+        if (String.class.isAssignableFrom(type)) {
+            return getStringDataType();
+        } else if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type)) {
+            return getLongDataType();
+        } else if (int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)) {
+            return getIntegerDataType();
+        } else if (boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type)) {
+            return getBooleanDataType();
+        } else if (BigDecimal.class.isAssignableFrom(type)) {
+            return getBigDecimalDataType();
+        } else if (Date.class.isAssignableFrom(type)) {
+            return getTimestampDataType();
+        }
+
+        throw new IllegalArgumentException(type.getName() + " not supported");
+    }
+
+    public static DataType<?> getDataType(ConditionType conditionType) {
+        if (conditionType == null) {
+            conditionType = ConditionType.String;
+        }
+
+        if (conditionType.equals(ConditionType.Integer)) {
+            return JOOQDataType.getIntegerDataType();
+        } else if (conditionType.equals(ConditionType.Boolean)) {
+            return JOOQDataType.getBooleanDataType();
+        } else if (conditionType.equals(ConditionType.Decimal)) {
+            return JOOQDataType.getBigDecimalDataType();
+        } else if (conditionType.equals(ConditionType.Timestamp)) {
+            return JOOQDataType.getTimestampDataType();
+        } else if (conditionType.equals(ConditionType.String)) {
+            return JOOQDataType.getStringDataType();
+        }
+
+        throw new IllegalArgumentException(
+                "Condition type " + conditionType.name() + " not mapping with JOOQ DataType");
+    }
 
 }

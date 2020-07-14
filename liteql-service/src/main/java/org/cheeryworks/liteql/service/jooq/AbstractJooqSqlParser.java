@@ -20,7 +20,7 @@ import org.cheeryworks.liteql.service.AbstractSqlParser;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
-import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
+import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
 import org.cheeryworks.liteql.service.util.StringEncoder;
 import org.jooq.AlterTableFinalStep;
@@ -147,56 +147,34 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
                 if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
                     IdField idField = (IdField) field;
 
-                    return JOOQDataTypeUtil
-                            .getInstance(database)
-                            .getStringDataType()
-                            .length(idField.getLength())
-                            .nullable(idField.isNullable());
+                    return JOOQDataType.getStringDataType(idField.isNullable(), idField.getLength());
                 } else {
                     StringField stringField = (StringField) field;
 
-                    return JOOQDataTypeUtil
-                            .getInstance(database)
-                            .getStringDataType()
-                            .length(stringField.getLength())
-                            .nullable(stringField.isNullable());
+                    return JOOQDataType.getStringDataType(stringField.isNullable(), stringField.getLength());
                 }
             case Integer:
                 IntegerField integerField = (IntegerField) field;
 
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getIntegerDataType(integerField.isNullable());
+                return JOOQDataType.getIntegerDataType(integerField.isNullable());
             case Timestamp:
                 TimestampField timestampField = (TimestampField) field;
 
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getTimestampDataType(timestampField.isNullable());
+                return JOOQDataType.getTimestampDataType(timestampField.isNullable());
             case Boolean:
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getBooleanDataType();
+                return JOOQDataType.getBooleanDataType();
             case Decimal:
                 DecimalField decimalField = (DecimalField) field;
 
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getBigDecimalDataType(decimalField.isNullable());
+                return JOOQDataType.getBigDecimalDataType(decimalField.isNullable());
             case Clob:
                 ClobField clobField = (ClobField) field;
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getClobDataType(clobField.isNullable());
+                return JOOQDataType.getClobDataType(clobField.isNullable());
             case Blob:
                 BlobField blobField = (BlobField) field;
-                return JOOQDataTypeUtil
-                        .getInstance(database)
-                        .getBlobDataType(blobField.isNullable());
+                return JOOQDataType.getBlobDataType(blobField.isNullable());
             case Reference:
-                return JOOQDataTypeUtil.getInstance(database).getStringDataType()
-                        .length(128)
-                        .nullable(((ReferenceField) field).isNullable());
+                return JOOQDataType.getStringDataType(((ReferenceField) field).isNullable(), 128);
             default:
                 throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
         }
@@ -208,7 +186,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
             return sqlCustomizer.getTableName(domainTypeName);
         }
 
-        return domainTypeName.getFullname().replace(".", "_").toLowerCase();
+        return super.getTableName(domainTypeName);
     }
 
 }

@@ -4,7 +4,6 @@ import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDDLUtil;
-import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.migration.SqlMigrationExecutor;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableFinalStep;
@@ -42,12 +41,10 @@ public class JooqSqlMigrationExecutor extends AbstractJooqSqlExecutor implements
         } catch (Exception ex) {
             logger.info("Initializing schema version table " + schemaVersionTableName);
 
-            JOOQDataType jooqDataType = JOOQDataTypeUtil.getInstance(getDatabase());
-
             CreateTableFinalStep createTableFinalStep = getDslContext().createTable(schemaVersionTableName)
-                    .column("version", jooqDataType.getStringDataType().length(32).nullable(false))
-                    .column("description", jooqDataType.getStringDataType().length(1000))
-                    .column("state", jooqDataType.getStringDataType().length(30));
+                    .column("version", JOOQDataType.getStringDataType(false, 32))
+                    .column("description", JOOQDataType.getStringDataType(true, 1000))
+                    .column("state", JOOQDataType.getStringDataType(false, 30));
 
             if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
                 logger.info(createTableFinalStep.getSQL());

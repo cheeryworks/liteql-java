@@ -31,7 +31,6 @@ import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
-import org.cheeryworks.liteql.service.jooq.util.JOOQDataTypeUtil;
 import org.cheeryworks.liteql.service.jooq.util.JOOQPageUtil;
 import org.cheeryworks.liteql.service.query.InlineSqlDeleteQuery;
 import org.cheeryworks.liteql.service.query.InlineSqlReadQuery;
@@ -237,7 +236,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     private Condition getCondition(QueryConditions conditions, String parentTableAlias, String tableAlias) {
         if (CollectionUtils.isNotEmpty(conditions)) {
             return SqlQueryServiceUtil.getConditions(
-                    conditions, JOOQDataTypeUtil.getInstance(getDatabase()), parentTableAlias, tableAlias);
+                    getDslContext().configuration(), conditions, parentTableAlias, tableAlias);
         }
 
         return null;
@@ -249,23 +248,20 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         SqlSaveQuery sqlSaveQuery = new InlineSqlSaveQuery();
 
-        JOOQDataType jooqDataType = JOOQDataTypeUtil.getInstance(getDatabase());
-
         Map<String, Class> fieldDefinitions = SqlQueryServiceUtil.getFieldDefinitions(domainType);
 
         if (saveQuery instanceof CreateQuery) {
             InsertSetStep insertSetStep = getDslContext()
                     .insertInto(table(getTableName(saveQuery.getDomainTypeName())));
 
-            DataType<String> dataType = jooqDataType.getDataType(
-                    fieldDefinitions.get(IdField.ID_FIELD_NAME));
+            DataType dataType = JOOQDataType.getDataType(fieldDefinitions.get(IdField.ID_FIELD_NAME));
 
             InsertSetMoreStep insertSetMoreStep = insertSetStep.set(
                     field("id", dataType),
                     UUID_GENERATOR.generate());
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
-                dataType = jooqDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
                     String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
@@ -298,7 +294,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
             Condition condition = DSL.trueCondition();
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
-                DataType dataType = jooqDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                DataType dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (uniqueKey.getFields().contains(dataEntry.getKey())) {
                     condition = condition.and(field(dataEntry.getKey()).eq(dataEntry.getValue()));
