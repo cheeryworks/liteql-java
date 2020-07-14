@@ -103,7 +103,6 @@
   ],
   "traits": [
     "liteql.audit_entity",
-    "soupe.domain_entity",
     "liteql.hierarchical_entity"
   ]
 }

@@ -9,12 +9,12 @@
     {
       "name": "userId",
       "type": "reference",
-      "domainTypeName": "soupe_ida.user"
+      "domainTypeName": "liteql_test.user"
     },
     {
       "name": "organizationId",
       "type": "reference",
-      "domainTypeName": "soupe_ida.organization"
+      "domainTypeName": "liteql_test.organization"
     },
     {
       "name": "master",
@@ -25,8 +25,5 @@
       "type": "string",
       "length": 255
     }
-  ],
-  "traits": [
-    "soupe.domain_entity"
   ]
 }
