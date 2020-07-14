@@ -241,15 +241,13 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
             boolean isGraphQLField = (graphQLField == null || !graphQLField.ignore()) ? true : false;
 
             boolean isLobField = AnnotationUtils.findAnnotation(javaField, Lob.class) != null ? true : false;
-            boolean isReferenceField
-                    = AnnotationUtils.findAnnotation(javaField, ReferenceField.class) != null ? true : false;
 
             ReferenceField referenceField
                     = AnnotationUtils.findAnnotation(javaField, ReferenceField.class);
 
             Field field = getField(
                     attribute.getName(), type, length, nullable,
-                    isGraphQLField, isLobField, isReferenceField, referenceField);
+                    isGraphQLField, isLobField, referenceField);
 
             fields.add(field);
         }
@@ -329,7 +327,7 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
 
                 String name = BeanUtils.findPropertyForMethod(method).getName();
 
-                Field field = getField(name, fieldType, null, true, true, false, false, null);
+                Field field = getField(name, fieldType, null, true, true, false, null);
 
                 fields.add(field);
             }
@@ -340,14 +338,14 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
 
     private Field getField(
             String name, Class fieldType, Integer length, boolean nullable, boolean isGraphQLField,
-            boolean isLobField, boolean isReferenceField, ReferenceField cqlReferenceField) {
+            boolean isLobField, ReferenceField referenceFieldAnnotation) {
         Field field = null;
 
         if (IdField.ID_FIELD_NAME.equalsIgnoreCase(name)) {
             IdField idField = new IdField();
 
             field = idField;
-        } else if (fieldType.equals(String.class) && !isLobField && !isReferenceField) {
+        } else if (fieldType.equals(String.class) && !isLobField && referenceFieldAnnotation == null) {
             StringField stringField = new StringField();
 
             stringField.setLength(length);
@@ -377,13 +375,12 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
             BlobField blobField = new BlobField();
 
             field = blobField;
-        } else if (fieldType.equals(String.class)
-                && isReferenceField) {
+        } else if (fieldType.equals(String.class) && referenceFieldAnnotation != null) {
             org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
                     = new org.cheeryworks.liteql.model.type.field.ReferenceField();
 
             referenceField.setName(StringUtils.removeEnd(name, "Id"));
-            referenceField.setDomainTypeName(Trait.getTypeName(cqlReferenceField.targetDomainType()));
+            referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
 
             field = referenceField;
         }
