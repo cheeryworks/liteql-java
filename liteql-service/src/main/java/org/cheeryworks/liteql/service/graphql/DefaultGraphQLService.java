@@ -30,6 +30,7 @@ import org.cheeryworks.liteql.model.graphql.Scalars;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.Trait;
+import org.cheeryworks.liteql.model.type.field.AbstractNullableField;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.ClassUtil;
@@ -196,10 +197,14 @@ public class DefaultGraphQLService implements GraphQLService {
                 objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
 
                 for (Field field : domainType.getFields()) {
+                    if (!field.isGraphQLField()) {
+                        continue;
+                    }
+
                     FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
                             .newFieldDefinition()
                             .name(field.getName())
-                            .type(new TypeName(getGraphQLTypeFromField(field)))
+                            .type(getGraphQLTypeFromField(field))
                             .inputValueDefinitions(defaultFieldArguments());
 
                     FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
@@ -370,7 +375,7 @@ public class DefaultGraphQLService implements GraphQLService {
     private Type getGraphQLType(
             Class type, Member member, GraphQLField graphQLField, ReferenceField referenceField,
             Map<Class, String> objectImplements) {
-        if (graphQLField != null && graphQLField.reference()) {
+        if (graphQLField != null && referenceField != null) {
             if (objectImplements.containsKey(referenceField.targetDomainType())) {
                 return new TypeName(objectImplements.get(referenceField.targetDomainType()));
             }
@@ -445,7 +450,21 @@ public class DefaultGraphQLService implements GraphQLService {
         return typeName.getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
     }
 
-    private String getGraphQLTypeFromField(Field field) {
+    private Type getGraphQLTypeFromField(Field field) {
+        String typeName = getGraphQLTypeNameFromField(field);
+
+        if (field instanceof AbstractNullableField) {
+            AbstractNullableField nullableField = (AbstractNullableField) field;
+
+            if (!nullableField.isNullable()) {
+                return new NonNullType(new TypeName(typeName));
+            }
+        }
+
+        return new TypeName(typeName);
+    }
+
+    private String getGraphQLTypeNameFromField(Field field) {
         switch (field.getType()) {
             case Id:
             case Clob:

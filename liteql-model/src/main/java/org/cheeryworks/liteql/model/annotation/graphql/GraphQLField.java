@@ -13,6 +13,4 @@ public @interface GraphQLField {
 
     boolean ignore() default false;
 
-    boolean reference() default false;
-
 }

@@ -44,7 +44,7 @@ public interface AuditEntity extends Entity {
     boolean isInherent();
 
     @Position(5)
-    @GraphQLField(name = "creator", reference = true)
+    @GraphQLField(name = "creator")
     @ReferenceField(targetDomainType = UserEntity.class)
     String getCreatorId();
 
@@ -56,7 +56,7 @@ public interface AuditEntity extends Entity {
     Date getCreateTime();
 
     @Position(8)
-    @GraphQLField(name = "lastModifier", reference = true)
+    @GraphQLField(name = "lastModifier")
     @ReferenceField(targetDomainType = UserEntity.class)
     String getLastModifierId();
 
