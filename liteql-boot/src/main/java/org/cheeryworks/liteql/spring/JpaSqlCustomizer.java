@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.spring;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.Trait;
 import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.service.AbstractSqlCustomizer;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.EntityManagerFactory;
@@ -12,7 +12,7 @@ import javax.persistence.metamodel.EntityType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JpaSqlCustomizer extends AbstractSqlCustomizer {
+public class JpaSqlCustomizer implements SqlCustomizer {
 
     private Map<TypeName, String> tableNames = new HashMap<>();
 
@@ -32,7 +32,7 @@ public class JpaSqlCustomizer extends AbstractSqlCustomizer {
         String tableName = tableNames.get(domainTypeName);
 
         if (StringUtils.isBlank(tableName)) {
-            return super.getTableName(domainTypeName);
+            return SqlCustomizer.super.getTableName(domainTypeName);
         }
 
         return tableName;

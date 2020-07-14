@@ -4,6 +4,8 @@ import org.cheeryworks.liteql.model.type.TypeName;
 
 public interface SqlCustomizer {
 
-    String getTableName(TypeName domainTypeName);
+    default String getTableName(TypeName domainTypeName) {
+        return domainTypeName.getFullname().replace(".", "_").toLowerCase();
+    }
 
 }
