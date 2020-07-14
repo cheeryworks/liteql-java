@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
-import static org.cheeryworks.liteql.util.GraphQLServiceUtil.GRAPHQL_NAME_CONCAT;
 
 public class DefaultGraphQLService implements GraphQLService {
 
@@ -188,7 +187,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
         for (String schema : repository.getSchemaNames()) {
             for (DomainType domainType : repository.getDomainTypes(schema)) {
-                String objectTypeName = getObjectTypeName(domainType);
+                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(domainType);
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()
@@ -241,7 +240,7 @@ public class DefaultGraphQLService implements GraphQLService {
             GraphQLEntity graphQLEntity = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
 
             if (graphQLEntity.extension().equals(Void.class)) {
-                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(domainType);
+                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(Trait.getTypeName(domainType));
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()
@@ -275,8 +274,8 @@ public class DefaultGraphQLService implements GraphQLService {
                     = AnnotationUtils.findAnnotation(domainType, GraphQLEntity.class);
 
             String objectTypeName = graphQLEntity.extension().equals(Void.class)
-                    ? GraphQLServiceUtil.getObjectTypeName(domainType)
-                    : GraphQLServiceUtil.getObjectTypeName(graphQLEntity.extension());
+                    ? GraphQLServiceUtil.getObjectTypeName(Trait.getTypeName(domainType))
+                    : GraphQLServiceUtil.getObjectTypeName(Trait.getTypeName(graphQLEntity.extension()));
 
             Map<String, String> graphQLFieldReferences = new HashMap<>();
 
@@ -446,10 +445,6 @@ public class DefaultGraphQLService implements GraphQLService {
         return new TypeName(getGraphQLTypeFromPrimitiveType(method.getReturnType()));
     }
 
-    private String getObjectTypeName(org.cheeryworks.liteql.model.type.TypeName typeName) {
-        return typeName.getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
-    }
-
     private Type getGraphQLTypeFromField(Field field) {
         String typeName = getGraphQLTypeNameFromField(field);
 
@@ -483,7 +478,7 @@ public class DefaultGraphQLService implements GraphQLService {
             case Reference:
                 org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
                         = (org.cheeryworks.liteql.model.type.field.ReferenceField) field;
-                return getObjectTypeName(referenceField.getDomainTypeName());
+                return GraphQLServiceUtil.getObjectTypeName(referenceField.getDomainTypeName());
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
         }

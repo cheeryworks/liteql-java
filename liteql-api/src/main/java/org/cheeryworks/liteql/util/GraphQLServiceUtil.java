@@ -17,6 +17,7 @@ import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.model.util.StringUtil;
@@ -29,6 +30,10 @@ import java.util.List;
 public abstract class GraphQLServiceUtil {
 
     public static final String GRAPHQL_NAME_CONCAT = "__";
+
+    public static String getObjectTypeName(TypeName typeName) {
+        return typeName.getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
+    }
 
     public static String getObjectTypeName(Class<?> domainType) {
         ResourceDefinition resourceDefinition = domainType.getAnnotation(ResourceDefinition.class);
