@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
 import org.cheeryworks.liteql.model.util.LiteQLUtil;
-import org.cheeryworks.liteql.model.util.builder.LiteQLBuilder;
+import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static org.cheeryworks.liteql.model.util.builder.LiteQLBuilderUtil.condition;
+import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.condition;
 
 public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<String, Object>> {
 
@@ -72,7 +72,7 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
 
             String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(keysInTypesEntry.getKey());
 
-            ReadQuery readQuery = LiteQLBuilder
+            ReadQuery readQuery = QueryBuilder
                     .read(LiteQLUtil.getTypeName(domainTypeName))
                     .fields()
                     .conditions(

@@ -25,7 +25,7 @@ import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.util.LiteQLUtil;
-import org.cheeryworks.liteql.model.util.builder.LiteQLBuilder;
+import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
@@ -38,8 +38,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.cheeryworks.liteql.model.util.builder.LiteQLBuilderUtil.condition;
-import static org.cheeryworks.liteql.model.util.builder.LiteQLBuilderUtil.field;
+import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.condition;
+import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.field;
 
 public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
@@ -138,7 +138,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
 
-        SingleReadQuery singleReadQuery = LiteQLBuilder
+        SingleReadQuery singleReadQuery = QueryBuilder
                 .read(LiteQLUtil.getTypeName(domainTypeName))
                 .fields()
                 .single()
@@ -161,7 +161,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
 
-        ReadQuery readQuery = LiteQLBuilder
+        ReadQuery readQuery = QueryBuilder
                 .read(LiteQLUtil.getTypeName(domainTypeName))
                 .fields()
                 .getQuery();
@@ -206,7 +206,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         String parentFieldName = getParentFieldName(fieldName, parentTypeName);
 
-        ReadQuery readQuery = LiteQLBuilder
+        ReadQuery readQuery = QueryBuilder
                 .read(domainTypeName)
                 .fields(
                         field(GraphQLConstants.QUERY_ARGUMENT_NAME_ID),
