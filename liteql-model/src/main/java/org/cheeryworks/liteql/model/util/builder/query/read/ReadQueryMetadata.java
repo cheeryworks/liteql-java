@@ -4,7 +4,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.model.query.read.AbstractReadQuery;
 import org.cheeryworks.liteql.model.query.read.join.JoinedReadQuery;
 import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
-import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.builder.query.read.join.ReadQueryJoinMetadata;
 
 import java.util.LinkedHashMap;
@@ -74,38 +73,31 @@ public class ReadQueryMetadata extends AbstractReadQueryMetadata {
         this.references = references;
     }
 
-    public org.cheeryworks.liteql.model.query.read.AbstractReadQuery[] getAssociations() {
+    public AbstractReadQuery[] getAssociations() {
         return associations;
     }
 
-    public void setAssociations(org.cheeryworks.liteql.model.query.read.AbstractReadQuery[] associations) {
+    public void setAssociations(AbstractReadQuery[] associations) {
         this.associations = associations;
     }
 
-    public JoinedReadQuery getJoinedQuery(ReadQueryJoinMetadata liteQLReadQueryJoin) {
+    public JoinedReadQuery getJoinedQuery(ReadQueryJoinMetadata readQueryJoinMetadata) {
         JoinedReadQuery joinedReadQuery = new JoinedReadQuery();
 
-        joinedReadQuery.setDomainTypeName(liteQLReadQueryJoin.getDomainTypeName());
-        joinedReadQuery.setFields(liteQLReadQueryJoin.getFields());
-        joinedReadQuery.setConditions(liteQLReadQueryJoin.getConditions());
+        joinedReadQuery.setDomainTypeName(readQueryJoinMetadata.getDomainTypeName());
+        joinedReadQuery.setFields(readQueryJoinMetadata.getFields());
+        joinedReadQuery.setConditions(readQueryJoinMetadata.getConditions());
 
-        if (ArrayUtils.isNotEmpty(liteQLReadQueryJoin.getLiteQLReadQueryJoins())) {
+        if (ArrayUtils.isNotEmpty(readQueryJoinMetadata.getReadQueryJoinMetadataArray())) {
             joinedReadQuery.setJoins(new LinkedList<>());
 
-            for (ReadQueryJoinMetadata childLiteQLReadQueryJoin : liteQLReadQueryJoin.getLiteQLReadQueryJoins()) {
-                joinedReadQuery.getJoins().add(getJoinedQuery(childLiteQLReadQueryJoin));
+            for (ReadQueryJoinMetadata childReadQueryJoinMetadata
+                    : readQueryJoinMetadata.getReadQueryJoinMetadataArray()) {
+                joinedReadQuery.getJoins().add(getJoinedQuery(childReadQueryJoinMetadata));
             }
         }
 
         return joinedReadQuery;
-    }
-
-    public static ReadQueryFieldsBuilder read(TypeName domainTypeName) {
-        ReadQueryMetadata liteQLReadQuery = new ReadQueryMetadata();
-
-        liteQLReadQuery.setDomainTypeName(domainTypeName);
-
-        return new ReadQueryFieldsBuilder(liteQLReadQuery);
     }
 
 }

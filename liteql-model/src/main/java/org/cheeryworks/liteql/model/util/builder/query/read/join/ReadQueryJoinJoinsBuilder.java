@@ -2,18 +2,18 @@ package org.cheeryworks.liteql.model.util.builder.query.read.join;
 
 public class ReadQueryJoinJoinsBuilder extends ReadQueryJoinEndBuilder {
 
-    private ReadQueryJoinMetadata liteQLReadQueryJoin;
+    private ReadQueryJoinMetadata readQueryJoinMetadata;
 
-    public ReadQueryJoinJoinsBuilder(ReadQueryJoinMetadata liteQLReadQueryJoin) {
-        super(liteQLReadQueryJoin);
+    public ReadQueryJoinJoinsBuilder(ReadQueryJoinMetadata readQueryJoinMetadata) {
+        super(readQueryJoinMetadata);
 
-        this.liteQLReadQueryJoin = liteQLReadQueryJoin;
+        this.readQueryJoinMetadata = readQueryJoinMetadata;
     }
 
-    public ReadQueryJoinEndBuilder joins(ReadQueryJoinMetadata... liteQLReadQueryJoins) {
-        this.liteQLReadQueryJoin.setLiteQLReadQueryJoins(liteQLReadQueryJoins);
+    public ReadQueryJoinEndBuilder joins(ReadQueryJoinMetadata... readQueryJoinMetadataArray) {
+        this.readQueryJoinMetadata.setReadQueryJoinMetadataArray(readQueryJoinMetadataArray);
 
-        return new ReadQueryJoinEndBuilder(this.liteQLReadQueryJoin);
+        return new ReadQueryJoinEndBuilder(this.readQueryJoinMetadata);
     }
 
 }

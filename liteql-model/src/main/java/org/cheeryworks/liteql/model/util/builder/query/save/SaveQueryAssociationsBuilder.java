@@ -16,12 +16,12 @@ public class SaveQueryAssociationsBuilder<T extends AbstractSaveQuery> extends S
     }
 
     public SaveQueryEndBuilder<T> associations(
-            List<QueryReference> references, SaveQueryMetadata... liteQLSaveQueries) {
+            List<QueryReference> references, SaveQueryMetadata... saveQueryMetadataArray) {
         for (QueryReference reference : references) {
             saveQueryMetadata.getReferences().put(reference.getSource(), reference.getDestination());
         }
 
-        saveQueryMetadata.setAssociations(liteQLSaveQueries);
+        saveQueryMetadata.setAssociations(saveQueryMetadataArray);
 
         return new SaveQueryEndBuilder<>(saveQueryMetadata);
     }

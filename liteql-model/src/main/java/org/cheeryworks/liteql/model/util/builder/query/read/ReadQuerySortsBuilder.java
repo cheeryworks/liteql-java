@@ -7,18 +7,18 @@ import java.util.LinkedList;
 
 public class ReadQuerySortsBuilder extends ReadQueryTypeBuilder {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
-    public ReadQuerySortsBuilder(ReadQueryMetadata liteQLReadQuery) {
-        super(liteQLReadQuery);
+    public ReadQuerySortsBuilder(ReadQueryMetadata readQueryMetadata) {
+        super(readQueryMetadata);
 
-        this.liteQLReadQuery = liteQLReadQuery;
+        this.readQueryMetadata = readQueryMetadata;
     }
 
     public ReadQueryTypeBuilder sorts(QuerySort... querySorts) {
-        this.liteQLReadQuery.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
+        this.readQueryMetadata.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
 
-        return new ReadQueryTypeBuilder(this.liteQLReadQuery);
+        return new ReadQueryTypeBuilder(this.readQueryMetadata);
     }
 
 }

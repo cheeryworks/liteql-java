@@ -11,12 +11,12 @@ import java.util.LinkedList;
 
 public class ReadQueryEndBuilder<T extends AbstractReadQuery> {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
     private T query;
 
-    public ReadQueryEndBuilder(ReadQueryMetadata liteQLReadQuery, Class<T> readQueryType) {
-        this.liteQLReadQuery = liteQLReadQuery;
+    public ReadQueryEndBuilder(ReadQueryMetadata readQueryMetadata, Class<T> readQueryType) {
+        this.readQueryMetadata = readQueryMetadata;
 
         try {
             this.query = readQueryType.newInstance();
@@ -26,34 +26,34 @@ public class ReadQueryEndBuilder<T extends AbstractReadQuery> {
     }
 
     public T getQuery() {
-        this.query.setDomainTypeName(liteQLReadQuery.getDomainTypeName());
-        this.query.setFields(liteQLReadQuery.getFields());
+        this.query.setDomainTypeName(readQueryMetadata.getDomainTypeName());
+        this.query.setFields(readQueryMetadata.getFields());
 
-        if (ArrayUtils.isNotEmpty(liteQLReadQuery.getLiteQLReadQueryJoins())) {
+        if (ArrayUtils.isNotEmpty(readQueryMetadata.getReadQueryJoinMetadataArray())) {
             this.query.setJoins(new LinkedList<>());
 
-            for (ReadQueryJoinMetadata liteQLReadQueryJoin : liteQLReadQuery.getLiteQLReadQueryJoins()) {
-                this.query.getJoins().add(liteQLReadQuery.getJoinedQuery(liteQLReadQueryJoin));
+            for (ReadQueryJoinMetadata readQueryJoinMetadata : readQueryMetadata.getReadQueryJoinMetadataArray()) {
+                this.query.getJoins().add(readQueryMetadata.getJoinedQuery(readQueryJoinMetadata));
             }
         }
 
-        this.query.setConditions(liteQLReadQuery.getConditions());
-        this.query.setSorts(liteQLReadQuery.getSorts());
-        this.query.setScope(liteQLReadQuery.getScope());
+        this.query.setConditions(readQueryMetadata.getConditions());
+        this.query.setSorts(readQueryMetadata.getSorts());
+        this.query.setScope(readQueryMetadata.getScope());
 
         if (query instanceof TreeReadQuery) {
-            ((TreeReadQuery) query).setExpandLevel(liteQLReadQuery.getExpandLevel());
+            ((TreeReadQuery) query).setExpandLevel(readQueryMetadata.getExpandLevel());
         }
 
         if (query instanceof PageReadQuery) {
-            ((PageReadQuery) query).setPage(this.liteQLReadQuery.getPage());
-            ((PageReadQuery) query).setSize(this.liteQLReadQuery.getSize());
+            ((PageReadQuery) query).setPage(this.readQueryMetadata.getPage());
+            ((PageReadQuery) query).setSize(this.readQueryMetadata.getSize());
         }
 
-        if (liteQLReadQuery.getAssociations() != null
-                && liteQLReadQuery.getAssociations().length > 0) {
-            this.query.setReferences(liteQLReadQuery.getReferences());
-            this.query.setAssociations(Arrays.asList(liteQLReadQuery.getAssociations()));
+        if (readQueryMetadata.getAssociations() != null
+                && readQueryMetadata.getAssociations().length > 0) {
+            this.query.setReferences(readQueryMetadata.getReferences());
+            this.query.setAssociations(Arrays.asList(readQueryMetadata.getAssociations()));
         }
 
         return this.query;

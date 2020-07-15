@@ -7,16 +7,16 @@ import java.util.List;
 
 public class SaveQueriesBuilder<T extends AbstractSaveQuery> extends SaveQueryBuilder<T> {
 
-    private SaveQueryMetadata<T>[] liteQLSaveQueries;
+    private SaveQueryMetadata<T>[] saveQueryMetadataArray;
 
-    public SaveQueriesBuilder(SaveQueryMetadata<T>... liteQLSaveQueries) {
-        this.liteQLSaveQueries = liteQLSaveQueries;
+    public SaveQueriesBuilder(SaveQueryMetadata<T>... saveQueryMetadataArray) {
+        this.saveQueryMetadataArray = saveQueryMetadataArray;
     }
 
     public List<T> getQueries() {
         List<T> saveQueries = new ArrayList<>();
 
-        for (SaveQueryMetadata<T> saveQueryMetadata : liteQLSaveQueries) {
+        for (SaveQueryMetadata<T> saveQueryMetadata : saveQueryMetadataArray) {
             saveQueries.add(getQuery(saveQueryMetadata));
         }
 

@@ -4,8 +4,8 @@ import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
 
 public class ReadQuerySingleBuilder extends ReadQueryScopeBuilder<SingleReadQuery> {
 
-    public ReadQuerySingleBuilder(ReadQueryMetadata liteQLReadQuery) {
-        super(liteQLReadQuery, SingleReadQuery.class);
+    public ReadQuerySingleBuilder(ReadQueryMetadata readQueryMetadata) {
+        super(readQueryMetadata, SingleReadQuery.class);
     }
 
 }

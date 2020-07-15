@@ -4,20 +4,20 @@ import org.cheeryworks.liteql.model.query.QueryCondition;
 
 public class ReadQueryConditionsBuilder extends ReadQuerySortsBuilder {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
-    public ReadQueryConditionsBuilder(ReadQueryMetadata liteQLReadQuery) {
-        super(liteQLReadQuery);
+    public ReadQueryConditionsBuilder(ReadQueryMetadata readQueryMetadata) {
+        super(readQueryMetadata);
 
-        this.liteQLReadQuery = liteQLReadQuery;
+        this.readQueryMetadata = readQueryMetadata;
     }
 
     public ReadQuerySortsBuilder conditions(QueryCondition... queryConditions) {
         for (QueryCondition queryCondition : queryConditions) {
-            this.liteQLReadQuery.getConditions().add(queryCondition);
+            this.readQueryMetadata.getConditions().add(queryCondition);
         }
 
-        return new ReadQuerySortsBuilder(this.liteQLReadQuery);
+        return new ReadQuerySortsBuilder(this.readQueryMetadata);
     }
 
 }

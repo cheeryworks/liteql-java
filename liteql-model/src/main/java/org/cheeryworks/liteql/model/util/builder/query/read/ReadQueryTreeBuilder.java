@@ -4,10 +4,10 @@ import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
 
 public class ReadQueryTreeBuilder extends ReadQueryScopeBuilder<TreeReadQuery> {
 
-    public ReadQueryTreeBuilder(ReadQueryMetadata liteQLReadQuery, Integer expandLevel) {
-        super(liteQLReadQuery, TreeReadQuery.class);
+    public ReadQueryTreeBuilder(ReadQueryMetadata readQueryMetadata, Integer expandLevel) {
+        super(readQueryMetadata, TreeReadQuery.class);
 
-        liteQLReadQuery.setExpandLevel(expandLevel);
+        readQueryMetadata.setExpandLevel(expandLevel);
     }
 
 }

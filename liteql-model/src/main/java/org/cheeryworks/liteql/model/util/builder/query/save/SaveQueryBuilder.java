@@ -8,17 +8,17 @@ import java.util.List;
 
 public class SaveQueryBuilder<T extends AbstractSaveQuery> {
 
-    protected T getQuery(SaveQueryMetadata<T> liteQLSaveQueryMetadata) {
-        T saveQuery = liteQLSaveQueryMetadata.getSaveQuery();
+    protected T getQuery(SaveQueryMetadata<T> saveQueryMetadataArray) {
+        T saveQuery = saveQueryMetadataArray.getSaveQuery();
 
-        saveQuery.setDomainTypeName(liteQLSaveQueryMetadata.getDomainTypeName());
-        saveQuery.setData(liteQLSaveQueryMetadata.getData());
+        saveQuery.setDomainTypeName(saveQueryMetadataArray.getDomainTypeName());
+        saveQuery.setData(saveQueryMetadataArray.getData());
 
-        if (liteQLSaveQueryMetadata.getReferences() != null && liteQLSaveQueryMetadata.getReferences().size() > 0) {
-            saveQuery.setReferences(liteQLSaveQueryMetadata.getReferences());
+        if (saveQueryMetadataArray.getReferences() != null && saveQueryMetadataArray.getReferences().size() > 0) {
+            saveQuery.setReferences(saveQueryMetadataArray.getReferences());
             saveQuery.setAssociations(
                     new SaveQueryAssociations(
-                            getQueries(liteQLSaveQueryMetadata.getAssociations())));
+                            getQueries(saveQueryMetadataArray.getAssociations())));
         }
 
         return saveQuery;

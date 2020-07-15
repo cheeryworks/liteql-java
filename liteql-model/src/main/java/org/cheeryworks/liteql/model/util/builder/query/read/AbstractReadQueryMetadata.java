@@ -13,7 +13,7 @@ public abstract class AbstractReadQueryMetadata {
 
     private QueryConditions conditions = new QueryConditions();
 
-    private ReadQueryJoinMetadata[] liteQLReadQueryJoins;
+    private ReadQueryJoinMetadata[] readQueryJoinMetadataArray;
 
     public TypeName getDomainTypeName() {
         return domainTypeName;
@@ -39,12 +39,12 @@ public abstract class AbstractReadQueryMetadata {
         this.conditions = conditions;
     }
 
-    public ReadQueryJoinMetadata[] getLiteQLReadQueryJoins() {
-        return liteQLReadQueryJoins;
+    public ReadQueryJoinMetadata[] getReadQueryJoinMetadataArray() {
+        return readQueryJoinMetadataArray;
     }
 
-    public void setLiteQLReadQueryJoins(ReadQueryJoinMetadata[] liteQLReadQueryJoins) {
-        this.liteQLReadQueryJoins = liteQLReadQueryJoins;
+    public void setReadQueryJoinMetadataArray(ReadQueryJoinMetadata[] readQueryJoinMetadataArray) {
+        this.readQueryJoinMetadataArray = readQueryJoinMetadataArray;
     }
 
 }

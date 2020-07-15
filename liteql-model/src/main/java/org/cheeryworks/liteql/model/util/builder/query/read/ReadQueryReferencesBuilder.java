@@ -5,24 +5,24 @@ import org.cheeryworks.liteql.model.util.builder.query.QueryReference;
 
 public class ReadQueryReferencesBuilder<T extends AbstractReadQuery> extends ReadQueryEndBuilder<T> {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
     private Class<T> readQueryType;
 
-    public ReadQueryReferencesBuilder(ReadQueryMetadata liteQLReadQuery, Class<T> readQueryType) {
-        super(liteQLReadQuery, readQueryType);
+    public ReadQueryReferencesBuilder(ReadQueryMetadata readQueryMetadata, Class<T> readQueryType) {
+        super(readQueryMetadata, readQueryType);
 
-        this.liteQLReadQuery = liteQLReadQuery;
+        this.readQueryMetadata = readQueryMetadata;
         this.readQueryType = readQueryType;
     }
 
     public ReadQueryAssociationsBuilder<T> references(QueryReference... queryReferences) {
         for (QueryReference queryReference : queryReferences) {
-            this.liteQLReadQuery.getReferences().put(
+            this.readQueryMetadata.getReferences().put(
                     queryReference.getSource(), queryReference.getDestination());
         }
 
-        return new ReadQueryAssociationsBuilder<>(this.liteQLReadQuery, this.readQueryType);
+        return new ReadQueryAssociationsBuilder<>(this.readQueryMetadata, this.readQueryType);
     }
 
 }

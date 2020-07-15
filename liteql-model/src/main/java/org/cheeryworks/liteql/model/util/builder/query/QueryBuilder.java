@@ -15,7 +15,11 @@ import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryFieldsBuild
 public class QueryBuilder {
 
     public static ReadQueryFieldsBuilder read(TypeName domainType) {
-        return ReadQueryMetadata.read(domainType);
+        ReadQueryMetadata readQueryMetadata = new ReadQueryMetadata();
+
+        readQueryMetadata.setDomainTypeName(domainType);
+
+        return new ReadQueryFieldsBuilder(readQueryMetadata);
     }
 
     public static SaveQueryFieldsBuilder<CreateQuery> create(TypeName domainType) {
@@ -26,16 +30,16 @@ public class QueryBuilder {
         return SaveQueryMetadata.update(domainType);
     }
 
-    public static SaveQueriesBuilder save(SaveQueryMetadata... liteQLSaveQueries) {
-        return new SaveQueriesBuilder(liteQLSaveQueries);
+    public static SaveQueriesBuilder save(SaveQueryMetadata... saveQueryMetadataArray) {
+        return new SaveQueriesBuilder(saveQueryMetadataArray);
     }
 
     public static DeleteQueryConditionsBuilder delete(TypeName domainTypeName) {
         return DeleteQueryMetadata.delete(domainTypeName);
     }
 
-    public static DeleteQueriesBuilder delete(DeleteQueryMetadata... liteQLDeleteQueries) {
-        return new DeleteQueriesBuilder(liteQLDeleteQueries);
+    public static DeleteQueriesBuilder delete(DeleteQueryMetadata... deleteQueryMetadataArray) {
+        return new DeleteQueriesBuilder(deleteQueryMetadataArray);
     }
 
 }

@@ -7,16 +7,16 @@ import java.util.List;
 
 public class DeleteQueriesBuilder extends DeleteQueryBuilder {
 
-    private DeleteQueryMetadata[] liteQLDeleteQueries;
+    private DeleteQueryMetadata[] deleteQueryMetadataArray;
 
-    public DeleteQueriesBuilder(DeleteQueryMetadata... liteQLDeleteQueries) {
-        this.liteQLDeleteQueries = liteQLDeleteQueries;
+    public DeleteQueriesBuilder(DeleteQueryMetadata... deleteQueryMetadataArray) {
+        this.deleteQueryMetadataArray = deleteQueryMetadataArray;
     }
 
     public List<DeleteQuery> getQueries() {
         List<DeleteQuery> deleteQueries = new LinkedList<>();
 
-        for (DeleteQueryMetadata deleteQueryMetadata : liteQLDeleteQueries) {
+        for (DeleteQueryMetadata deleteQueryMetadata : deleteQueryMetadataArray) {
             deleteQueries.add(getQuery(deleteQueryMetadata));
         }
 

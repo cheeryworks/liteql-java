@@ -6,11 +6,11 @@ import org.cheeryworks.liteql.model.util.builder.query.read.AbstractReadQueryMet
 public class ReadQueryJoinMetadata extends AbstractReadQueryMetadata {
 
     public static ReadQueryJoinFieldsBuilder join(TypeName domainTypeName) {
-        ReadQueryJoinMetadata liteQLReadQueryJoin = new ReadQueryJoinMetadata();
+        ReadQueryJoinMetadata readQueryJoinMetadata = new ReadQueryJoinMetadata();
 
-        liteQLReadQueryJoin.setDomainTypeName(domainTypeName);
+        readQueryJoinMetadata.setDomainTypeName(domainTypeName);
 
-        return new ReadQueryJoinFieldsBuilder(liteQLReadQueryJoin);
+        return new ReadQueryJoinFieldsBuilder(readQueryJoinMetadata);
     }
 
 }

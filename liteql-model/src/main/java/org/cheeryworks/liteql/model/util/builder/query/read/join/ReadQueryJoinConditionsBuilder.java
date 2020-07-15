@@ -4,20 +4,20 @@ import org.cheeryworks.liteql.model.query.QueryCondition;
 
 public class ReadQueryJoinConditionsBuilder extends ReadQueryJoinJoinsBuilder {
 
-    private ReadQueryJoinMetadata liteQLReadQueryJoin;
+    private ReadQueryJoinMetadata readQueryJoinMetadata;
 
-    public ReadQueryJoinConditionsBuilder(ReadQueryJoinMetadata liteQLReadQueryJoin) {
-        super(liteQLReadQueryJoin);
+    public ReadQueryJoinConditionsBuilder(ReadQueryJoinMetadata readQueryJoinMetadata) {
+        super(readQueryJoinMetadata);
 
-        this.liteQLReadQueryJoin = liteQLReadQueryJoin;
+        this.readQueryJoinMetadata = readQueryJoinMetadata;
     }
 
     public ReadQueryJoinJoinsBuilder conditions(QueryCondition... queryConditions) {
         for (QueryCondition queryCondition : queryConditions) {
-            this.liteQLReadQueryJoin.getConditions().add(queryCondition);
+            this.readQueryJoinMetadata.getConditions().add(queryCondition);
         }
 
-        return new ReadQueryJoinJoinsBuilder(this.liteQLReadQueryJoin);
+        return new ReadQueryJoinJoinsBuilder(this.readQueryJoinMetadata);
     }
 
 }

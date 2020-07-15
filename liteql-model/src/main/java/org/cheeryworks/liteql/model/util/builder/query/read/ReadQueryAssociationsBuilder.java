@@ -7,25 +7,25 @@ import java.util.List;
 
 public class ReadQueryAssociationsBuilder<T extends AbstractReadQuery> extends ReadQueryEndBuilder<T> {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
     private Class<T> readQueryType;
 
-    public ReadQueryAssociationsBuilder(ReadQueryMetadata liteQLReadQuery, Class<T> readQueryType) {
-        super(liteQLReadQuery, readQueryType);
+    public ReadQueryAssociationsBuilder(ReadQueryMetadata readQueryMetadata, Class<T> readQueryType) {
+        super(readQueryMetadata, readQueryType);
 
-        this.liteQLReadQuery = liteQLReadQuery;
+        this.readQueryMetadata = readQueryMetadata;
         this.readQueryType = readQueryType;
     }
 
     public ReadQueryEndBuilder<T> associations(List<QueryReference> references, T... associations) {
         for (QueryReference reference : references) {
-            liteQLReadQuery.getReferences().put(reference.getSource(), reference.getDestination());
+            readQueryMetadata.getReferences().put(reference.getSource(), reference.getDestination());
         }
 
-        this.liteQLReadQuery.setAssociations(associations);
+        this.readQueryMetadata.setAssociations(associations);
 
-        return new ReadQueryEndBuilder<>(this.liteQLReadQuery, this.readQueryType);
+        return new ReadQueryEndBuilder<>(this.readQueryMetadata, this.readQueryType);
     }
 
 }
