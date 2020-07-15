@@ -11,8 +11,6 @@ import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
-import org.cheeryworks.liteql.model.util.builder.query.delete.DeleteQueryMetadata;
-import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryMetadata;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +122,7 @@ public class QueryBuilderTest extends AbstractTest {
                         references(
                                 reference("id", "projectId")
                         ),
-                        SaveQueryMetadata.create(new TypeName("liteql_test", "activity"))
+                        QueryBuilder.create(new TypeName("liteql_test", "activity"))
                                 .fields(
                                         saveField("code", "A"),
                                         saveField("name", "A")
@@ -140,7 +138,7 @@ public class QueryBuilderTest extends AbstractTest {
     public void testingSaveQueryBuilder() {
         List<AbstractSaveQuery> saveQueries = QueryBuilder
                 .save(
-                        SaveQueryMetadata.create(new TypeName("liteql_test", "project"))
+                        QueryBuilder.create(new TypeName("liteql_test", "project"))
                                 .fields(
                                         saveField("code", "A"),
                                         saveField("name", "A"),
@@ -150,7 +148,7 @@ public class QueryBuilderTest extends AbstractTest {
                                         references(
                                                 reference("id", "projectId")
                                         ),
-                                        SaveQueryMetadata.create(new TypeName("liteql_test", "activity"))
+                                        QueryBuilder.create(new TypeName("liteql_test", "activity"))
                                                 .fields(
                                                         saveField("code", "A"),
                                                         saveField("name", "A")
@@ -158,7 +156,7 @@ public class QueryBuilderTest extends AbstractTest {
                                                 .build()
                                 )
                                 .build(),
-                        SaveQueryMetadata.update(new TypeName("liteql_test", "project"))
+                        QueryBuilder.update(new TypeName("liteql_test", "project"))
                                 .fields(
                                         saveField("code", "B"),
                                         saveField("name", "B"),
@@ -188,12 +186,12 @@ public class QueryBuilderTest extends AbstractTest {
     public void testingDeleteQueryBuilder() {
         List<DeleteQuery> deleteQueries = QueryBuilder
                 .delete(
-                        DeleteQueryMetadata.delete(new TypeName("liteql_test", "user"))
+                        QueryBuilder.delete(new TypeName("liteql_test", "user"))
                                 .conditions(
                                         condition("name", "name")
                                 )
                                 .build(),
-                        DeleteQueryMetadata.delete(new TypeName("liteql_test", "organization"))
+                        QueryBuilder.delete(new TypeName("liteql_test", "organization"))
                                 .conditions(
                                         condition("code", "code")
                                 )

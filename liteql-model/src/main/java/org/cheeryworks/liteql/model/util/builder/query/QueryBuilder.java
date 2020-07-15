@@ -14,20 +14,28 @@ import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryFieldsBuild
 
 public class QueryBuilder {
 
-    public static ReadQueryFieldsBuilder read(TypeName domainType) {
+    public static ReadQueryFieldsBuilder read(TypeName domainTypeName) {
         ReadQueryMetadata readQueryMetadata = new ReadQueryMetadata();
 
-        readQueryMetadata.setDomainTypeName(domainType);
+        readQueryMetadata.setDomainTypeName(domainTypeName);
 
         return new ReadQueryFieldsBuilder(readQueryMetadata);
     }
 
-    public static SaveQueryFieldsBuilder<CreateQuery> create(TypeName domainType) {
-        return SaveQueryMetadata.create(domainType);
+    public static SaveQueryFieldsBuilder<CreateQuery> create(TypeName domainTypeName) {
+        SaveQueryMetadata<CreateQuery> saveQueryMetadata = new SaveQueryMetadata<>(new CreateQuery());
+
+        saveQueryMetadata.setDomainTypeName(domainTypeName);
+
+        return new SaveQueryFieldsBuilder<>(saveQueryMetadata);
     }
 
-    public static SaveQueryFieldsBuilder<UpdateQuery> update(TypeName domainType) {
-        return SaveQueryMetadata.update(domainType);
+    public static SaveQueryFieldsBuilder<UpdateQuery> update(TypeName domainTypeName) {
+        SaveQueryMetadata<UpdateQuery> saveQueryMetadata = new SaveQueryMetadata<>(new UpdateQuery());
+
+        saveQueryMetadata.setDomainTypeName(domainTypeName);
+
+        return new SaveQueryFieldsBuilder<>(saveQueryMetadata);
     }
 
     public static SaveQueriesBuilder save(SaveQueryMetadata... saveQueryMetadataArray) {
@@ -35,7 +43,10 @@ public class QueryBuilder {
     }
 
     public static DeleteQueryConditionsBuilder delete(TypeName domainTypeName) {
-        return DeleteQueryMetadata.delete(domainTypeName);
+        DeleteQueryMetadata deleteQueryMetadata = new DeleteQueryMetadata();
+        deleteQueryMetadata.setDomainTypeName(domainTypeName);
+
+        return new DeleteQueryConditionsBuilder(deleteQueryMetadata);
     }
 
     public static DeleteQueriesBuilder delete(DeleteQueryMetadata... deleteQueryMetadataArray) {

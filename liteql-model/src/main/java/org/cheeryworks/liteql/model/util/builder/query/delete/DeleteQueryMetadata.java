@@ -35,11 +35,4 @@ public class DeleteQueryMetadata {
         this.truncated = truncated;
     }
 
-    public static DeleteQueryConditionsBuilder delete(TypeName domainTypeName) {
-        DeleteQueryMetadata deleteQueryMetadata = new DeleteQueryMetadata();
-        deleteQueryMetadata.setDomainTypeName(domainTypeName);
-
-        return new DeleteQueryConditionsBuilder(deleteQueryMetadata);
-    }
-
 }
