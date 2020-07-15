@@ -5,19 +5,19 @@ import org.cheeryworks.liteql.model.util.builder.query.read.join.ReadQueryJoinsB
 
 public class ReadQueryFieldsBuilder {
 
-    private ReadQueryMetadata liteQLReadQuery;
+    private ReadQueryMetadata readQueryMetadata;
 
-    public ReadQueryFieldsBuilder(ReadQueryMetadata liteQLReadQuery) {
-        this.liteQLReadQuery = liteQLReadQuery;
+    public ReadQueryFieldsBuilder(ReadQueryMetadata readQueryMetadata) {
+        this.readQueryMetadata = readQueryMetadata;
     }
 
     public ReadQueryJoinsBuilder fields(ReadQueryFieldMetadata... readQueryFieldMetadataArray) {
         for (ReadQueryFieldMetadata readQueryFieldMetadata : readQueryFieldMetadataArray) {
-            this.liteQLReadQuery.getFields().add(
+            this.readQueryMetadata.getFields().add(
                     new FieldDefinition(readQueryFieldMetadata.getName(), readQueryFieldMetadata.getAlias()));
         }
 
-        return new ReadQueryJoinsBuilder(this.liteQLReadQuery);
+        return new ReadQueryJoinsBuilder(this.readQueryMetadata);
     }
 
 }

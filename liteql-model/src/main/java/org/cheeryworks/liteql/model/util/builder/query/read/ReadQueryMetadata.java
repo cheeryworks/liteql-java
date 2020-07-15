@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.model.util.builder.query.read;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.cheeryworks.liteql.model.query.read.AbstractReadQuery;
 import org.cheeryworks.liteql.model.query.read.join.JoinedReadQuery;
 import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.model.type.TypeName;
@@ -23,7 +24,7 @@ public class ReadQueryMetadata extends AbstractReadQueryMetadata {
 
     private LinkedHashMap<String, String> references = new LinkedHashMap<>();
 
-    private org.cheeryworks.liteql.model.query.read.AbstractReadQuery[] associations;
+    private AbstractReadQuery[] associations;
 
     public LinkedList<QuerySort> getSorts() {
         return sorts;
