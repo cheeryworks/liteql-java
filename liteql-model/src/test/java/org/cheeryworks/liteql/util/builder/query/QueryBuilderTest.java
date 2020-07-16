@@ -5,6 +5,7 @@ import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionOperator;
 import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
@@ -27,6 +28,15 @@ import static org.cheeryworks.liteql.model.util.builder.query.read.join.ReadQuer
 public class QueryBuilderTest extends AbstractTest {
 
     private Logger logger = LoggerFactory.getLogger(QueryBuilderTest.class);
+
+    @Test
+    public void testingReadQueryBuilder() {
+        ReadQuery readQuery = QueryBuilder
+                .read(new TypeName("liteql_test", "user"))
+                .getQuery();
+
+        logger.info(LiteQLJsonUtil.toJson(getObjectMapper(), readQuery));
+    }
 
     @Test
     public void testingSingleReadQueryBuilder() {

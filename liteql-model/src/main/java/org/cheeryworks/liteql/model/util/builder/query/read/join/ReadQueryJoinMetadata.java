@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.model.util.builder.query.read.join;
 
-import org.cheeryworks.liteql.model.query.read.AbstractReadQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.builder.query.read.AbstractReadQueryMetadata;
 

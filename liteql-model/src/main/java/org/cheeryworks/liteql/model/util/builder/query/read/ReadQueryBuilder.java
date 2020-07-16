@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.model.util.builder.query.read;
 
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 
-public class ReadQueryBuilder extends ReadQueryAssociationsBuilder {
+public class ReadQueryBuilder extends ReadQueryScopeBuilder<ReadQuery> {
 
     public ReadQueryBuilder(ReadQueryMetadata readQueryMetadata) {
         super(readQueryMetadata, new ReadQuery());
@@ -22,12 +22,6 @@ public class ReadQueryBuilder extends ReadQueryAssociationsBuilder {
 
     public ReadQueryTreeBuilder tree(Integer expandLevel) {
         return new ReadQueryTreeBuilder(getReadQueryMetadata(), expandLevel);
-    }
-
-    public ReadQueryAssociationsBuilder<ReadQuery> scope(String scope) {
-        getQuery().setScope(scope);
-
-        return this;
     }
 
 }
