@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cheeryworks.liteql.jooq.LiteQLJooqAutoConfiguration;
 import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.MigrationService;
+import org.cheeryworks.liteql.service.QueryConditionNormalizer;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
@@ -28,6 +29,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(LiteQLProperties.class)
@@ -81,10 +84,11 @@ public class LiteQLAutoConfiguration {
     public QueryService queryService(
             Repository repository, ObjectMapper objectMapper, DSLContext dslContext,
             ObjectProvider<SqlCustomizer> sqlCustomizer,
-            AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher) {
+            AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher,
+            ObjectProvider<List<QueryConditionNormalizer>> queryConditionNormalizers) {
         QueryService queryService = new JooqSqlQueryService(
                 repository, objectMapper, dslContext, sqlCustomizer.getIfAvailable(),
-                auditingService, applicationEventPublisher);
+                auditingService, applicationEventPublisher, queryConditionNormalizers.getIfAvailable());
 
         return queryService;
     }

@@ -21,7 +21,7 @@ public class AbstractJooqSqlQueryServiceTest extends AbstractJooqSqlTest {
 
         queryService = new JooqSqlQueryService(
                 getRepository(), getObjectMapper(), getDslContext(), null,
-                new DefaultAuditingService(), Mockito.mock(ApplicationEventPublisher.class));
+                new DefaultAuditingService(), Mockito.mock(ApplicationEventPublisher.class), null);
     }
 
     protected QueryService getQueryService() {

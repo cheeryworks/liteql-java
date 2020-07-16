@@ -36,6 +36,7 @@ import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.service.QueryConditionNormalizer;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
@@ -72,6 +73,8 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     private ApplicationEventPublisher applicationEventPublisher;
 
+    private List<QueryConditionNormalizer> queryConditionNormalizers;
+
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
@@ -88,13 +91,15 @@ public abstract class AbstractSqlQueryService implements QueryService {
             Repository repository, ObjectMapper objectMapper,
             SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor,
             AuditingService auditingService,
-            ApplicationEventPublisher applicationEventPublisher) {
+            ApplicationEventPublisher applicationEventPublisher,
+            List<QueryConditionNormalizer> queryConditionNormalizers) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.queryConditionNormalizers = queryConditionNormalizers;
     }
 
     @Override
@@ -650,19 +655,9 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private void normalize(List<QueryCondition> conditions, QueryContext queryContext) {
-        if (conditions != null) {
-            for (QueryCondition condition : conditions) {
-                if (condition.getValue() != null && condition.getValue().equals("$userId")) {
-                    if (queryContext.getUser() != null) {
-                        condition.setValue(queryContext.getUser().getId());
-                    } else {
-                        throw new IllegalStateException("Can not get user from QueryContext");
-                    }
-                }
-
-                if (condition.getConditions() != null) {
-                    normalize(condition.getConditions(), queryContext);
-                }
+        if (CollectionUtils.isNotEmpty(this.queryConditionNormalizers)) {
+            for (QueryConditionNormalizer queryConditionNormalizer : this.queryConditionNormalizers) {
+                queryConditionNormalizer.normalize(conditions, queryContext);
             }
         }
     }
