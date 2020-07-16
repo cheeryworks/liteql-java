@@ -3,14 +3,14 @@ package org.cheeryworks.liteql.model.util.builder.query;
 import org.cheeryworks.liteql.model.query.save.CreateQuery;
 import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.util.builder.query.delete.DeleteQueryMetadata;
-import org.cheeryworks.liteql.model.util.builder.query.read.ReadQueryFieldsBuilder;
-import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueriesBuilder;
 import org.cheeryworks.liteql.model.util.builder.query.delete.DeleteQueriesBuilder;
 import org.cheeryworks.liteql.model.util.builder.query.delete.DeleteQueryConditionsBuilder;
+import org.cheeryworks.liteql.model.util.builder.query.delete.DeleteQueryMetadata;
+import org.cheeryworks.liteql.model.util.builder.query.read.ReadQueryFieldsBuilder;
 import org.cheeryworks.liteql.model.util.builder.query.read.ReadQueryMetadata;
-import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryMetadata;
+import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueriesBuilder;
 import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryFieldsBuilder;
+import org.cheeryworks.liteql.model.util.builder.query.save.SaveQueryMetadata;
 
 public class QueryBuilder {
 

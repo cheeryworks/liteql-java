@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.model.query.read.PageReadQuery;
 public class ReadQueryPageBuilder extends ReadQueryScopeBuilder<PageReadQuery> {
 
     public ReadQueryPageBuilder(ReadQueryMetadata readQueryMetadata, int page, int size) {
-        super(readQueryMetadata, PageReadQuery.class);
+        super(readQueryMetadata, new PageReadQuery());
 
         readQueryMetadata.setPage(page);
         readQueryMetadata.setSize(size);
