@@ -235,8 +235,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
     private Condition getCondition(QueryConditions conditions, String parentTableAlias, String tableAlias) {
         if (CollectionUtils.isNotEmpty(conditions)) {
-            return SqlQueryServiceUtil.getConditions(
-                    getDslContext().configuration(), conditions, parentTableAlias, tableAlias);
+            return SqlQueryServiceUtil.getConditions(conditions, parentTableAlias, tableAlias);
         }
 
         return null;
@@ -264,8 +263,8 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
-                    String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
-                            + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                    String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(
+                            dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
@@ -304,8 +303,8 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                                     .eq(dataEntry.getValue()));
                 } else {
                     if (domainType.isReferenceField(dataEntry.getKey())) {
-                        String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(dataEntry.getKey()
-                                + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                        String fieldName = SqlQueryServiceUtil.getColumnNameByFieldName(
+                                dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(

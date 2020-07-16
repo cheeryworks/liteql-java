@@ -13,7 +13,6 @@ import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.query.condition.ConditionValueConverter;
 import org.jooq.Condition;
-import org.jooq.Configuration;
 import org.jooq.impl.DSL;
 
 import java.math.BigDecimal;
@@ -159,7 +158,7 @@ public abstract class SqlQueryServiceUtil {
     }
 
     public static Condition getConditions(
-            Configuration configuration, QueryConditions queryConditions, String parentTableAlias, String tableAlias) {
+            QueryConditions queryConditions, String parentTableAlias, String tableAlias) {
         Condition condition = null;
 
         if (queryConditions != null && queryConditions.size() > 0) {
@@ -276,22 +275,22 @@ public abstract class SqlQueryServiceUtil {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = condition.or(getConditions(
-                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
+                                        queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                             default:
                                 condition = condition.and(getConditions(
-                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
+                                        queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                         }
                     } else {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = DSL.or(getConditions(
-                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
+                                        queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                             default:
                                 condition = DSL.and(getConditions(
-                                        configuration, queryCondition.getConditions(), parentTableAlias, tableAlias));
+                                        queryCondition.getConditions(), parentTableAlias, tableAlias));
                                 break;
                         }
                     }
