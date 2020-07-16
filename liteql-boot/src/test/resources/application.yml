@@ -16,3 +16,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: none
+  security:
+    user:
+      name: "admin"
+      password: "admin"
+
+liteql:
+  graphql-schema-enabled: true
+  migration-enabled: true

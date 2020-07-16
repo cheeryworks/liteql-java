@@ -2,10 +2,9 @@ package org.cheeryworks.liteql.spring;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cheeryworks.liteql.boot.LiteQLAutoConfiguration;
 import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +16,15 @@ import javax.persistence.EntityManagerFactory;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnBean(EntityManagerFactory.class)
 @AutoConfigureAfter(HibernateJpaAutoConfiguration.class)
-@AutoConfigureBefore(LiteQLAutoConfiguration.class)
 @Import({
         JpaSchemaServiceController.class,
 })
 public class LiteQLSpringJpaAutoConfiguration {
+
+    @Bean
+    public SqlCustomizer sqlCustomizer(EntityManagerFactory entityManagerFactory) {
+        return new JpaSqlCustomizer(entityManagerFactory);
+    }
 
     @Bean
     public JpaSchemaService jpaSchemaService(EntityManagerFactory entityManagerFactory, ObjectMapper objectMapper) {

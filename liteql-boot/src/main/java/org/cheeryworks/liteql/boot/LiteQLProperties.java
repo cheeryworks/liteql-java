@@ -9,9 +9,11 @@ public class LiteQLProperties {
 
     private boolean enabled = true;
 
-    private boolean liteQLBasedGraphQLSchemaEnabled = false;
+    private boolean graphQLSchemaEnabled = false;
 
     private boolean annotationBasedGraphQLSchemaEnabled = true;
+
+    private boolean migrationEnabled = false;
 
     public boolean isEnabled() {
         return enabled;
@@ -21,12 +23,12 @@ public class LiteQLProperties {
         this.enabled = enabled;
     }
 
-    public boolean isLiteQLBasedGraphQLSchemaEnabled() {
-        return liteQLBasedGraphQLSchemaEnabled;
+    public boolean isGraphQLSchemaEnabled() {
+        return graphQLSchemaEnabled;
     }
 
-    public void setLiteQLBasedGraphQLSchemaEnabled(boolean liteQLBasedGraphQLSchemaEnabled) {
-        this.liteQLBasedGraphQLSchemaEnabled = liteQLBasedGraphQLSchemaEnabled;
+    public void setGraphQLSchemaEnabled(boolean graphQLSchemaEnabled) {
+        this.graphQLSchemaEnabled = graphQLSchemaEnabled;
     }
 
     public boolean isAnnotationBasedGraphQLSchemaEnabled() {
@@ -35,6 +37,14 @@ public class LiteQLProperties {
 
     public void setAnnotationBasedGraphQLSchemaEnabled(boolean annotationBasedGraphQLSchemaEnabled) {
         this.annotationBasedGraphQLSchemaEnabled = annotationBasedGraphQLSchemaEnabled;
+    }
+
+    public boolean isMigrationEnabled() {
+        return migrationEnabled;
+    }
+
+    public void setMigrationEnabled(boolean migrationEnabled) {
+        this.migrationEnabled = migrationEnabled;
     }
 
 }

@@ -6,6 +6,7 @@ import org.cheeryworks.liteql.model.type.UserEntity;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -30,7 +31,7 @@ public class SpringSecurityBasedQueryContextHandlerMethodArgumentResolver implem
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            user = (UserEntity) authentication.getPrincipal();
+            user = new SpringSecurityUser((UserDetails) authentication.getPrincipal());
         }
 
         return new DefaultQueryContext(user);
