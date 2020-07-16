@@ -25,7 +25,11 @@ public class DecimalField extends AbstractNullableField {
     }
 
     public DecimalField() {
-        super(DataType.Decimal);
+        this(null);
+    }
+
+    public DecimalField(Boolean graphQLField) {
+        super(DataType.Decimal, graphQLField);
     }
 
 }

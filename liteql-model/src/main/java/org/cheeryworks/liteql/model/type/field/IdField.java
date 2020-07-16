@@ -9,7 +9,7 @@ public class IdField extends AbstractField {
     public static final int ID_FIELD_LENGTH = 128;
 
     public IdField() {
-        super(DataType.String);
+        super(DataType.String, true);
     }
 
     public int getLength() {

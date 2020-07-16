@@ -5,7 +5,11 @@ import org.cheeryworks.liteql.model.enums.DataType;
 public class ClobField extends AbstractNullableField {
 
     public ClobField() {
-        super(DataType.Clob);
+        this(null);
+    }
+
+    public ClobField(Boolean graphQLField) {
+        super(DataType.Clob, graphQLField);
     }
 
 }

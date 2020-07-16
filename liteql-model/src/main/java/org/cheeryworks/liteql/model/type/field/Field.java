@@ -14,6 +14,4 @@ public interface Field extends Serializable {
 
     boolean isGraphQLField();
 
-    void setGraphQLField(Boolean graphQLField);
-
 }

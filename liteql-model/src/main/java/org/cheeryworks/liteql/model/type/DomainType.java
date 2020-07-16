@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.model.type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Index;
 import org.cheeryworks.liteql.model.type.index.Unique;
@@ -53,7 +54,7 @@ public class DomainType extends TraitType {
         if (getFields() != null && getFields().size() > 0) {
             for (Field field : getFields()) {
                 if (field instanceof ReferenceField
-                        && field.getName().toLowerCase().equals(fieldName.toLowerCase())) {
+                        && field.getName().equalsIgnoreCase(fieldName)) {
                     return true;
                 }
             }
@@ -70,6 +71,42 @@ public class DomainType extends TraitType {
         }
 
         return null;
+    }
+
+    public boolean isPersistentDomainType() {
+        boolean haveIdField = false;
+        boolean havePersistentField = false;
+
+        if (getFields() != null && getFields().size() > 0) {
+            for (Field field : getFields()) {
+                if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
+                    haveIdField = true;
+                } else if (field instanceof ReferenceField) {
+                    ReferenceField referenceField = (ReferenceField) field;
+                    havePersistentField = !referenceField.isCollection();
+                } else {
+                    havePersistentField = true;
+                }
+            }
+        }
+
+        return haveIdField && havePersistentField;
+    }
+
+    public boolean isGraphQLObjectTypeOnly() {
+        boolean haveGraphQLField = false;
+
+        if (getFields() != null && getFields().size() > 0) {
+            for (Field field : getFields()) {
+                if (field.isGraphQLField()) {
+                    haveGraphQLField = true;
+                }
+            }
+        }
+
+        boolean onlyHaveGraphQLField = !isPersistentDomainType();
+
+        return haveGraphQLField && onlyHaveGraphQLField;
     }
 
 }

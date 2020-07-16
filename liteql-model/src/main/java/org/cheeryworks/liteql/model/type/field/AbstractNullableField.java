@@ -24,8 +24,12 @@ public abstract class AbstractNullableField extends AbstractField {
         return nullable.booleanValue();
     }
 
-    protected AbstractNullableField(DataType type) {
-        super(type);
+    protected AbstractNullableField(DataType dataType) {
+        super(dataType);
+    }
+
+    protected AbstractNullableField(DataType dataType, Boolean graphQLField) {
+        super(dataType, graphQLField);
     }
 
 }

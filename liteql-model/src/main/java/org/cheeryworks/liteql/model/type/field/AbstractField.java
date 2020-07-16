@@ -11,8 +11,13 @@ public abstract class AbstractField implements Field {
 
     private Boolean graphQLField;
 
-    protected AbstractField(DataType type) {
-        this.type = type;
+    protected AbstractField(DataType dataType) {
+        this(dataType, null);
+    }
+
+    protected AbstractField(DataType dataType, Boolean graphQLField) {
+        this.type = dataType;
+        this.graphQLField = graphQLField;
     }
 
     @Override
@@ -42,11 +47,6 @@ public abstract class AbstractField implements Field {
         }
 
         return graphQLField.booleanValue();
-    }
-
-    @Override
-    public void setGraphQLField(Boolean graphQLField) {
-        this.graphQLField = graphQLField;
     }
 
     @Override

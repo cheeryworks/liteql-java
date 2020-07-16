@@ -237,9 +237,7 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
                 }
             }
 
-            GraphQLField graphQLField = AnnotationUtils.findAnnotation(javaField, GraphQLField.class);
-
-            boolean isGraphQLField = (graphQLField == null || !graphQLField.ignore()) ? true : false;
+            GraphQLField graphQLField = javaField.getAnnotation(GraphQLField.class);
 
             boolean isLobField = AnnotationUtils.findAnnotation(javaField, Lob.class) != null ? true : false;
 
@@ -248,7 +246,7 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
 
             Field field = getField(
                     attribute.getName(), type, length, nullable,
-                    isGraphQLField, isLobField, referenceField);
+                    graphQLField, isLobField, referenceField);
 
             fields.add(field);
         }
@@ -328,7 +326,9 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
 
                 String name = BeanUtils.findPropertyForMethod(method).getName();
 
-                Field field = getField(name, fieldType, null, true, true, false, null);
+                GraphQLField graphQLField = method.getAnnotation(GraphQLField.class);
+
+                Field field = getField(name, fieldType, null, true, graphQLField, false, null);
 
                 fields.add(field);
             }
@@ -338,47 +338,49 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
     }
 
     private Field getField(
-            String name, Class fieldType, Integer length, boolean nullable, boolean isGraphQLField,
+            String name, Class fieldType, Integer length, boolean nullable, GraphQLField graphQLField,
             boolean isLobField, ReferenceField referenceFieldAnnotation) {
         AbstractField field = null;
+
+        Boolean isGraphQLField = (graphQLField != null && graphQLField.ignore()) ? false : null;
 
         if (IdField.ID_FIELD_NAME.equalsIgnoreCase(name)) {
             IdField idField = new IdField();
 
             field = idField;
         } else if (fieldType.equals(String.class) && !isLobField && referenceFieldAnnotation == null) {
-            StringField stringField = new StringField();
+            StringField stringField = new StringField(isGraphQLField);
 
             stringField.setLength(length);
 
             field = stringField;
         } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
-            IntegerField integerField = new IntegerField();
+            IntegerField integerField = new IntegerField(isGraphQLField);
 
             field = integerField;
         } else if (Date.class.isAssignableFrom(fieldType)) {
-            TimestampField timestampField = new TimestampField();
+            TimestampField timestampField = new TimestampField(isGraphQLField);
 
             field = timestampField;
         } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
-            BooleanField booleanField = new BooleanField();
+            BooleanField booleanField = new BooleanField(isGraphQLField);
 
             field = booleanField;
         } else if (fieldType.equals(BigDecimal.class)) {
-            DecimalField decimalField = new DecimalField();
+            DecimalField decimalField = new DecimalField(isGraphQLField);
 
             field = decimalField;
         } else if (fieldType.equals(String.class) && isLobField) {
-            ClobField clobField = new ClobField();
+            ClobField clobField = new ClobField(isGraphQLField);
 
             field = clobField;
         } else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
-            BlobField blobField = new BlobField();
+            BlobField blobField = new BlobField(isGraphQLField);
 
             field = blobField;
         } else if (fieldType.equals(String.class) && referenceFieldAnnotation != null) {
             org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
-                    = new org.cheeryworks.liteql.model.type.field.ReferenceField();
+                    = new org.cheeryworks.liteql.model.type.field.ReferenceField(isGraphQLField);
 
             referenceField.setName(StringUtils.removeEnd(name, "Id"));
             referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
@@ -393,10 +395,6 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
 
             if (field instanceof AbstractNullableField && !nullable) {
                 ((AbstractNullableField) field).setNullable(false);
-            }
-
-            if (!isGraphQLField) {
-                field.setGraphQLField(false);
             }
         }
 

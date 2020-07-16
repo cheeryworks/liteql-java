@@ -5,7 +5,11 @@ import org.cheeryworks.liteql.model.enums.DataType;
 public class BooleanField extends AbstractField {
 
     public BooleanField() {
-        super(DataType.Boolean);
+        this(null);
+    }
+
+    public BooleanField(Boolean graphQLField) {
+        super(DataType.Boolean, graphQLField);
     }
 
     public boolean isNullable() {

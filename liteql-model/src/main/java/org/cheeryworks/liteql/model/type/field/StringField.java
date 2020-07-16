@@ -15,7 +15,11 @@ public class StringField extends AbstractNullableField {
     }
 
     public StringField() {
-        super(DataType.String);
+        this(null);
+    }
+
+    public StringField(Boolean graphQLField) {
+        super(DataType.String, graphQLField);
     }
 
 }
