@@ -7,23 +7,37 @@
       "length": 128
     },
     {
-      "name": "userId",
+      "name": "user",
       "type": "reference",
       "domainTypeName": "liteql_test.user"
     },
     {
-      "name": "organizationId",
+      "name": "organization",
       "type": "reference",
       "domainTypeName": "liteql_test.organization"
     },
     {
       "name": "master",
       "type": "boolean"
-    },
-    {
-      "name": "domainId",
-      "type": "string",
-      "length": 255
     }
+  ],
+  "uniques": [
+    {
+      "fields": [
+        "user",
+        "organization"
+      ]
+    }
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "user",
+        "organization"
+      ]
+    }
+  ],
+  "traits": [
+    "liteql.entity"
   ]
 }

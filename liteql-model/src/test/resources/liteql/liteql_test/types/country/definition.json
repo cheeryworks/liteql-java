@@ -15,6 +15,18 @@
       "type": "string",
       "length": 255,
       "nullable": false
+    },
+    {
+      "name": "users",
+      "type": "reference",
+      "domainTypeName": "liteql_test.user",
+      "collection": true
+    },
+    {
+      "name": "organizations",
+      "type": "reference",
+      "domainTypeName": "liteql_test.organization",
+      "collection": true
     }
   ],
   "uniques": [
@@ -23,5 +35,15 @@
         "code"
       ]
     }
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "name"
+      ]
+    }
+  ],
+  "traits": [
+    "liteql.entity"
   ]
 }

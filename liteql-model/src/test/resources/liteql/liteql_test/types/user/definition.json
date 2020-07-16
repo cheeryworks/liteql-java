@@ -43,6 +43,13 @@
       "domainTypeName": "liteql_test.organization"
     },
     {
+      "name": "organizations",
+      "type": "reference",
+      "domainTypeName": "liteql_test.organization",
+      "mappedDomainTypeName": "liteql_test.user_organization",
+      "collection": true
+    },
+    {
       "name": "country",
       "type": "reference",
       "domainTypeName": "liteql_test.country"
