@@ -5,28 +5,21 @@
       "fields": [
         {
           "name": "id",
-          "type": "string",
-          "nullable": false,
-          "length": 128
+          "type": "id"
         },
         {
-          "name": "userId",
+          "name": "user",
           "type": "reference",
           "domainTypeName": "liteql_test.user"
         },
         {
-          "name": "organizationId",
+          "name": "organization",
           "type": "reference",
           "domainTypeName": "liteql_test.organization"
         },
         {
           "name": "master",
           "type": "boolean"
-        },
-        {
-          "name": "domainId",
-          "type": "string",
-          "length": 255
         }
       ]
     }

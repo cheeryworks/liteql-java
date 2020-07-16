@@ -6,9 +6,7 @@
       "fields": [
         {
           "name": "id",
-          "type": "string",
-          "nullable": false,
-          "length": 128
+          "type": "id"
         },
         {
           "name": "username",

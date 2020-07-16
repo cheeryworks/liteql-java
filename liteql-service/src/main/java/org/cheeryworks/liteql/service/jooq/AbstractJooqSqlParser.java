@@ -151,16 +151,12 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
     private DataType getJooqDataType(Field field) {
         switch (field.getType()) {
+            case Id:
+                return JOOQDataType.getStringDataType(false, IdField.ID_FIELD_LENGTH);
             case String:
-                if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
-                    IdField idField = (IdField) field;
+                StringField stringField = (StringField) field;
 
-                    return JOOQDataType.getStringDataType(idField.isNullable(), idField.getLength());
-                } else {
-                    StringField stringField = (StringField) field;
-
-                    return JOOQDataType.getStringDataType(stringField.isNullable(), stringField.getLength());
-                }
+                return JOOQDataType.getStringDataType(stringField.isNullable(), stringField.getLength());
             case Integer:
                 IntegerField integerField = (IntegerField) field;
 

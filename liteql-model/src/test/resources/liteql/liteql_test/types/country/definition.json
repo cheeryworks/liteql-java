@@ -2,7 +2,7 @@
   "fields": [
     {
       "name": "id",
-      "type": "string"
+      "type": "id"
     },
     {
       "name": "name",

@@ -350,6 +350,7 @@ public abstract class SqlQueryServiceUtil {
 
     private static Class getDataType(DataType dataType) {
         switch (dataType) {
+            case Id:
             case Reference:
             case String:
                 return String.class;
