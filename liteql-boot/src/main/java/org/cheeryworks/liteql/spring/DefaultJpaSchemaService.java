@@ -15,6 +15,7 @@ import org.cheeryworks.liteql.model.type.Entity;
 import org.cheeryworks.liteql.model.type.Trait;
 import org.cheeryworks.liteql.model.type.TraitType;
 import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.model.type.field.AbstractField;
 import org.cheeryworks.liteql.model.type.field.AbstractNullableField;
 import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.BooleanField;
@@ -339,7 +340,7 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
     private Field getField(
             String name, Class fieldType, Integer length, boolean nullable, boolean isGraphQLField,
             boolean isLobField, ReferenceField referenceFieldAnnotation) {
-        Field field = null;
+        AbstractField field = null;
 
         if (IdField.ID_FIELD_NAME.equalsIgnoreCase(name)) {
             IdField idField = new IdField();
