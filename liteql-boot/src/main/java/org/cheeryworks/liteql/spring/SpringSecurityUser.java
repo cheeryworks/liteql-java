@@ -11,15 +11,13 @@ public class SpringSecurityUser implements UserDetails, UserEntity {
 
     private UserDetails userDetails;
 
-    private String id;
+    private UserEntity user;
 
-    private String name;
+    public SpringSecurityUser(UserEntity user) {
+        Assert.notNull(user, "UserEntity is required");
 
-    private String email;
-
-    private String phone;
-
-    private String avatarUrl;
+        this.user = user;
+    }
 
     public SpringSecurityUser(UserDetails userDetails) {
         Assert.notNull(userDetails, "UserDetails is required");
@@ -29,47 +27,27 @@ public class SpringSecurityUser implements UserDetails, UserEntity {
 
     @Override
     public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+        return this.user.getId();
     }
 
     @Override
     public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return this.user.getName();
     }
 
     @Override
     public String getEmail() {
-        return this.email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+        return this.user.getEmail();
     }
 
     @Override
     public String getPhone() {
-        return this.phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
+        return this.user.getPhone();
     }
 
     @Override
     public String getAvatarUrl() {
-        return this.avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+        return this.user.getAvatarUrl();
     }
 
     @Override

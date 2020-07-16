@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.spring;
 
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +17,7 @@ import java.util.List;
 public class LiteQLSpringSecurityAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
+    @ConditionalOnMissingBean(WebSecurityConfigurerAdapter.class)
     public static class BasicAuthConfiguration extends WebSecurityConfigurerAdapter {
 
         @Override

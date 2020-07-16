@@ -31,7 +31,11 @@ public class SpringSecurityBasedQueryContextHandlerMethodArgumentResolver implem
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            user = new SpringSecurityUser((UserDetails) authentication.getPrincipal());
+            if (authentication.getPrincipal() instanceof UserEntity) {
+                user = new SpringSecurityUser((UserEntity) authentication.getPrincipal());
+            } else if (authentication.getPrincipal() instanceof UserDetails) {
+                user = new SpringSecurityUser((UserDetails) authentication.getPrincipal());
+            }
         }
 
         return new DefaultQueryContext(user);
