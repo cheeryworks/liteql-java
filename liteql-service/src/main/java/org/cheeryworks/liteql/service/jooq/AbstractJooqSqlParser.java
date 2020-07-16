@@ -3,6 +3,7 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
+import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.BlobField;
 import org.cheeryworks.liteql.model.type.field.ClobField;
@@ -32,6 +33,7 @@ import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +41,7 @@ import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.INDEX_KEY_PR
 import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.PRIMARY_KEY_PREFIX;
 import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.UNIQUE_KEY_PREFIX;
 import static org.jooq.impl.DSL.constraint;
+import static org.jooq.impl.DSL.table;
 
 public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
@@ -82,12 +85,14 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
             TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
         String tableName = getTableName(domainTypeName);
 
+        DomainType domainType = getRepository().getDomainType(domainTypeName);
+
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
             for (AbstractIndex index : indexMigrationOperation.getIndexes()) {
                 String fieldsInString = Arrays.toString(
                         index.getFields().toArray(new String[index.getFields().size()]));
-                String indexName = IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX
+                String indexName = (IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX)
                         + StringEncoder.md5(tableName + "_" + fieldsInString).substring(0, 20);
 
                 Query query;
@@ -101,7 +106,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
                     } else {
                         query = getDslContext()
                                 .createIndex(indexName)
-                                .on(tableName, index.getFields().toArray(new String[index.getFields().size()]));
+                                .on(table(tableName), transformToJooqFields(domainType, index.getFields()));
                     }
                 } else {
                     if (MigrationOperationType.DROP_UNIQUE.equals(indexMigrationOperation.getType())) {
@@ -113,8 +118,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
                         query = getDslContext()
                                 .alterTable(tableName)
                                 .add(constraint(indexName).
-                                        unique(index.getFields().toArray(
-                                                new String[index.getFields().size()])));
+                                        unique(transformToJooqFields(domainType, index.getFields())));
                     }
                 }
 
@@ -125,23 +129,27 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
         return sqls;
     }
 
-    protected List<org.jooq.Field> getJooqFields(Set<Field> fields, Database database) {
+    protected List<org.jooq.Field> getJooqFields(Set<Field> fields) {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
         for (Field field : fields) {
             String fieldName = StringUtil.camelNameToLowerDashConnectedLowercaseName(field.getName());
 
             if (field instanceof ReferenceField) {
+                if (((ReferenceField) field).isCollection()) {
+                    continue;
+                }
+
                 fieldName += "_" + IdField.ID_FIELD_NAME;
             }
 
-            jooqFields.add(DSL.field(fieldName, getJooqDataType(field, database)));
+            jooqFields.add(DSL.field(fieldName, getJooqDataType(field)));
         }
 
         return jooqFields;
     }
 
-    private DataType getJooqDataType(Field field, Database database) {
+    private DataType getJooqDataType(Field field) {
         switch (field.getType()) {
             case String:
                 if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
@@ -178,6 +186,28 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
             default:
                 throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
         }
+    }
+
+    private org.jooq.Field[] transformToJooqFields(DomainType domainType, Set<String> fieldNames) {
+        Set<Field> fields = new LinkedHashSet<>();
+
+        for (String fieldName : fieldNames) {
+            boolean exist = false;
+
+            for (Field field : domainType.getFields()) {
+                if (field.getName().equalsIgnoreCase(fieldName)) {
+                    fields.add(field);
+
+                    exist = true;
+                }
+            }
+
+            if (!exist) {
+                throw new IllegalStateException("Can not find Field [" + fieldName + "]");
+            }
+        }
+
+        return getJooqFields(fields).toArray(new org.jooq.Field[fieldNames.size()]);
     }
 
     @Override

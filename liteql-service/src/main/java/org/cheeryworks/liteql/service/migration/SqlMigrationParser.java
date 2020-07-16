@@ -9,6 +9,6 @@ public interface SqlMigrationParser extends SqlParser {
 
     List<String> migrationsToSql(String schemaName);
 
-    List<String> migrationToSql(String schemaName, Migration migration);
+    List<String> migrationToSql(Migration migration);
 
 }

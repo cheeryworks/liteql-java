@@ -42,7 +42,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
         if (MapUtils.isNotEmpty(migrations)) {
             for (Map.Entry<TypeName, Map<String, Migration>> migrationsEntry : migrations.entrySet()) {
                 for (Map.Entry<String, Migration> migrationOfDomainType : migrationsEntry.getValue().entrySet()) {
-                    migrationsInSql.addAll(migrationToSql(schemaName, migrationOfDomainType.getValue()));
+                    migrationsInSql.addAll(migrationToSql(migrationOfDomainType.getValue()));
                 }
             }
         }
@@ -51,7 +51,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
     }
 
     @Override
-    public List<String> migrationToSql(String schemaName, Migration migration) {
+    public List<String> migrationToSql(Migration migration) {
         List<String> migrationInSql = new ArrayList<>();
 
         for (MigrationOperation operation : migration.getOperations()) {
@@ -102,7 +102,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
 
-        for (Field field : getJooqFields(createTypeMigrationOperation.getFields(), getDatabase())) {
+        for (Field field : getJooqFields(createTypeMigrationOperation.getFields())) {
             if (createTableColumnStep == null) {
                 createTableColumnStep = createTableColumnStep.column(field, field.getDataType());
             } else {
@@ -131,7 +131,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
 
         String tableName = getTableName(domainTypeName);
 
-        List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields(), getDatabase());
+        List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields());
 
         for (org.jooq.Field jooqField : jooqFields) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()

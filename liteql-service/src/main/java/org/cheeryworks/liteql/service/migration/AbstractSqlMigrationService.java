@@ -73,7 +73,7 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
                         if (StringUtils.isBlank(latestVersion) || migration.getVersion().compareTo(latestVersion) > 0) {
                             getSqlMigrationExecutor().migrate(
                                     schema, migration.getVersion(), migration.getDescription(),
-                                    getSqlMigrationParser().migrationToSql(schema, migration));
+                                    getSqlMigrationParser().migrationToSql(migration));
                         }
                     }
                 }
