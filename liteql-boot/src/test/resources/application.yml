@@ -22,5 +22,4 @@ spring:
       password: "admin"
 
 liteql:
-  graphql-schema-enabled: true
   migration-enabled: true

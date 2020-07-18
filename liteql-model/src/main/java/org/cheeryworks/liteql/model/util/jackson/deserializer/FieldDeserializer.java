@@ -13,6 +13,7 @@ import org.cheeryworks.liteql.model.type.field.DecimalField;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
+import org.cheeryworks.liteql.model.type.field.LongField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
 import org.cheeryworks.liteql.model.type.field.TimestampField;
@@ -44,6 +45,8 @@ public class FieldDeserializer extends StdDeserializer<Field> {
                         } else {
                             return jsonParser.getCodec().treeToValue(node, StringField.class);
                         }
+                    case Long:
+                        return jsonParser.getCodec().treeToValue(node, LongField.class);
                     case Integer:
                         return jsonParser.getCodec().treeToValue(node, IntegerField.class);
                     case Timestamp:

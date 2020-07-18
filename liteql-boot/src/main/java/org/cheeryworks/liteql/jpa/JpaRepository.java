@@ -1,14 +1,14 @@
-package org.cheeryworks.liteql.spring;
+package org.cheeryworks.liteql.jpa;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.cheeryworks.liteql.model.annotation.Position;
 import org.cheeryworks.liteql.model.annotation.ReferenceField;
 import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
+import org.cheeryworks.liteql.model.annotation.graphql.GraphQLEntity;
 import org.cheeryworks.liteql.model.annotation.graphql.GraphQLField;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.Entity;
@@ -30,9 +30,8 @@ import org.cheeryworks.liteql.model.type.index.Index;
 import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.util.ClassUtil;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.model.util.StringUtil;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.PathMatchingResourceRepository;
 import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -48,14 +47,9 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,59 +59,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
-public class DefaultJpaSchemaService implements JpaSchemaService {
+public class JpaRepository extends PathMatchingResourceRepository {
 
-    private EntityManagerFactory entityManagerFactory;
+    public JpaRepository(ObjectMapper objectMapper, EntityManagerFactory entityManagerFactory) {
+        super(objectMapper, "classpath*:/liteql");
 
-    private ObjectMapper objectMapper;
+        Map<String, Set<TypeName>> typeNameWithinSchemas = getTypeNameWithinSchemas(entityManagerFactory);
 
-    public DefaultJpaSchemaService(EntityManagerFactory entityManagerFactory, ObjectMapper objectMapper) {
-        this.entityManagerFactory = entityManagerFactory;
-        this.objectMapper = objectMapper;
+        for (Map.Entry<String, Set<TypeName>> typeNameWithinSchema : typeNameWithinSchemas.entrySet()) {
+            for (TypeName typeName : typeNameWithinSchema.getValue()) {
+                addType(typeName);
+            }
+        }
     }
 
-    @Override
-    public void exportSql(String outputFileAbsolutePath) {
-        throw new UnsupportedOperationException();
-//        StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
-//
-//        registryBuilder
-//                .applySettings(entityManagerFactory.getProperties());
-//
-//
-//        if (StringUtils.isNotEmpty(dialect)) {
-//            registryBuilder.applySetting(DIALECT, dialect);
-//        }
-//
-//        MetadataSources metadataSources = new MetadataSources(registryBuilder.build());
-//
-//        for (ManagedType managedType : entityManagerFactory.getMetamodel().getManagedTypes()) {
-//            metadataSources.addAnnotatedClass(managedType.getJavaType());
-//        }
-//
-//        if (StringUtils.isNotEmpty(delimiter)) {
-//            delimiter = ";";
-//        }
-//
-//        SchemaExport schemaExport = new SchemaExport()
-//                .setHaltOnError(true)
-//                .setFormat(true)
-//                .setDelimiter(delimiter)
-//                .setOutputFile(outputFileAbsolutePath);
-//
-//        schemaExport.execute(EnumSet.of(STDOUT, SCRIPT), SchemaExport.Action.BOTH, metadataSources.buildMetadata());
-    }
-
-    @Override
-    public void exportLiteQL(String outputFileAbsolutePath) throws IOException {
-        exportLiteQLSchemaAsFiles(outputFileAbsolutePath, getTypeNameWithinSchemas());
-    }
-
-    @Override
-    public Map<String, Set<TypeName>> getTypeNameWithinSchemas() {
+    private Map<String, Set<TypeName>> getTypeNameWithinSchemas(EntityManagerFactory entityManagerFactory) {
         Map<String, Set<TypeName>> typeNameWithinSchemas = new HashMap<>();
 
         for (EntityType<?> entityType : entityManagerFactory.getMetamodel().getEntities()) {
@@ -137,7 +94,7 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
             }
         }
 
-        ClassPathScanningCandidateComponentProvider scanner =
+        ClassPathScanningCandidateComponentProvider resourceDefinitionScanner =
                 new ClassPathScanningCandidateComponentProvider(false) {
                     protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
                         AnnotationMetadata metadata = beanDefinition.getMetadata();
@@ -150,16 +107,16 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
                     }
                 };
 
-        scanner.addIncludeFilter(new AnnotationTypeFilter(ResourceDefinition.class));
+        resourceDefinitionScanner.addIncludeFilter(new AnnotationTypeFilter(ResourceDefinition.class));
 
-        Set<BeanDefinition> beanDefinitions = new HashSet<>();
+        Set<BeanDefinition> resourceDefinitionBeans = new HashSet<>();
 
         for (String packageToScan : LiteQLConstants.getPackageToScan()) {
-            beanDefinitions.addAll(scanner.findCandidateComponents(packageToScan));
+            resourceDefinitionBeans.addAll(resourceDefinitionScanner.findCandidateComponents(packageToScan));
         }
 
-        for (BeanDefinition beanDefinition : beanDefinitions) {
-            Class traitInterface = ClassUtil.getClass(beanDefinition.getBeanClassName());
+        for (BeanDefinition resourceDefinitionBean : resourceDefinitionBeans) {
+            Class traitInterface = ClassUtil.getClass(resourceDefinitionBean.getBeanClassName());
 
             if (Entity.class.isAssignableFrom(traitInterface) && traitInterface.isInterface()) {
                 TypeName typeName = Trait.getTypeName(traitInterface);
@@ -182,8 +139,15 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
         return typeNameWithinSchemas;
     }
 
-    private DomainType entityTypeToDomainType(EntityType<?> entityType, TypeName typeName) {
+    private DomainType entityTypeToDomainType(
+            EntityType<?> entityType, TypeName typeName) {
         DomainType domainType = new DomainType(typeName);
+
+        GraphQLEntity graphQLEntity = entityType.getJavaType().getAnnotation(GraphQLEntity.class);
+
+        if (graphQLEntity == null) {
+            domainType.setGraphQLType(false);
+        }
 
         performFieldsOfDomain(domainType, entityType);
 
@@ -354,6 +318,12 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
             stringField.setLength(length);
 
             field = stringField;
+        } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
+            StringField stringField = new StringField(isGraphQLField);
+
+            stringField.setLength(length);
+
+            field = stringField;
         } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
             IntegerField integerField = new IntegerField(isGraphQLField);
 
@@ -383,7 +353,13 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
                     = new org.cheeryworks.liteql.model.type.field.ReferenceField(isGraphQLField);
 
             referenceField.setName(StringUtils.removeEnd(name, "Id"));
-            referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+
+            if (getTraitImplements().containsKey(referenceFieldAnnotation.targetDomainType())) {
+                referenceField.setDomainTypeName(
+                        Trait.getTypeName(getTraitImplements().get(referenceFieldAnnotation.targetDomainType())));
+            } else {
+                referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+            }
 
             field = referenceField;
         }
@@ -431,85 +407,6 @@ public class DefaultJpaSchemaService implements JpaSchemaService {
         if (CollectionUtils.isNotEmpty(typeNames)) {
             traitType.setTraits(typeNames);
         }
-    }
-
-    private void exportLiteQLSchemaAsFiles(
-            String outputFileAbsolutePath, Map<String, Set<TypeName>> domainTypesWithinSchemas) throws IOException {
-        File liteQLRoot = new File(outputFileAbsolutePath + "/liteql");
-
-        if (liteQLRoot.exists()) {
-            FileUtils.deleteDirectory(liteQLRoot);
-        } else {
-            liteQLRoot.mkdir();
-        }
-
-        for (Map.Entry<String, Set<TypeName>> domainTypesWithinSchema : domainTypesWithinSchemas.entrySet()) {
-            File liteQLSchema = new File(
-                    liteQLRoot.getPath() + "/" + domainTypesWithinSchema.getKey()
-                            + Repository.SUFFIX_OF_SCHEMA_ROOT_FILE);
-
-            FileUtils.write(liteQLSchema, "", StandardCharsets.UTF_8);
-
-            File liteQLSchemaDirectory = new File(
-                    liteQLRoot.getPath()
-                            + "/" + domainTypesWithinSchema.getKey()
-                            + "/" + Repository.NAME_OF_TYPES_DIRECTORY);
-
-            liteQLSchemaDirectory.mkdirs();
-
-            for (TypeName domainTypeName : domainTypesWithinSchema.getValue()) {
-                File liteQLModelDirectory = new File(liteQLSchemaDirectory.getPath() + "/" + domainTypeName.getName());
-
-                liteQLModelDirectory.mkdir();
-
-                File liteQLModelDefinition = new File(liteQLModelDirectory + "/" + Repository.NAME_OF_TYPE_DEFINITION);
-
-                FileUtils.write(
-                        liteQLModelDefinition, LiteQLJsonUtil.toJson(objectMapper, domainTypeName) + "\n",
-                        StandardCharsets.UTF_8);
-            }
-        }
-
-        FileOutputStream fos = new FileOutputStream(outputFileAbsolutePath + "/liteql.zip");
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-        zipFile(liteQLRoot, liteQLRoot.getName(), zipOut);
-        zipOut.close();
-        fos.close();
-    }
-
-    private void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
-        if (fileToZip.isHidden()) {
-            return;
-        }
-
-        if (fileToZip.isDirectory()) {
-            if (fileName.endsWith("/")) {
-                zipOut.putNextEntry(new ZipEntry(fileName));
-                zipOut.closeEntry();
-            } else {
-                zipOut.putNextEntry(new ZipEntry(fileName + "/"));
-                zipOut.closeEntry();
-            }
-
-            File[] children = fileToZip.listFiles();
-            for (File childFile : children) {
-                zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
-            }
-
-            return;
-        }
-
-        FileInputStream fis = new FileInputStream(fileToZip);
-        ZipEntry zipEntry = new ZipEntry(fileName);
-        zipOut.putNextEntry(zipEntry);
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zipOut.write(bytes, 0, length);
-        }
-
-        fis.close();
     }
 
 }

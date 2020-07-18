@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.spring;
+package org.cheeryworks.liteql.spring.security.web;
 
 import org.cheeryworks.liteql.model.query.DefaultQueryContext;
 import org.cheeryworks.liteql.model.query.QueryContext;
@@ -12,7 +12,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-public class SpringSecurityBasedQueryContextHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class QueryContextHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         if (QueryContext.class.equals(parameter.getParameterType())) {
@@ -32,9 +32,9 @@ public class SpringSecurityBasedQueryContextHandlerMethodArgumentResolver implem
 
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication.getPrincipal() instanceof UserEntity) {
-                user = new SpringSecurityUser((UserEntity) authentication.getPrincipal());
+                user = new SecurityUser((UserEntity) authentication.getPrincipal());
             } else if (authentication.getPrincipal() instanceof UserDetails) {
-                user = new SpringSecurityUser((UserDetails) authentication.getPrincipal());
+                user = new SecurityUser((UserDetails) authentication.getPrincipal());
             }
         }
 

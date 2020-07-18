@@ -1,18 +1,22 @@
-package org.cheeryworks.liteql.jooq;
+package org.cheeryworks.liteql.boot.configuration.jooq;
 
 
 import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
 import org.jooq.conf.SettingsTools;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureBefore({JooqAutoConfiguration.class})
+@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@AutoConfigureBefore({JooqAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 public class LiteQLJooqAutoConfiguration {
 
     @Bean

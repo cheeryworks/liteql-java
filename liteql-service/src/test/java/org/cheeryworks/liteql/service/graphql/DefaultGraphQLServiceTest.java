@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+
 import static org.cheeryworks.liteql.model.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
 
 public class DefaultGraphQLServiceTest extends AbstractJooqSqlQueryServiceTest {
@@ -22,7 +24,8 @@ public class DefaultGraphQLServiceTest extends AbstractJooqSqlQueryServiceTest {
 
     public DefaultGraphQLServiceTest() {
         this.graphQLService = new DefaultGraphQLService(
-                getRepository(), getObjectMapper(), getQueryService(), true, false);
+                getRepository(), getObjectMapper(), getQueryService(),
+                Collections.singletonList(new DefaultGraphQLSchemaProcessor()));
     }
 
     @Test

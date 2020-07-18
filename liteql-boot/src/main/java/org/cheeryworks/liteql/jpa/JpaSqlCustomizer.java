@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.spring;
+package org.cheeryworks.liteql.jpa;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.Trait;

@@ -353,6 +353,8 @@ public abstract class SqlQueryServiceUtil {
             case Reference:
             case String:
                 return String.class;
+            case Long:
+                return Long.class;
             case Integer:
                 return Integer.class;
             case Boolean:

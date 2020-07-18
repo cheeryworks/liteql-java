@@ -7,7 +7,6 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
@@ -49,15 +48,11 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
     private QueryService queryService;
 
-    private Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType;
-
     public AbstractGraphQLDataFetcher(
-            Repository repository, ObjectMapper objectMapper, QueryService queryService,
-            Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
+            Repository repository, ObjectMapper objectMapper, QueryService queryService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
-        this.graphQLFieldReferencesWithDomainType = graphQLFieldReferencesWithDomainType;
     }
 
     protected Repository getRepository() {
@@ -244,15 +239,6 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     private String getParentFieldName(String parentGraphQLFieldName, String parentTypeName) {
         TypeName parentDomainTypeName = LiteQLUtil.getTypeName(
                 GraphQLServiceUtil.normalizeGraphQLFieldName(parentTypeName));
-
-        Map<String, String> graphQLFieldReferences = graphQLFieldReferencesWithDomainType.get(parentDomainTypeName);
-
-        if (MapUtils.isNotEmpty(graphQLFieldReferences)) {
-            String parentCQLFieldName = graphQLFieldReferences.get(parentGraphQLFieldName);
-            if (StringUtils.isNotBlank(parentCQLFieldName)) {
-                return parentCQLFieldName;
-            }
-        }
 
         DomainType parentDomainType = getRepository().getDomainType(parentDomainTypeName);
 

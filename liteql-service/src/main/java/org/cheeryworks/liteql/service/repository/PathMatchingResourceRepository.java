@@ -3,15 +3,22 @@ package org.cheeryworks.liteql.service.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.annotation.TraitInstance;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.Schema;
 import org.cheeryworks.liteql.model.type.TraitType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
+import org.cheeryworks.liteql.model.util.ClassUtil;
+import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.Repository;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -19,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +44,8 @@ public class PathMatchingResourceRepository implements Repository {
 
     private List<Schema> schemas = new ArrayList<>();
 
+    private static Map<Class, Class> traitImplements = initTraitImplements();
+
     public PathMatchingResourceRepository(ObjectMapper objectMapper, String... locationPatterns) {
         this.objectMapper = objectMapper;
         this.locationPatterns = locationPatterns;
@@ -44,7 +54,6 @@ public class PathMatchingResourceRepository implements Repository {
     }
 
     private void init() {
-
         for (String locationPattern : locationPatterns) {
             try {
                 locationPattern = StringUtils.removeEnd(
@@ -264,6 +273,44 @@ public class PathMatchingResourceRepository implements Repository {
     @Override
     public Map<TypeName, Map<String, Migration>> getMigrations(String schemaName) {
         return getSchema(schemaName).getMigrations();
+    }
+
+    protected static Map<Class, Class> getTraitImplements() {
+        return traitImplements;
+    }
+
+    private static Map<Class, Class> initTraitImplements() {
+        ClassPathScanningCandidateComponentProvider traitInstanceScanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        traitInstanceScanner.addIncludeFilter(new AnnotationTypeFilter(TraitInstance.class));
+
+        Set<BeanDefinition> traitInstanceDefinitions = new HashSet<>();
+
+        for (String packageToScan : LiteQLConstants.getPackageToScan()) {
+            traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
+        }
+
+        Map<Class, Class> traitImplements = new HashMap<>();
+
+        for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
+            Class domainJavaType = ClassUtil.getClass(traitInstanceDefinition.getBeanClassName());
+
+            TraitInstance traitInstance = AnnotationUtils.findAnnotation(domainJavaType, TraitInstance.class);
+
+            if (!traitInstance.implement().equals(Void.class)) {
+                if (traitImplements.containsKey(traitInstance.implement())) {
+                    throw new IllegalStateException(
+                            "Duplicated implements of"
+                                    + " [" + traitInstance.implement().getName() + "]"
+                                    + " in different package");
+                } else {
+                    traitImplements.put(traitInstance.implement(), domainJavaType);
+                }
+            }
+        }
+
+        return Collections.unmodifiableMap(traitImplements);
     }
 
 }

@@ -11,6 +11,7 @@ import org.cheeryworks.liteql.model.type.field.DecimalField;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.IntegerField;
+import org.cheeryworks.liteql.model.type.field.LongField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.field.StringField;
 import org.cheeryworks.liteql.model.type.field.TimestampField;
@@ -18,6 +19,7 @@ import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.service.AbstractSqlParser;
+import org.cheeryworks.liteql.service.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
@@ -51,13 +53,16 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
     private Database database;
 
-    private SqlCustomizer sqlCustomizer;
+    private SqlCustomizer sqlCustomizer = new DefaultSqlCustomizer();
 
     public AbstractJooqSqlParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
         this.repository = repository;
         this.dslContext = dslContext;
         this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
-        this.sqlCustomizer = sqlCustomizer;
+
+        if (sqlCustomizer != null) {
+            this.sqlCustomizer = sqlCustomizer;
+        }
     }
 
     protected Repository getRepository() {
@@ -157,6 +162,10 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
                 StringField stringField = (StringField) field;
 
                 return JOOQDataType.getStringDataType(stringField.isNullable(), stringField.getLength());
+            case Long:
+                LongField longField = (LongField) field;
+
+                return JOOQDataType.getLongDataType(longField.isNullable());
             case Integer:
                 IntegerField integerField = (IntegerField) field;
 
@@ -206,13 +215,8 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
         return getJooqFields(fields).toArray(new org.jooq.Field[fieldNames.size()]);
     }
 
-    @Override
-    public String getTableName(TypeName domainTypeName) {
-        if (sqlCustomizer != null) {
-            return sqlCustomizer.getTableName(domainTypeName);
-        }
-
-        return super.getTableName(domainTypeName);
+    protected String getTableName(TypeName domainTypeName) {
+        return sqlCustomizer.getTableName(domainTypeName);
     }
 
 }

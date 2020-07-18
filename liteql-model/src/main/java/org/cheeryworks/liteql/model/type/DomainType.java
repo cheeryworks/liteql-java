@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.model.type;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.type.field.IdField;
@@ -17,6 +18,8 @@ public class DomainType extends TraitType {
 
     private Set<Index> indexes;
 
+    private Boolean graphQLType;
+
     public Set<Unique> getUniques() {
         return this.uniques;
     }
@@ -31,6 +34,23 @@ public class DomainType extends TraitType {
 
     public void setIndexes(Set<Index> indexes) {
         this.indexes = indexes;
+    }
+
+    @JsonGetter
+    private Boolean graphQLEntity() {
+        return graphQLType;
+    }
+
+    public boolean isGraphQLType() {
+        if (graphQLType == null) {
+            return true;
+        }
+
+        return graphQLType.booleanValue();
+    }
+
+    public void setGraphQLType(Boolean graphQLType) {
+        this.graphQLType = graphQLType;
     }
 
     public DomainType() {

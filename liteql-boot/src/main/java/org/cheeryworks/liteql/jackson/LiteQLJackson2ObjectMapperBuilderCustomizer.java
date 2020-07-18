@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.boot;
+package org.cheeryworks.liteql.jackson;
 
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;

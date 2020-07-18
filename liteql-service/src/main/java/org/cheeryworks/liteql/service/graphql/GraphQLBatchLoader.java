@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.graphql;
 
+import graphql.schema.DataFetchingEnvironment;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
@@ -37,8 +38,6 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
     }
 
     private List<Map<String, Object>> query(List<String> keys, BatchLoaderEnvironment environment) {
-        GraphQLBatchLoaderContext context = environment.getContext();
-
         Map<Object, Object> keyContexts = environment.getKeyContexts();
 
         Map<String, Map<String, Object>> keysInTypes = new HashMap<>();
@@ -83,7 +82,10 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
                     )
                     .getQuery();
 
-            ReadResults dataSubSet = queryService.read(context.getQueryContext(), readQuery);
+            DataFetchingEnvironment dataFetchingEnvironment
+                    = (DataFetchingEnvironment) keyContext.get(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
+
+            ReadResults dataSubSet = queryService.read(dataFetchingEnvironment.getContext(), readQuery);
 
             dataSet.addAll(dataSubSet);
         }

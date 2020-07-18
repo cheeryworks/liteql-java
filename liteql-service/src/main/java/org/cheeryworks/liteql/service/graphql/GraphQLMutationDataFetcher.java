@@ -13,14 +13,11 @@ import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 
-import java.util.Map;
-
 public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
     public GraphQLMutationDataFetcher(
-            Repository repository, ObjectMapper objectMapper, QueryService queryService,
-            Map<Class, Map<String, String>> graphQLFieldReferences) {
-        super(repository, objectMapper, queryService, graphQLFieldReferences);
+            Repository repository, ObjectMapper objectMapper, QueryService queryService) {
+        super(repository, objectMapper, queryService);
     }
 
     @Override

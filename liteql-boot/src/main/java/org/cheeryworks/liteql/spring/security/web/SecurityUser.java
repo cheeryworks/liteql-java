@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.spring;
+package org.cheeryworks.liteql.spring.security.web;
 
 import org.cheeryworks.liteql.model.type.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -7,19 +7,19 @@ import org.springframework.util.Assert;
 
 import java.util.Collection;
 
-public class SpringSecurityUser implements UserDetails, UserEntity {
+public class SecurityUser implements UserDetails, UserEntity {
 
     private UserDetails userDetails;
 
     private UserEntity user;
 
-    public SpringSecurityUser(UserEntity user) {
+    public SecurityUser(UserEntity user) {
         Assert.notNull(user, "UserEntity is required");
 
         this.user = user;
     }
 
-    public SpringSecurityUser(UserDetails userDetails) {
+    public SecurityUser(UserDetails userDetails) {
         Assert.notNull(userDetails, "UserDetails is required");
 
         this.userDetails = userDetails;
