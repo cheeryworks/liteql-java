@@ -108,12 +108,12 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     public QueryService queryService(
-            Repository repository, ObjectMapper objectMapper, DSLContext dslContext,
+            Repository repository, DSLContext dslContext,
             ObjectProvider<SqlCustomizer> sqlCustomizer,
             AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher,
             ObjectProvider<List<QueryConditionNormalizer>> queryConditionNormalizers) {
         QueryService queryService = new JooqSqlQueryService(
-                repository, objectMapper, dslContext, sqlCustomizer.getIfAvailable(),
+                repository, dslContext, sqlCustomizer.getIfAvailable(),
                 auditingService, applicationEventPublisher, queryConditionNormalizers.getIfAvailable());
 
         logger.info("QueryService is ready.");

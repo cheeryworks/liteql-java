@@ -10,13 +10,12 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
-@AutoConfigureBefore({JooqAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@AutoConfigureBefore({JooqAutoConfiguration.class})
 public class LiteQLJooqAutoConfiguration {
 
     @Bean
