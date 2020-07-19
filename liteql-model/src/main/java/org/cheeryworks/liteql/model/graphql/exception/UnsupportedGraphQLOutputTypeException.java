@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model.graphql;
+package org.cheeryworks.liteql.model.graphql.exception;
 
 import graphql.GraphQLException;
 import graphql.schema.GraphQLOutputType;

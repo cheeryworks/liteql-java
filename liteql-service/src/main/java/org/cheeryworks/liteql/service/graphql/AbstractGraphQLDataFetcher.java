@@ -10,7 +10,7 @@ import graphql.schema.GraphQLOutputType;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.graphql.UnsupportedGraphQLOutputTypeException;
+import org.cheeryworks.liteql.model.graphql.exception.UnsupportedGraphQLOutputTypeException;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.read.PageReadQuery;
