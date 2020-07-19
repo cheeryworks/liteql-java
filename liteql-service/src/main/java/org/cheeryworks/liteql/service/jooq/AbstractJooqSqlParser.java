@@ -19,7 +19,6 @@ import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.service.AbstractSqlParser;
-import org.cheeryworks.liteql.service.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
@@ -53,16 +52,12 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
     private Database database;
 
-    private SqlCustomizer sqlCustomizer = new DefaultSqlCustomizer();
-
     public AbstractJooqSqlParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(sqlCustomizer);
+
         this.repository = repository;
         this.dslContext = dslContext;
         this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
-
-        if (sqlCustomizer != null) {
-            this.sqlCustomizer = sqlCustomizer;
-        }
     }
 
     protected Repository getRepository() {
@@ -213,10 +208,6 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
         }
 
         return getJooqFields(fields).toArray(new org.jooq.Field[fieldNames.size()]);
-    }
-
-    protected String getTableName(TypeName domainTypeName) {
-        return sqlCustomizer.getTableName(domainTypeName);
     }
 
 }

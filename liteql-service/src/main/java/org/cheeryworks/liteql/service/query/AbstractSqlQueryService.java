@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.service.query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +18,7 @@ import org.cheeryworks.liteql.model.query.event.AfterUpdateEvent;
 import org.cheeryworks.liteql.model.query.event.BeforeCreateEvent;
 import org.cheeryworks.liteql.model.query.event.BeforeDeleteEvent;
 import org.cheeryworks.liteql.model.query.event.BeforeUpdateEvent;
+import org.cheeryworks.liteql.model.query.exception.UnsupportedQueryException;
 import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.PageReadQuery;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
@@ -35,7 +35,6 @@ import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.QueryConditionNormalizer;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
@@ -63,8 +62,6 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     private Repository repository;
 
-    private ObjectMapper objectMapper;
-
     private SqlQueryParser sqlQueryParser;
 
     private SqlQueryExecutor sqlQueryExecutor;
@@ -88,13 +85,13 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     public AbstractSqlQueryService(
-            Repository repository, ObjectMapper objectMapper,
-            SqlQueryParser sqlQueryParser, SqlQueryExecutor sqlQueryExecutor,
+            Repository repository,
+            SqlQueryParser sqlQueryParser,
+            SqlQueryExecutor sqlQueryExecutor,
             AuditingService auditingService,
             ApplicationEventPublisher applicationEventPublisher,
             List<QueryConditionNormalizer> queryConditionNormalizers) {
         this.repository = repository;
-        this.objectMapper = objectMapper;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
@@ -651,7 +648,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
             return results;
         }
 
-        throw new UnsupportedOperationException(LiteQLJsonUtil.toJson(this.objectMapper, query));
+        throw new UnsupportedQueryException(query);
     }
 
     private void normalize(List<QueryCondition> conditions, QueryContext queryContext) {

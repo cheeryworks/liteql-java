@@ -78,7 +78,7 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
                     }
                 }
 
-                logger.info("Migrating schema " + schema + " finished successfully");
+                logger.info("Migrating schema " + schema + " finished");
             } catch (Exception ex) {
                 throw new IllegalStateException(
                         "Migrating schema " + schema + " finished failed, " + ex.getMessage(), ex);
