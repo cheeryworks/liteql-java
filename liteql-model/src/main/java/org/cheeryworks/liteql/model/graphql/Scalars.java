@@ -31,10 +31,10 @@ public class Scalars {
     public Scalars(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
 
-        this.scalarLong = buildScalarCQLLong();
-        this.scalarBigDecimal = buildScalarCQLBigDecimal();
-        this.scalarValue = buildScalarCQLValue();
-        this.scalarDate = buildScalarCQLDate();
+        this.scalarLong = buildScalarLong();
+        this.scalarBigDecimal = buildScalarBigDecimal();
+        this.scalarValue = buildScalarValue();
+        this.scalarDate = buildScalarDate();
     }
 
     public GraphQLScalarType getScalarLong() {
@@ -65,7 +65,7 @@ public class Scalars {
         return input.getClass().getSimpleName();
     }
 
-    private GraphQLScalarType buildScalarCQLLong() {
+    private GraphQLScalarType buildScalarLong() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_LONG_NAME)
                 .coercing(new Coercing<Long, Long>() {
@@ -138,7 +138,7 @@ public class Scalars {
                 }).build();
     }
 
-    private GraphQLScalarType buildScalarCQLBigDecimal() {
+    private GraphQLScalarType buildScalarBigDecimal() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_DECIMAL_NAME)
                 .coercing(
@@ -202,10 +202,10 @@ public class Scalars {
                 .build();
     }
 
-    private GraphQLScalarType buildScalarCQLValue() {
+    private GraphQLScalarType buildScalarValue() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_CONDITION_VALUE_NAME)
-                .description("CQL condition value type")
+                .description("Condition Value Type")
                 .coercing(
                         new Coercing() {
                             @Override
@@ -226,10 +226,10 @@ public class Scalars {
                 ).build();
     }
 
-    private GraphQLScalarType buildScalarCQLDate() {
+    private GraphQLScalarType buildScalarDate() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_DATE_NAME)
-                .description("CQL Date field")
+                .description("Date Field")
                 .coercing(
                         new Coercing() {
                             @Override
