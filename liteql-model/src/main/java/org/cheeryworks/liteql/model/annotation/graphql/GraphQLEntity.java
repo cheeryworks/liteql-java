@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GraphQLEntity {
 
+    boolean ignored() default false;
+
     Class extension() default Void.class;
 
 }

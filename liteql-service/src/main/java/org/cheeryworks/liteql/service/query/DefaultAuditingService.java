@@ -41,11 +41,9 @@ public class DefaultAuditingService implements AuditingService {
             if (user != null) {
                 if (domainObject.get(AuditEntity.CREATOR_ID_FIELD_NAME) == null) {
                     domainObject.put(AuditEntity.CREATOR_ID_FIELD_NAME, user.getId());
-                    domainObject.put(AuditEntity.CREATOR_NAME_FIELD_NAME, user.getName());
                 }
 
                 domainObject.put(AuditEntity.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
-                domainObject.put(AuditEntity.LAST_MODIFIER_NAME_FIELD_NAME, user.getName());
             }
         }
     }
@@ -60,7 +58,6 @@ public class DefaultAuditingService implements AuditingService {
 
             if (user != null) {
                 domainObject.put(AuditEntity.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
-                domainObject.put(AuditEntity.LAST_MODIFIER_NAME_FIELD_NAME, user.getName());
             }
         }
     }

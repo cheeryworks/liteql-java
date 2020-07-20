@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.model.type;
 import org.cheeryworks.liteql.model.annotation.Position;
 import org.cheeryworks.liteql.model.annotation.ReferenceField;
 import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
-import org.cheeryworks.liteql.model.annotation.graphql.GraphQLField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 
 import java.util.Date;
@@ -21,13 +20,9 @@ public interface AuditEntity extends Entity {
 
     String CREATOR_ID_FIELD_NAME = "creatorId";
 
-    String CREATOR_NAME_FIELD_NAME = "creatorName";
-
     String CREATE_TIME_FIELD_NAME = "createTime";
 
     String LAST_MODIFIER_ID_FIELD_NAME = "lastModifierId";
-
-    String LAST_MODIFIER_NAME_FIELD_NAME = "lastModifierName";
 
     String LAST_MODIFIED_TIME_FIELD_NAME = "lastModifiedTime";
 
@@ -44,27 +39,17 @@ public interface AuditEntity extends Entity {
     boolean isInherent();
 
     @Position(5)
-    @GraphQLField(name = "creator")
-    @ReferenceField(targetDomainType = UserEntity.class)
+    @ReferenceField(name = "creator", targetDomainType = UserEntity.class)
     String getCreatorId();
 
     @Position(6)
-    @GraphQLField(ignore = true)
-    String getCreatorName();
-
-    @Position(7)
     Date getCreateTime();
 
-    @Position(8)
-    @GraphQLField(name = "lastModifier")
-    @ReferenceField(targetDomainType = UserEntity.class)
+    @Position(7)
+    @ReferenceField(name = "lastModifier", targetDomainType = UserEntity.class)
     String getLastModifierId();
 
-    @Position(9)
-    @GraphQLField(ignore = true)
-    String getLastModifierName();
-
-    @Position(10)
+    @Position(8)
     Date getLastModifiedTime();
 
 }

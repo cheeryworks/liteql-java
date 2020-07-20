@@ -52,7 +52,7 @@ public class JooqSqlSchemaParser extends AbstractJooqSqlParser implements SqlSch
     private String domainTypeToSql(DomainType domainType) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getTableName(domainType);
+        String tableName = getSqlCustomizer().getTableName(domainType);
 
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 

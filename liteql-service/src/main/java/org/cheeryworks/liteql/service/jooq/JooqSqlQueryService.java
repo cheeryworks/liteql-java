@@ -22,7 +22,7 @@ public class JooqSqlQueryService extends AbstractSqlQueryService {
         super(
                 repository,
                 new JooqSqlQueryParser(repository, dslContext, sqlCustomizer),
-                new JooqSqlQueryExecutor(dslContext),
+                new JooqSqlQueryExecutor(dslContext, sqlCustomizer),
                 auditingService,
                 applicationEventPublisher,
                 queryConditionNormalizers);

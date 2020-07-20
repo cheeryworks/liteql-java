@@ -176,7 +176,7 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
-        ReadResults results = getResults(sqlReadQuery);
+        ReadResults results = getResults(readQuery.getDomainTypeName(), sqlReadQuery);
 
         applicationEventPublisher.publishEvent(
                 new AfterReadEvent(
@@ -195,9 +195,9 @@ public abstract class AbstractSqlQueryService implements QueryService {
                 sqlReadQuery.getTotalSql(), ((List) sqlReadQuery.getTotalSqlParameters()).toArray());
     }
 
-    private ReadResults getResults(SqlReadQuery sqlReadQuery) {
+    private ReadResults getResults(TypeName domainTypeName, SqlReadQuery sqlReadQuery) {
         return sqlQueryExecutor.read(
-                sqlReadQuery.getSql(), sqlReadQuery.getFields(),
+                domainTypeName, sqlReadQuery.getSql(), sqlReadQuery.getFields(),
                 ((List) sqlReadQuery.getSqlParameters()).toArray());
     }
 

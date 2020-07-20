@@ -12,7 +12,7 @@ public class JooqSqlMigrationService extends AbstractSqlMigrationService {
         super(
                 repository,
                 new JooqSqlMigrationParser(repository, dslContext, sqlCustomizer),
-                new JooqSqlMigrationExecutor(dslContext));
+                new JooqSqlMigrationExecutor(dslContext, sqlCustomizer));
     }
 
 }

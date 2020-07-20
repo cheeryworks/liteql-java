@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReferenceField {
 
+    String name();
+
     Class<? extends Entity> targetDomainType();
 
 }

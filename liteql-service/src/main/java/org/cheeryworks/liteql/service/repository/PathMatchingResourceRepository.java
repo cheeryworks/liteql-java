@@ -151,7 +151,7 @@ public class PathMatchingResourceRepository implements Repository {
         }
     }
 
-    protected void addType(TypeName typeName) {
+    public void addType(TypeName typeName) {
         Schema schema = null;
 
         try {
@@ -275,7 +275,7 @@ public class PathMatchingResourceRepository implements Repository {
         return getSchema(schemaName).getMigrations();
     }
 
-    protected static Map<Class, Class> getTraitImplements() {
+    public static Map<Class, Class> getTraitImplements() {
         return traitImplements;
     }
 

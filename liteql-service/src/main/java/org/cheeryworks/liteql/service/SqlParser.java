@@ -1,5 +1,5 @@
 package org.cheeryworks.liteql.service;
 
-public interface SqlParser {
+public interface SqlParser extends SqlService {
 
 }

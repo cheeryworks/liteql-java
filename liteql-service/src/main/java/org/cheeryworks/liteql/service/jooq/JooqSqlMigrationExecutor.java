@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDDLUtil;
 import org.cheeryworks.liteql.service.migration.SqlMigrationExecutor;
@@ -25,8 +26,8 @@ public class JooqSqlMigrationExecutor extends AbstractJooqSqlExecutor implements
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlMigrationExecutor.class);
 
-    public JooqSqlMigrationExecutor(DSLContext dslContext) {
-        super(dslContext);
+    public JooqSqlMigrationExecutor(DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(dslContext, sqlCustomizer);
     }
 
     @Override

@@ -25,7 +25,6 @@ public abstract class AbstractField implements Field {
         return name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }

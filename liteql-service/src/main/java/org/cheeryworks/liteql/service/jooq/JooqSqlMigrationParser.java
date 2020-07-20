@@ -16,7 +16,6 @@ import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.migration.SqlMigrationParser;
-import org.cheeryworks.liteql.service.util.SqlQueryServiceUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
@@ -97,7 +96,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
             TypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
         CreateTableColumnStep createTableColumnStep = getDslContext()
                 .createTable(tableName);
@@ -129,7 +128,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
             TypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
         List<org.jooq.Field> jooqFields = getJooqFields(createFieldMigrationOperation.getFields());
 
@@ -148,7 +147,7 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
             TypeName typeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(typeName);
+        String tableName = getSqlCustomizer().getTableName(typeName);
 
         DomainType domainType = getRepository().getDomainType(typeName);
 
@@ -173,12 +172,12 @@ public class JooqSqlMigrationParser extends AbstractJooqSqlParser implements Sql
             TypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
-        String tableName = getTableName(domainTypeName);
+        String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
         for (String field : dropFieldMigrationOperation.getFields()) {
             AlterTableFinalStep alterTableFinalStep = getDslContext()
                     .alterTable(tableName)
-                    .dropColumn(SqlQueryServiceUtil.getColumnNameByFieldName(field));
+                    .dropColumn(getSqlCustomizer().getColumnName(domainTypeName, field));
 
             operationsInSql.add(alterTableFinalStep.getSQL());
         }

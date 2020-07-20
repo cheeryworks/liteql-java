@@ -16,6 +16,7 @@ import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.model.type.TraitType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.model.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
@@ -87,8 +88,10 @@ public class QueryServiceController extends AbstractServiceController {
     }
 
     @GetMapping(value = "/liteql/type/{type}")
-    public Object getType(@PathVariable(name = "type") TypeName typeName) {
+    public Object getType(@PathVariable(name = "type") String type) {
         try {
+            TypeName typeName = LiteQLUtil.getTypeName(type);
+
             TraitType traitType = repository.getDomainType(typeName);
 
             if (traitType == null) {

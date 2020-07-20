@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
-import org.cheeryworks.liteql.service.SqlExecutor;
+import org.cheeryworks.liteql.service.AbstractSqlExecutor;
+import org.cheeryworks.liteql.service.SqlCustomizer;
 import org.cheeryworks.liteql.service.enums.Database;
 import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
 import org.cheeryworks.liteql.service.util.DatabaseTypeUtil;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractJooqSqlExecutor implements SqlExecutor {
+public abstract class AbstractJooqSqlExecutor extends AbstractSqlExecutor {
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlMigrationExecutor.class);
 
@@ -29,7 +30,9 @@ public abstract class AbstractJooqSqlExecutor implements SqlExecutor {
         return database;
     }
 
-    public AbstractJooqSqlExecutor(DSLContext dslContext) {
+    public AbstractJooqSqlExecutor(DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(sqlCustomizer);
+
         this.dslContext = dslContext;
         this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
     }
