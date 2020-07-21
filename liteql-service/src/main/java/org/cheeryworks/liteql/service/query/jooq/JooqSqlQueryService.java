@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
+import org.cheeryworks.liteql.service.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlQueryService;
@@ -14,12 +15,14 @@ public class JooqSqlQueryService extends AbstractSqlQueryService {
             DSLContext dslContext,
             SqlCustomizer sqlCustomizer,
             AuditingService auditingService,
+            QueryAccessDecisionService queryAccessDecisionService,
             ApplicationEventPublisher applicationEventPublisher) {
         super(
                 repository,
                 new JooqSqlQueryParser(repository, dslContext, sqlCustomizer),
                 new JooqSqlQueryExecutor(dslContext, sqlCustomizer),
                 auditingService,
+                queryAccessDecisionService,
                 applicationEventPublisher);
     }
 

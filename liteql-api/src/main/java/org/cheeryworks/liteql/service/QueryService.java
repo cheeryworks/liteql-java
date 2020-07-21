@@ -21,6 +21,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface QueryService {
 
+    QueryAccessDecisionService getQueryAccessDecisionService();
+
     ReadResults read(QueryContext queryContext, ReadQuery readQuery);
 
     ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery);

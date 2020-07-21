@@ -8,6 +8,7 @@ import org.cheeryworks.liteql.boot.configuration.spring.security.web.LiteQLSecur
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.MigrationService;
+import org.cheeryworks.liteql.service.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
@@ -103,9 +104,12 @@ public class LiteQLAutoConfiguration {
     public QueryService queryService(
             Repository repository, DSLContext dslContext,
             ObjectProvider<SqlCustomizer> sqlCustomizer,
-            AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher) {
+            AuditingService auditingService,
+            ObjectProvider<QueryAccessDecisionService> queryAccessDecisionService,
+            ApplicationEventPublisher applicationEventPublisher) {
         QueryService queryService = new JooqSqlQueryService(
-                repository, dslContext, sqlCustomizer.getIfAvailable(), auditingService, applicationEventPublisher);
+                repository, dslContext, sqlCustomizer.getIfAvailable(),
+                auditingService, queryAccessDecisionService.getIfAvailable(), applicationEventPublisher);
 
         logger.info("QueryService is ready.");
 

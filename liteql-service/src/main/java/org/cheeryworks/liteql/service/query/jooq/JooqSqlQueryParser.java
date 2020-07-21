@@ -61,8 +61,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.field;
@@ -83,6 +86,26 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
     @Override
     public SqlReadQuery getSqlReadQuery(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = new InlineSqlReadQuery();
+
+        List<Condition> conditions = new LinkedList<>();
+
+        Set<String> accessDecisionFields = new LinkedHashSet<>();
+
+        if (readQuery.getConditions() != null) {
+            conditions.add(
+                    JOOQUtil.getCondition(
+                            readQuery.getDomainTypeName(), readQuery.getConditions(),
+                            null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
+        }
+
+        accessDecisionFields = getAccessDecisionFields(readQuery);
+
+        if (!accessDecisionFields.isEmpty()) {
+            conditions.add(
+                    JOOQUtil.getCondition(
+                            readQuery.getDomainTypeName(), readQuery.getAccessDecisionConditions(),
+                            null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
+        }
 
         Condition condition = JOOQUtil.getCondition(
                 readQuery.getDomainTypeName(), readQuery.getConditions(),
@@ -152,6 +175,32 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         }
 
         return sqlReadQuery;
+    }
+
+    private Set<String> getAccessDecisionFields(AbstractTypedReadQuery readQuery) {
+        Set<String> fields = new LinkedHashSet<>();
+
+        if (readQuery.getAccessDecisionConditions() != null) {
+            fields.addAll(getAccessDecisionFields(readQuery.getAccessDecisionConditions()));
+        }
+
+        return fields;
+    }
+
+    private Set<String> getAccessDecisionFields(QueryConditions accessDecisionConditions) {
+        Set<String> fields = new LinkedHashSet<>();
+
+        for (QueryCondition accessDecisionCondition : accessDecisionConditions) {
+            fields.add(accessDecisionCondition.getField());
+
+            accessDecisionCondition.setField(accessDecisionCondition.getField() + "ADF");
+
+            if (accessDecisionCondition.getConditions() != null) {
+                fields.addAll(getAccessDecisionFields(accessDecisionCondition.getConditions()));
+            }
+        }
+
+        return fields;
     }
 
     private Pageable transformPage(int page, int size) {
@@ -292,6 +341,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
             Condition condition = DSL.trueCondition();
 
+            if (saveQuery.getAccessDecisionConditions() != null) {
+                condition = condition.and(
+                        JOOQUtil.getCondition(
+                                saveQuery.getDomainTypeName(),
+                                saveQuery.getAccessDecisionConditions(), null, null,
+                                getSqlCustomizer()));
+            }
+
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 DataType dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
@@ -371,12 +428,25 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
     @Override
     public SqlDeleteQuery getSqlDeleteQuery(DeleteQuery deleteQuery) {
+        List<Condition> conditions = new ArrayList<>();
+
+        conditions.add(
+                JOOQUtil.getCondition(
+                        deleteQuery.getDomainTypeName(),
+                        deleteQuery.getConditions(), null, null,
+                        getSqlCustomizer()));
+
+        if (deleteQuery.getAccessDecisionConditions() != null) {
+            conditions.add(
+                    JOOQUtil.getCondition(
+                            deleteQuery.getDomainTypeName(),
+                            deleteQuery.getAccessDecisionConditions(), null, null,
+                            getSqlCustomizer()));
+        }
+
         DeleteFinalStep deleteFinalStep = getDslContext()
                 .deleteFrom(table(getSqlCustomizer().getTableName(deleteQuery.getDomainTypeName())))
-                .where(
-                        JOOQUtil.getCondition(
-                                deleteQuery.getDomainTypeName(), deleteQuery.getConditions(),
-                                null, null, getSqlCustomizer()));
+                .where(conditions);
 
         InlineSqlDeleteQuery sqlDeleteQuery = new InlineSqlDeleteQuery();
         sqlDeleteQuery.setSql(deleteFinalStep.getSQL());

@@ -35,6 +35,8 @@ import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.service.DefaultQueryAccessDecisionService;
+import org.cheeryworks.liteql.service.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
@@ -70,6 +72,8 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
 
     private AuditingService auditingService;
 
+    private QueryAccessDecisionService queryAccessDecisionService = new DefaultQueryAccessDecisionService();
+
     private ApplicationEventPublisher applicationEventPublisher;
 
     public void setRepository(Repository repository) {
@@ -89,12 +93,23 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
             AuditingService auditingService,
+            QueryAccessDecisionService queryAccessDecisionService,
             ApplicationEventPublisher applicationEventPublisher) {
         this.repository = repository;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
+
+        if (queryAccessDecisionService != null) {
+            this.queryAccessDecisionService = queryAccessDecisionService;
+        }
+
         this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    @Override
+    public QueryAccessDecisionService getQueryAccessDecisionService() {
+        return this.queryAccessDecisionService;
     }
 
     @Override
@@ -118,7 +133,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
     }
 
     private Object query(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
-        ReadResults results = internalRead(queryContext, readQuery);
+        ReadResults results = internalRead(readQuery);
 
         query(queryContext, readQuery.getAssociations(), results);
 
@@ -145,7 +160,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
                     throw new IllegalArgumentException("References not defined");
                 }
 
-                ReadResults associatedResults = internalRead(queryContext, readQuery);
+                ReadResults associatedResults = internalRead(readQuery);
 
                 for (Map<String, Object> result : results) {
                     for (Map<String, Object> associatedResult : associatedResults) {
@@ -169,7 +184,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
         }
     }
 
-    private ReadResults internalRead(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
+    private ReadResults internalRead(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
         ReadResults results = getResults(readQuery.getDomainTypeName(), sqlReadQuery);
@@ -613,17 +628,27 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
         if (query instanceof AbstractTypedReadQuery) {
             AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
 
+            getQueryAccessDecisionService().decide(queryContext.getUser(), readQuery);
+
             return query(queryContext, readQuery);
         } else if (query instanceof AbstractSaveQuery) {
             AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
+
+            getQueryAccessDecisionService().decide(queryContext.getUser(), saveQuery);
 
             return save(queryContext, saveQuery);
         } else if (query instanceof SaveQueries) {
             SaveQueries saveQueries = (SaveQueries) query;
 
+            for (AbstractSaveQuery saveQuery : saveQueries) {
+                getQueryAccessDecisionService().decide(queryContext.getUser(), saveQuery);
+            }
+
             return save(queryContext, saveQueries);
         } else if (query instanceof DeleteQuery) {
             DeleteQuery deleteQuery = (DeleteQuery) query;
+
+            getQueryAccessDecisionService().decide(queryContext.getUser(), deleteQuery);
 
             return delete(queryContext, deleteQuery);
         } else if (query instanceof Queries) {
