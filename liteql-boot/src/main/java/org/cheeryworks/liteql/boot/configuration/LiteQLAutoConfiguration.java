@@ -8,7 +8,6 @@ import org.cheeryworks.liteql.boot.configuration.spring.security.web.LiteQLSecur
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.MigrationService;
-import org.cheeryworks.liteql.service.QueryConditionNormalizer;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.SqlCustomizer;
@@ -36,8 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-
-import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(LiteQLProperties.class)
@@ -106,11 +103,9 @@ public class LiteQLAutoConfiguration {
     public QueryService queryService(
             Repository repository, DSLContext dslContext,
             ObjectProvider<SqlCustomizer> sqlCustomizer,
-            AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher,
-            ObjectProvider<List<QueryConditionNormalizer>> queryConditionNormalizers) {
+            AuditingService auditingService, ApplicationEventPublisher applicationEventPublisher) {
         QueryService queryService = new JooqSqlQueryService(
-                repository, dslContext, sqlCustomizer.getIfAvailable(),
-                auditingService, applicationEventPublisher, queryConditionNormalizers.getIfAvailable());
+                repository, dslContext, sqlCustomizer.getIfAvailable(), auditingService, applicationEventPublisher);
 
         logger.info("QueryService is ready.");
 

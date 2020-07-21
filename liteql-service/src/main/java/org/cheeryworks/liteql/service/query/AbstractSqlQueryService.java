@@ -8,7 +8,6 @@ import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.enums.QueryType;
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.Queries;
-import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.model.query.event.AfterCreateEvent;
@@ -35,7 +34,6 @@ import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.QueryConditionNormalizer;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.query.diagnostic.SaveQueryDiagnostic;
@@ -70,8 +68,6 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     private ApplicationEventPublisher applicationEventPublisher;
 
-    private List<QueryConditionNormalizer> queryConditionNormalizers;
-
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
@@ -89,14 +85,12 @@ public abstract class AbstractSqlQueryService implements QueryService {
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
             AuditingService auditingService,
-            ApplicationEventPublisher applicationEventPublisher,
-            List<QueryConditionNormalizer> queryConditionNormalizers) {
+            ApplicationEventPublisher applicationEventPublisher) {
         this.repository = repository;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.queryConditionNormalizers = queryConditionNormalizers;
     }
 
     @Override
@@ -172,8 +166,6 @@ public abstract class AbstractSqlQueryService implements QueryService {
     }
 
     private ReadResults internalRead(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
-        normalize(readQuery.getConditions(), queryContext);
-
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
         ReadResults results = getResults(readQuery.getDomainTypeName(), sqlReadQuery);
@@ -552,8 +544,6 @@ public abstract class AbstractSqlQueryService implements QueryService {
 
     @Override
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
-        normalize(deleteQuery.getConditions(), queryContext);
-
         ReadResults results = null;
 
         if (!deleteQuery.isTruncated()) {
@@ -651,11 +641,4 @@ public abstract class AbstractSqlQueryService implements QueryService {
         throw new UnsupportedQueryException(query);
     }
 
-    private void normalize(List<QueryCondition> conditions, QueryContext queryContext) {
-        if (CollectionUtils.isNotEmpty(this.queryConditionNormalizers)) {
-            for (QueryConditionNormalizer queryConditionNormalizer : this.queryConditionNormalizers) {
-                queryConditionNormalizer.normalize(conditions, queryContext);
-            }
-        }
-    }
 }
