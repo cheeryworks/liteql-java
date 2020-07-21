@@ -8,7 +8,7 @@ import org.cheeryworks.liteql.model.type.Trait;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.ClassUtil;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.SqlCustomizer;
+import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;

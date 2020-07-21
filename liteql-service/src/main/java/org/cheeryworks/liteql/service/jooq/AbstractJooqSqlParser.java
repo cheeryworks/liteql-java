@@ -1,6 +1,8 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.cheeryworks.liteql.enums.Database;
+import org.cheeryworks.liteql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 import org.cheeryworks.liteql.model.type.DomainType;
@@ -18,13 +20,11 @@ import org.cheeryworks.liteql.model.type.field.TimestampField;
 import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.StringUtil;
-import org.cheeryworks.liteql.service.AbstractSqlParser;
 import org.cheeryworks.liteql.service.Repository;
-import org.cheeryworks.liteql.service.SqlCustomizer;
-import org.cheeryworks.liteql.service.enums.Database;
-import org.cheeryworks.liteql.service.jooq.datatype.JOOQDataType;
-import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
+import org.cheeryworks.liteql.service.sql.AbstractSqlParser;
+import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.service.util.StringEncoder;
+import org.cheeryworks.liteql.util.JOOQUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -38,9 +38,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.INDEX_KEY_PREFIX;
-import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.PRIMARY_KEY_PREFIX;
-import static org.cheeryworks.liteql.service.schema.SqlSchemaParser.UNIQUE_KEY_PREFIX;
+import static org.cheeryworks.liteql.util.DatabaseUtil.INDEX_KEY_PREFIX;
+import static org.cheeryworks.liteql.util.DatabaseUtil.PRIMARY_KEY_PREFIX;
+import static org.cheeryworks.liteql.util.DatabaseUtil.UNIQUE_KEY_PREFIX;
 import static org.jooq.impl.DSL.constraint;
 import static org.jooq.impl.DSL.table;
 
@@ -57,7 +57,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
         this.repository = repository;
         this.dslContext = dslContext;
-        this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
+        this.database = JOOQUtil.getDatabase(dslContext.dialect());
     }
 
     protected Repository getRepository() {

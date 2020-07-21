@@ -1,10 +1,11 @@
 package org.cheeryworks.liteql.service.jooq;
 
-import org.cheeryworks.liteql.service.AbstractSqlExecutor;
-import org.cheeryworks.liteql.service.SqlCustomizer;
-import org.cheeryworks.liteql.service.enums.Database;
-import org.cheeryworks.liteql.service.jooq.util.JOOQDatabaseTypeUtil;
-import org.cheeryworks.liteql.service.util.DatabaseTypeUtil;
+import org.cheeryworks.liteql.enums.Database;
+import org.cheeryworks.liteql.service.migration.jooq.JooqSqlMigrationExecutor;
+import org.cheeryworks.liteql.service.sql.AbstractSqlExecutor;
+import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.util.DatabaseUtil;
+import org.cheeryworks.liteql.util.JOOQUtil;
 import org.jooq.BatchBindStep;
 import org.jooq.DSLContext;
 import org.jooq.ResultQuery;
@@ -34,13 +35,13 @@ public abstract class AbstractJooqSqlExecutor extends AbstractSqlExecutor {
         super(sqlCustomizer);
 
         this.dslContext = dslContext;
-        this.database = JOOQDatabaseTypeUtil.getDatabase(dslContext.dialect());
+        this.database = JOOQUtil.getDatabase(dslContext.dialect());
     }
 
     @Override
     public void isDatabaseReady() {
         try {
-            getDslContext().fetch(DatabaseTypeUtil.getInstance(getDatabase()).getValidationQuery());
+            getDslContext().fetch(DatabaseUtil.getInstance(getDatabase()).getValidationQuery());
 
             logger.info("Database is ready");
         } catch (Exception ex) {

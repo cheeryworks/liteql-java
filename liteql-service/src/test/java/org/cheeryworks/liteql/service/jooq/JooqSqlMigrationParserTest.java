@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.cheeryworks.liteql.service.migration.jooq.JooqSqlMigrationParser;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

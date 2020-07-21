@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.service.migration;
 
-import org.cheeryworks.liteql.service.SqlExecutor;
+import org.cheeryworks.liteql.service.sql.SqlExecutor;
 
 import java.util.List;
 

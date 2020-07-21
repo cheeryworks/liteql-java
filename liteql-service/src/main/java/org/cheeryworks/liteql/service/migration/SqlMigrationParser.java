@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.migration;
 
 import org.cheeryworks.liteql.model.type.migration.Migration;
-import org.cheeryworks.liteql.service.SqlParser;
+import org.cheeryworks.liteql.service.sql.SqlParser;
 
 import java.util.List;
 

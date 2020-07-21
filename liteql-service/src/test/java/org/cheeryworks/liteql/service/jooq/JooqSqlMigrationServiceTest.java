@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.cheeryworks.liteql.service.migration.jooq.JooqSqlMigrationService;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

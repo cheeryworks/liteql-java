@@ -4,7 +4,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.model.query.QueryContext;
 import org.cheeryworks.liteql.service.QueryService;
-import org.cheeryworks.liteql.service.query.DefaultAuditingService;
+import org.cheeryworks.liteql.service.auditing.DefaultAuditingService;
+import org.cheeryworks.liteql.service.query.jooq.JooqSqlQueryService;
+import org.cheeryworks.liteql.service.schema.jooq.JooqSqlSchemaParser;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 

@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.service.schema.jooq.JooqSqlSchemaParser;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

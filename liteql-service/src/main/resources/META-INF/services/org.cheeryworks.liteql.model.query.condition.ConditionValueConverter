@@ -1,0 +1,6 @@
+org.cheeryworks.liteql.model.query.condition.StringConditionValueConverter
+org.cheeryworks.liteql.model.query.condition.IntegerConditionValueConverter
+org.cheeryworks.liteql.model.query.condition.DecimalConditionValueConverter
+org.cheeryworks.liteql.model.query.condition.BooleanConditionValueConverter
+org.cheeryworks.liteql.model.query.condition.TimestampConditionValueConverter
+org.cheeryworks.liteql.model.query.condition.FieldConditionValueConverter
