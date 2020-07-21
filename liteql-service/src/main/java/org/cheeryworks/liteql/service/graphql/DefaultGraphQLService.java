@@ -5,10 +5,12 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.language.FieldDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.OperationTypeDefinition;
+import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.GraphQLSchema;
@@ -17,17 +19,19 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.graphql.Scalars;
 import org.cheeryworks.liteql.model.query.QueryContext;
+import org.cheeryworks.liteql.model.type.DomainType;
+import org.cheeryworks.liteql.model.type.field.AbstractNullableField;
+import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
-import org.cheeryworks.liteql.service.GraphQLSchemaProcessor;
 import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.QueryService;
 import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.core.io.Resource;
@@ -35,6 +39,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.StreamUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,8 +66,6 @@ public class DefaultGraphQLService implements GraphQLService {
 
     private DataLoaderRegistry dataLoaderRegistry;
 
-    List<GraphQLSchemaProcessor> graphQLSchemaProcessors;
-
     private GraphQL graphQL;
 
     static {
@@ -84,13 +87,10 @@ public class DefaultGraphQLService implements GraphQLService {
         EMPTY_SCHEMA = emptySchemaBuilder.toString();
     }
 
-    public DefaultGraphQLService(
-            Repository repository, ObjectMapper objectMapper, QueryService queryService,
-            List<GraphQLSchemaProcessor> graphQLSchemaProcessors) {
+    public DefaultGraphQLService(Repository repository, ObjectMapper objectMapper, QueryService queryService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
-        this.graphQLSchemaProcessors = graphQLSchemaProcessors;
         this.scalars = new Scalars(objectMapper);
 
         this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(repository, objectMapper, queryService);
@@ -135,18 +135,11 @@ public class DefaultGraphQLService implements GraphQLService {
 
             Set<String> operationTypeNames = new HashSet<>();
 
-            Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType = new HashMap<>();
-
             for (OperationTypeDefinition operationTypeDefinition : operationTypeDefinitions) {
                 operationTypeNames.add(operationTypeDefinition.getTypeName().getName());
             }
 
-            if (CollectionUtils.isNotEmpty(graphQLSchemaProcessors)) {
-                for (GraphQLSchemaProcessor graphQLSchemaProcessor : graphQLSchemaProcessors) {
-                    graphQLSchemaProcessor.process(
-                            repository, scalars, typeDefinitionRegistry, graphQLFieldReferencesWithDomainType);
-                }
-            }
+            generateObjectTypeDefinitions(repository, scalars, typeDefinitionRegistry);
 
             generateDefaultQueries(schemaParser, typeDefinitionRegistry, operationTypeNames);
 
@@ -154,8 +147,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
             generateDefaultMutations(schemaParser, typeDefinitionRegistry, operationTypeNames);
 
-            RuntimeWiring runtimeWiring = buildWiring(
-                    typeDefinitionRegistry.types(), operationTypeNames, graphQLFieldReferencesWithDomainType);
+            RuntimeWiring runtimeWiring = buildWiring(typeDefinitionRegistry.types(), operationTypeNames);
 
             SchemaGenerator schemaGenerator = new SchemaGenerator();
 
@@ -163,6 +155,108 @@ public class DefaultGraphQLService implements GraphQLService {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public void generateObjectTypeDefinitions(
+            Repository repository, Scalars scalars, TypeDefinitionRegistry typeDefinitionRegistry) {
+        Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
+
+        for (String schema : repository.getSchemaNames()) {
+            for (DomainType domainType : repository.getDomainTypes(schema)) {
+                if (!domainType.isGraphQLType()) {
+                    continue;
+                }
+
+                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(domainType);
+
+                ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
+                        .newObjectTypeDefinition()
+                        .name(objectTypeName);
+
+                objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
+
+                for (Field field : domainType.getFields()) {
+                    if (!field.isGraphQLField()) {
+                        continue;
+                    }
+
+                    FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                            .newFieldDefinition()
+                            .name(field.getName())
+                            .type(getGraphQLTypeFromField(scalars, field))
+                            .inputValueDefinitions(defaultFieldArguments());
+
+                    FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
+
+                    objectTypeDefinitionBuilder.fieldDefinition(fieldDefinition);
+                }
+            }
+        }
+
+        objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
+    }
+
+    private Type getGraphQLTypeFromField(Scalars scalars, Field field) {
+        String typeName = getGraphQLTypeNameFromField(scalars, field);
+
+        if (field instanceof AbstractNullableField) {
+            AbstractNullableField nullableField = (AbstractNullableField) field;
+
+            if (!nullableField.isNullable()) {
+                return new NonNullType(new TypeName(typeName));
+            }
+        }
+
+        return new TypeName(typeName);
+    }
+
+    private String getGraphQLTypeNameFromField(Scalars scalars, Field field) {
+        switch (field.getType()) {
+            case Id:
+            case Clob:
+            case String:
+                return graphql.Scalars.GraphQLString.getName();
+            case Long:
+                return scalars.getScalarLong().getName();
+            case Integer:
+                return graphql.Scalars.GraphQLInt.getName();
+            case Timestamp:
+                return scalars.getScalarDate().getName();
+            case Boolean:
+                return graphql.Scalars.GraphQLBoolean.getName();
+            case Decimal:
+                return scalars.getScalarBigDecimal().getName();
+            case Blob:
+                return graphql.Scalars.GraphQLByte.getName();
+            case Reference:
+                org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
+                        = (org.cheeryworks.liteql.model.type.field.ReferenceField) field;
+                return GraphQLServiceUtil.getObjectTypeName(referenceField.getDomainTypeName());
+            default:
+                throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
+        }
+    }
+
+    private List<InputValueDefinition> defaultFieldArguments() {
+        List<InputValueDefinition> arguments = new ArrayList<>();
+
+        arguments.add(
+                InputValueDefinition.newInputValueDefinition()
+                        .name(GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS)
+                        .type(new ListType(
+                                new NonNullType(
+                                        new TypeName(GraphQLConstants.INPUT_TYPE_CONDITION_NAME))))
+                        .build());
+
+        arguments.add(
+                InputValueDefinition.newInputValueDefinition()
+                        .name(GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY)
+                        .type(new ListType(
+                                new NonNullType(
+                                        new TypeName(GraphQLConstants.INPUT_TYPE_SORT_NAME))))
+                        .build());
+
+        return arguments;
     }
 
     private void generateDefaultInputTypes(
@@ -414,9 +508,7 @@ public class DefaultGraphQLService implements GraphQLService {
         }
     }
 
-    private RuntimeWiring buildWiring(
-            Map<String, TypeDefinition> typeDefinitions, Set<String> operationTypeNames,
-            Map<Class, Map<String, String>> graphQLFieldReferencesWithDomainType) {
+    private RuntimeWiring buildWiring(Map<String, TypeDefinition> typeDefinitions, Set<String> operationTypeNames) {
         RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
 
         builder.scalar(this.scalars.getScalarLong());
