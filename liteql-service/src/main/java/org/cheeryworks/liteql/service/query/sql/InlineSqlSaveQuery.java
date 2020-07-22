@@ -1,4 +1,6 @@
-package org.cheeryworks.liteql.sql;
+package org.cheeryworks.liteql.service.query.sql;
+
+import org.cheeryworks.liteql.sql.SqlSaveQuery;
 
 import java.util.List;
 

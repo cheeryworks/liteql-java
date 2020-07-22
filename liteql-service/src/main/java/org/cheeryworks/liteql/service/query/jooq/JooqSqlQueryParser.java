@@ -5,8 +5,6 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.jooq.datatype.JOOQDataType;
-import org.cheeryworks.liteql.jooq.join.JOOQJoinedTable;
 import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.QueryCondition;
@@ -30,17 +28,17 @@ import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
 import org.cheeryworks.liteql.model.type.index.Unique;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlParser;
+import org.cheeryworks.liteql.service.query.sql.InlineSqlDeleteQuery;
+import org.cheeryworks.liteql.service.query.sql.InlineSqlReadQuery;
+import org.cheeryworks.liteql.service.query.sql.InlineSqlSaveQuery;
 import org.cheeryworks.liteql.service.query.sql.SqlQueryParser;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
-import org.cheeryworks.liteql.sql.InlineSqlDeleteQuery;
-import org.cheeryworks.liteql.sql.InlineSqlReadQuery;
-import org.cheeryworks.liteql.sql.InlineSqlSaveQuery;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
-import org.cheeryworks.liteql.util.JOOQUtil;
+import org.cheeryworks.liteql.util.JooqUtil;
 import org.cheeryworks.liteql.util.SqlQueryServiceUtil;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -93,7 +91,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         if (readQuery.getConditions() != null) {
             conditions.add(
-                    JOOQUtil.getCondition(
+                    JooqUtil.getCondition(
                             readQuery.getDomainTypeName(), readQuery.getConditions(),
                             null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
         }
@@ -102,12 +100,12 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         if (!accessDecisionFields.isEmpty()) {
             conditions.add(
-                    JOOQUtil.getCondition(
+                    JooqUtil.getCondition(
                             readQuery.getDomainTypeName(), readQuery.getAccessDecisionConditions(),
                             null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
         }
 
-        Condition condition = JOOQUtil.getCondition(
+        Condition condition = JooqUtil.getCondition(
                 readQuery.getDomainTypeName(), readQuery.getConditions(),
                 null, TABLE_ALIAS_PREFIX, getSqlCustomizer());
 
@@ -115,10 +113,10 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 getRepository().getDomainType(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
-        List<JOOQJoinedTable> joinedTables = parseJoins(readQuery.getJoins(), TABLE_ALIAS_PREFIX, sqlReadQuery);
+        List<JooqJoinedTable> joinedTables = parseJoins(readQuery.getJoins(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
         if (CollectionUtils.isNotEmpty(joinedTables)) {
-            for (JOOQJoinedTable joinedTable : joinedTables) {
+            for (JooqJoinedTable joinedTable : joinedTables) {
                 fields.addAll(joinedTable.getFields());
 
                 if (joinedTable.getCondition() != null) {
@@ -136,7 +134,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 .from(table(getSqlCustomizer().getTableName(readQuery.getDomainTypeName())).as(TABLE_ALIAS_PREFIX));
 
         if (CollectionUtils.isNotEmpty(joinedTables)) {
-            for (JOOQJoinedTable joinedTable : joinedTables) {
+            for (JooqJoinedTable joinedTable : joinedTables) {
                 selectJoinStep
                         .leftOuterJoin(table(joinedTable.getTableName()).as(joinedTable.getTableAlias()))
                         .on(joinedTable.getJoinCondition());
@@ -163,7 +161,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                     ((PageReadQuery) readQuery).getPage(),
                     ((PageReadQuery) readQuery).getSize());
 
-            sqlReadQuery.setSql(JOOQUtil.getPageSql(getDatabase(), selectConditionStep, pageable));
+            sqlReadQuery.setSql(JooqUtil.getPageSql(getDatabase(), selectConditionStep, pageable));
         } else {
             sqlReadQuery.setSql(selectConditionStep.getSQL());
         }
@@ -207,13 +205,13 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         return new PageRequest(page == 0 ? 0 : page - 1, size);
     }
 
-    private List<JOOQJoinedTable> parseJoins(
+    private List<JooqJoinedTable> parseJoins(
             List<JoinedReadQuery> joinedReadQueries, String joinedTableAliasPrefix, SqlReadQuery sqlReadQuery) {
-        List<JOOQJoinedTable> joinedTables = new ArrayList<>();
+        List<JooqJoinedTable> joinedTables = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(joinedReadQueries)) {
             for (JoinedReadQuery joinedReadQuery : joinedReadQueries) {
-                JOOQJoinedTable joinedTable = new JOOQJoinedTable();
+                JooqJoinedTable joinedTable = new JooqJoinedTable();
                 joinedTable.setTableName(getSqlCustomizer().getTableName(joinedReadQuery.getDomainTypeName()));
                 joinedTable.setTableAlias(joinedTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
@@ -222,18 +220,21 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                                 joinedReadQuery.getFields(), joinedTable.getTableAlias(), sqlReadQuery));
 
                 QueryConditions joinConditions = new QueryConditions();
+
                 joinConditions.add(new QueryCondition(
                         IdField.ID_FIELD_NAME,
                         ConditionClause.EQUALS, ConditionType.Field,
-                        joinedReadQuery.getDomainTypeName().getName() + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
+                        joinedReadQuery.getDomainTypeName().getName()
+                                + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
+
                 joinedTable.setJoinCondition(
-                        JOOQUtil.getCondition(
+                        JooqUtil.getCondition(
                                 joinedReadQuery.getDomainTypeName(),
                                 joinConditions,
                                 joinedTableAliasPrefix, joinedTable.getTableAlias(), getSqlCustomizer()));
 
                 joinedTable.setCondition(
-                        JOOQUtil.getCondition(
+                        JooqUtil.getCondition(
                                 joinedReadQuery.getDomainTypeName(),
                                 joinedReadQuery.getConditions(),
                                 null, joinedTable.getTableAlias(), getSqlCustomizer()));
@@ -302,14 +303,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
             InsertSetStep insertSetStep = getDslContext()
                     .insertInto(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
 
-            DataType dataType = JOOQDataType.getDataType(fieldDefinitions.get(IdField.ID_FIELD_NAME));
+            DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(IdField.ID_FIELD_NAME));
 
             InsertSetMoreStep insertSetMoreStep = insertSetStep.set(
                     field("id", dataType),
                     UUID_GENERATOR.generate());
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
-                dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
                     String fieldName = getSqlCustomizer().getColumnName(
@@ -343,14 +344,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
             if (saveQuery.getAccessDecisionConditions() != null) {
                 condition = condition.and(
-                        JOOQUtil.getCondition(
+                        JooqUtil.getCondition(
                                 saveQuery.getDomainTypeName(),
                                 saveQuery.getAccessDecisionConditions(), null, null,
                                 getSqlCustomizer()));
             }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
-                DataType dataType = JOOQDataType.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (uniqueKey.getFields().contains(dataEntry.getKey())) {
                     condition = condition.and(field(dataEntry.getKey()).eq(dataEntry.getValue()));
@@ -431,14 +432,14 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         List<Condition> conditions = new ArrayList<>();
 
         conditions.add(
-                JOOQUtil.getCondition(
+                JooqUtil.getCondition(
                         deleteQuery.getDomainTypeName(),
                         deleteQuery.getConditions(), null, null,
                         getSqlCustomizer()));
 
         if (deleteQuery.getAccessDecisionConditions() != null) {
             conditions.add(
-                    JOOQUtil.getCondition(
+                    JooqUtil.getCondition(
                             deleteQuery.getDomainTypeName(),
                             deleteQuery.getAccessDecisionConditions(), null, null,
                             getSqlCustomizer()));

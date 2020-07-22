@@ -1,7 +1,6 @@
 package org.cheeryworks.liteql.util;
 
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.QueryConditions;
@@ -10,13 +9,19 @@ import org.cheeryworks.liteql.model.query.read.page.Pageable;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectLimitStep;
 import org.jooq.exception.SQLDialectNotSupportedException;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,11 +33,36 @@ import static org.cheeryworks.liteql.model.enums.ConditionClause.IN;
 import static org.cheeryworks.liteql.model.enums.ConditionClause.NOT_NULL;
 import static org.cheeryworks.liteql.model.enums.ConditionClause.NULL;
 
-public class JOOQUtil {
+public class JooqUtil {
+
+    public static final int STRING_DEFAULT_LENGTH = 255;
+
+    public static final int STRING_MAX_LENGTH = 4000;
+
+    public static final int LONG_LENGTH = 19;
+
+    public static final int INTEGER_MAX_LENGTH = 10;
+
+    public static final int BIG_DECIMAL_PRECISION = 19;
+
+    public static final int BIG_DECIMAL_MIN_SCALE = 2;
+
+    public static final int BIG_DECIMAL_MAX_SCALE = 6;
+
+    public static final Map<Integer, Class> SUPPORTED_DATA_TYPES = new HashMap<>();
 
     public static final Map<ConditionType, ConditionValueConverter> CONDITION_VALUE_CONVERTERS;
 
     static {
+        SUPPORTED_DATA_TYPES.put(Types.VARCHAR, String.class);
+        SUPPORTED_DATA_TYPES.put(Types.BIGINT, Long.class);
+        SUPPORTED_DATA_TYPES.put(Types.INTEGER, Integer.class);
+        SUPPORTED_DATA_TYPES.put(Types.BOOLEAN, Boolean.class);
+        SUPPORTED_DATA_TYPES.put(Types.NUMERIC, BigDecimal.class);
+        SUPPORTED_DATA_TYPES.put(Types.TIMESTAMP, Timestamp.class);
+        SUPPORTED_DATA_TYPES.put(Types.CLOB, String.class);
+        SUPPORTED_DATA_TYPES.put(Types.BLOB, byte[].class);
+
         Map<ConditionType, ConditionValueConverter> conditionValueConverters
                 = new HashMap<>();
         Iterator<ConditionValueConverter> conditionValueConverterIterator
@@ -45,6 +75,121 @@ public class JOOQUtil {
         }
 
         CONDITION_VALUE_CONVERTERS = Collections.unmodifiableMap(conditionValueConverters);
+    }
+
+    public static DataType<String> getStringDataType() {
+        return SQLDataType.VARCHAR;
+    }
+
+    public static DataType<String> getStringDataType(boolean nullable) {
+        return getStringDataType().nullable(nullable);
+    }
+
+    public static DataType<String> getStringDataType(boolean nullable, int length) {
+        return getStringDataType(nullable).length(length);
+    }
+
+    public static DataType<Long> getLongDataType() {
+        return SQLDataType.BIGINT;
+    }
+
+    public static DataType<Long> getLongDataType(boolean nullable) {
+        return getLongDataType().nullable(nullable);
+    }
+
+    public static DataType<Long> getLongDataType(boolean nullable, int length) {
+        return getLongDataType(nullable).length(length);
+    }
+
+    public static DataType<Integer> getIntegerDataType() {
+        return SQLDataType.INTEGER;
+    }
+
+    public static DataType<Integer> getIntegerDataType(boolean nullable) {
+        return getIntegerDataType().nullable(nullable);
+    }
+
+    public static DataType<Integer> getIntegerDataType(boolean nullable, int length) {
+        return getIntegerDataType(nullable).length(length);
+    }
+
+    public static DataType<Boolean> getBooleanDataType() {
+        return SQLDataType.BOOLEAN.nullable(false);
+    }
+
+    public static DataType<BigDecimal> getBigDecimalDataType() {
+        return SQLDataType.DECIMAL(BIG_DECIMAL_PRECISION, BIG_DECIMAL_MIN_SCALE);
+    }
+
+    public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable) {
+        return getBigDecimalDataType().nullable(nullable);
+    }
+
+    public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable, int precision, int scale) {
+        return getBigDecimalDataType(nullable).precision(precision).scale(scale);
+    }
+
+    public static DataType<Timestamp> getTimestampDataType() {
+        return SQLDataType.TIMESTAMP;
+    }
+
+    public static DataType<Timestamp> getTimestampDataType(boolean nullable) {
+        return getTimestampDataType().nullable(nullable);
+    }
+
+    public static DataType<String> getClobDataType() {
+        return SQLDataType.CLOB;
+    }
+
+    public static DataType<String> getClobDataType(boolean nullable) {
+        return getClobDataType().nullable(nullable);
+    }
+
+    public static DataType<byte[]> getBlobDataType() {
+        return SQLDataType.BLOB;
+    }
+
+    public static DataType<byte[]> getBlobDataType(boolean nullable) {
+        return getBlobDataType().nullable(nullable);
+    }
+
+    public static DataType<?> getDataType(Class<?> type) {
+        if (String.class.isAssignableFrom(type)) {
+            return getStringDataType();
+        } else if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type)) {
+            return getLongDataType();
+        } else if (int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)) {
+            return getIntegerDataType();
+        } else if (boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type)) {
+            return getBooleanDataType();
+        } else if (BigDecimal.class.isAssignableFrom(type)) {
+            return getBigDecimalDataType();
+        } else if (Date.class.isAssignableFrom(type)) {
+            return getTimestampDataType();
+        }
+
+        throw new IllegalArgumentException(type.getName() + " not supported");
+    }
+
+    public static DataType<?> getDataType(ConditionType conditionType) {
+        if (conditionType == null) {
+            conditionType = ConditionType.String;
+        }
+
+        if (conditionType.equals(ConditionType.Integer)) {
+            return getIntegerDataType();
+        } else if (conditionType.equals(ConditionType.Boolean)) {
+            return getBooleanDataType();
+        } else if (conditionType.equals(ConditionType.Decimal)) {
+            return getBigDecimalDataType();
+        } else if (conditionType.equals(ConditionType.Timestamp)) {
+            return getTimestampDataType();
+        } else if (conditionType.equals(ConditionType.String)) {
+            return getStringDataType();
+        }
+
+        throw new IllegalArgumentException(
+                "Condition type " + conditionType.name() + " not mapping with Jooq DataType");
     }
 
     public static SQLDialect getSqlDialect(String databaseType) {
@@ -134,7 +279,7 @@ public class JOOQUtil {
 
                     org.jooq.Field field = (ConditionType.Field.equals(queryCondition.getType()))
                             ? DSL.field(leftClause)
-                            : DSL.field(leftClause, JOOQDataType.getDataType(queryCondition.getType()));
+                            : DSL.field(leftClause, JooqUtil.getDataType(queryCondition.getType()));
 
                     switch (queryCondition.getCondition()) {
                         case LESS_THAN:

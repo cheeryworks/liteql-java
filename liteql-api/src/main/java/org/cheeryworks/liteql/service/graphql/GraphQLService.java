@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service;
+package org.cheeryworks.liteql.service.graphql;
 
 import graphql.ExecutionResult;
 import org.cheeryworks.liteql.model.query.QueryContext;

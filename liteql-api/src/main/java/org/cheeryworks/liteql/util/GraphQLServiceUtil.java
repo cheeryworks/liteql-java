@@ -11,7 +11,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchemaElement;
 import graphql.schema.GraphQLType;
-import org.cheeryworks.liteql.model.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
@@ -20,7 +19,7 @@ import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
-import org.cheeryworks.liteql.model.util.StringUtil;
+import org.cheeryworks.liteql.model.util.LiteQLUtil;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
 
 import java.util.Arrays;
@@ -31,21 +30,13 @@ public abstract class GraphQLServiceUtil {
 
     public static final String GRAPHQL_NAME_CONCAT = "__";
 
-    public static String getObjectTypeName(TypeName typeName) {
+    public static String toObjectTypeName(TypeName typeName) {
         return typeName.getFullname().replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
     }
 
-    public static String getObjectTypeName(Class<?> domainType) {
-        ResourceDefinition resourceDefinition = domainType.getAnnotation(ResourceDefinition.class);
-
-        return resourceDefinition.namespace().toLowerCase()
-                .replaceAll("\\" + LiteQLConstants.NAME_CONCAT, GRAPHQL_NAME_CONCAT)
-                + GRAPHQL_NAME_CONCAT
-                + StringUtil.camelNameToLowerDashConnectedLowercaseName(domainType.getSimpleName());
-    }
-
-    public static String normalizeGraphQLFieldName(String graphQLFieldName) {
-        return graphQLFieldName.replaceAll(GRAPHQL_NAME_CONCAT, LiteQLConstants.NAME_CONCAT);
+    public static TypeName toDomainTypeName(String graphQLObjectTypeName) {
+        return LiteQLUtil.getTypeName(
+                graphQLObjectTypeName.replaceAll(GRAPHQL_NAME_CONCAT, LiteQLConstants.NAME_CONCAT));
     }
 
     public static void parseConditions(

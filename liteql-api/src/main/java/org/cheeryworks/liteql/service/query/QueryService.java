@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service;
+package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.model.query.PublicQuery;
 import org.cheeryworks.liteql.model.query.QueryContext;

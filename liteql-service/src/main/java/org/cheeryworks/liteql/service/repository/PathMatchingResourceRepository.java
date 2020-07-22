@@ -12,7 +12,6 @@ import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.ClassUtil;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
-import org.cheeryworks.liteql.service.Repository;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;

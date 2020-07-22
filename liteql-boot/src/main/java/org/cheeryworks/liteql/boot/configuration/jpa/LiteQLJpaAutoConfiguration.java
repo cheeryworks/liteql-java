@@ -4,7 +4,7 @@ package org.cheeryworks.liteql.boot.configuration.jpa;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cheeryworks.liteql.jpa.JpaRepository;
 import org.cheeryworks.liteql.jpa.JpaSqlCustomizer;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;

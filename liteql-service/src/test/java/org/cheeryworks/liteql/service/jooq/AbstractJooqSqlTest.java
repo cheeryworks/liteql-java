@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.service.AbstractSqlTest;
-import org.cheeryworks.liteql.util.JOOQUtil;
+import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.DSLContext;
 import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.RenderQuotedNames;
@@ -36,7 +36,7 @@ public abstract class AbstractJooqSqlTest extends AbstractSqlTest {
         }
 
         this.dslContext = new DefaultDSLContext(
-                getDataSource(), JOOQUtil.getSqlDialect(getDatabase()), settings);
+                getDataSource(), JooqUtil.getSqlDialect(getDatabase()), settings);
 
         initDatabase();
     }

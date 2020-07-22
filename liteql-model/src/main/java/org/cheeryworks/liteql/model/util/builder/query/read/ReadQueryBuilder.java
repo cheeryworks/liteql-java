@@ -17,11 +17,7 @@ public class ReadQueryBuilder extends ReadQueryScopeBuilder<ReadQuery> {
     }
 
     public ReadQueryTreeBuilder tree() {
-        return new ReadQueryTreeBuilder(getReadQueryMetadata(), null);
-    }
-
-    public ReadQueryTreeBuilder tree(Integer expandLevel) {
-        return new ReadQueryTreeBuilder(getReadQueryMetadata(), expandLevel);
+        return new ReadQueryTreeBuilder(getReadQueryMetadata());
     }
 
 }

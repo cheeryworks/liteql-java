@@ -35,10 +35,9 @@ import org.cheeryworks.liteql.model.query.save.UpdateQuery;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.IdField;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.DefaultQueryAccessDecisionService;
-import org.cheeryworks.liteql.service.QueryAccessDecisionService;
-import org.cheeryworks.liteql.service.Repository;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
+import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
@@ -140,8 +139,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
         if (readQuery instanceof SingleReadQuery) {
             return results.get(0);
         } else if (readQuery instanceof TreeReadQuery) {
-            return HierarchicalEntityUtil.transformInTree(
-                    results, ((TreeReadQuery) readQuery).getExpandLevel());
+            return HierarchicalEntityUtil.transformInTree(results);
         } else if (readQuery instanceof PageReadQuery) {
             return new PageReadResults(
                     results,

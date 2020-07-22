@@ -5,10 +5,10 @@ import org.cheeryworks.liteql.model.enums.ConditionClause;
 import org.cheeryworks.liteql.model.enums.ConditionType;
 import org.cheeryworks.liteql.model.query.read.ReadQuery;
 import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.util.LiteQLUtil;
+import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
-import org.cheeryworks.liteql.service.QueryService;
+import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.BatchLoaderEnvironment;
 import org.dataloader.BatchLoaderWithContext;
@@ -69,10 +69,10 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         for (Map.Entry<String, Map<String, Object>> keysInTypesEntry : keysInTypes.entrySet()) {
             Map<String, Object> keyContext = keysInTypesEntry.getValue();
 
-            String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(keysInTypesEntry.getKey());
+            TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(keysInTypesEntry.getKey());
 
             ReadQuery readQuery = QueryBuilder
-                    .read(LiteQLUtil.getTypeName(domainTypeName))
+                    .read(domainTypeName)
                     .fields()
                     .conditions(
                             condition(

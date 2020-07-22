@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.jooq.join;
+package org.cheeryworks.liteql.service.query.jooq;
 
 import org.cheeryworks.liteql.model.query.QueryCondition;
 import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
@@ -8,11 +8,7 @@ import org.jooq.Field;
 import java.util.LinkedList;
 import java.util.List;
 
-public class JOOQJoinedTable {
-
-    private Class type;
-
-    private Class parentType;
+public class JooqJoinedTable {
 
     private String tableName;
 
@@ -58,22 +54,6 @@ public class JOOQJoinedTable {
 
     public void setJoinConditions(LinkedList<QueryCondition> joinConditions) {
         this.joinConditions = joinConditions;
-    }
-
-    public Class getType() {
-        return type;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
-    }
-
-    public Class getParentType() {
-        return parentType;
-    }
-
-    public void setParentType(Class parentType) {
-        this.parentType = parentType;
     }
 
     public Condition getCondition() {

@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.model.util.builder.query.read;
 import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.model.util.builder.query.read.join.ReadQueryJoinMetadata;
 
 import java.util.Arrays;
@@ -43,10 +42,6 @@ public class ReadQueryEndBuilder<T extends AbstractTypedReadQuery> {
         readQuery.setConditions(readQueryMetadata.getConditions());
         readQuery.setSorts(readQueryMetadata.getSorts());
         readQuery.setScope(readQueryMetadata.getScope());
-
-        if (readQuery instanceof TreeReadQuery) {
-            ((TreeReadQuery) readQuery).setExpandLevel(readQueryMetadata.getExpandLevel());
-        }
 
         if (readQuery instanceof PageReadQuery) {
             ((PageReadQuery) readQuery).setPage(this.readQueryMetadata.getPage());

@@ -33,7 +33,7 @@ import org.cheeryworks.liteql.model.type.migration.Migration;
 import org.cheeryworks.liteql.model.util.ClassUtil;
 import org.cheeryworks.liteql.model.util.LiteQLConstants;
 import org.cheeryworks.liteql.model.util.StringUtil;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.repository.PathMatchingResourceRepository;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;

@@ -2,7 +2,6 @@ package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.jooq.datatype.JOOQDataType;
 import org.cheeryworks.liteql.model.enums.IndexType;
 import org.cheeryworks.liteql.model.enums.MigrationOperationType;
 import org.cheeryworks.liteql.model.type.DomainType;
@@ -20,11 +19,11 @@ import org.cheeryworks.liteql.model.type.field.TimestampField;
 import org.cheeryworks.liteql.model.type.index.AbstractIndex;
 import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.model.util.StringUtil;
-import org.cheeryworks.liteql.service.Repository;
-import org.cheeryworks.liteql.service.sql.AbstractSqlParser;
+import org.cheeryworks.liteql.service.query.sql.AbstractSqlParser;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.service.util.StringEncoder;
-import org.cheeryworks.liteql.util.JOOQUtil;
+import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -57,7 +56,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
         this.repository = repository;
         this.dslContext = dslContext;
-        this.database = JOOQUtil.getDatabase(dslContext.dialect());
+        this.database = JooqUtil.getDatabase(dslContext.dialect());
     }
 
     protected Repository getRepository() {
@@ -152,37 +151,37 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
     private DataType getJooqDataType(Field field) {
         switch (field.getType()) {
             case Id:
-                return JOOQDataType.getStringDataType(false, IdField.ID_FIELD_LENGTH);
+                return JooqUtil.getStringDataType(false, IdField.ID_FIELD_LENGTH);
             case String:
                 StringField stringField = (StringField) field;
 
-                return JOOQDataType.getStringDataType(stringField.isNullable(), stringField.getLength());
+                return JooqUtil.getStringDataType(stringField.isNullable(), stringField.getLength());
             case Long:
                 LongField longField = (LongField) field;
 
-                return JOOQDataType.getLongDataType(longField.isNullable());
+                return JooqUtil.getLongDataType(longField.isNullable());
             case Integer:
                 IntegerField integerField = (IntegerField) field;
 
-                return JOOQDataType.getIntegerDataType(integerField.isNullable());
+                return JooqUtil.getIntegerDataType(integerField.isNullable());
             case Timestamp:
                 TimestampField timestampField = (TimestampField) field;
 
-                return JOOQDataType.getTimestampDataType(timestampField.isNullable());
+                return JooqUtil.getTimestampDataType(timestampField.isNullable());
             case Boolean:
-                return JOOQDataType.getBooleanDataType();
+                return JooqUtil.getBooleanDataType();
             case Decimal:
                 DecimalField decimalField = (DecimalField) field;
 
-                return JOOQDataType.getBigDecimalDataType(decimalField.isNullable());
+                return JooqUtil.getBigDecimalDataType(decimalField.isNullable());
             case Clob:
                 ClobField clobField = (ClobField) field;
-                return JOOQDataType.getClobDataType(clobField.isNullable());
+                return JooqUtil.getClobDataType(clobField.isNullable());
             case Blob:
                 BlobField blobField = (BlobField) field;
-                return JOOQDataType.getBlobDataType(blobField.isNullable());
+                return JooqUtil.getBlobDataType(blobField.isNullable());
             case Reference:
-                return JOOQDataType.getStringDataType(((ReferenceField) field).isNullable(), 128);
+                return JooqUtil.getStringDataType(((ReferenceField) field).isNullable(), 128);
             default:
                 throw new IllegalArgumentException("Unsupported field type " + field.getClass().getSimpleName());
         }

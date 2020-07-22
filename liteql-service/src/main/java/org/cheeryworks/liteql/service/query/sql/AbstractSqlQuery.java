@@ -1,4 +1,6 @@
-package org.cheeryworks.liteql.sql;
+package org.cheeryworks.liteql.service.query.sql;
+
+import org.cheeryworks.liteql.sql.SqlQuery;
 
 public abstract class AbstractSqlQuery<T> implements SqlQuery<T> {
 

@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service;
+package org.cheeryworks.liteql.service.migration;
 
 public interface MigrationService {
 

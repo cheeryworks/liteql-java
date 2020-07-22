@@ -4,7 +4,6 @@ import graphql.ExecutionResult;
 import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
 import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLBuilder;
 import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLChildFieldQueryBuilder;
-import org.cheeryworks.liteql.service.GraphQLService;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlQueryServiceTest;
 import org.cheeryworks.liteql.service.jooq.JooqSqlSchemaParserTest;
 import org.junit.jupiter.api.Assertions;

@@ -4,7 +4,7 @@ import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.CreateUniqueMigrationOperation;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlParser;
 import org.cheeryworks.liteql.service.schema.SqlSchemaParser;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;

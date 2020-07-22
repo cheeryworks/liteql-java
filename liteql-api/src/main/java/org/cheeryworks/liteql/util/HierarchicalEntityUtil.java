@@ -12,22 +12,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class HierarchicalEntityUtil {
+import static org.cheeryworks.liteql.model.type.HierarchicalEntity.CHILDREN_FIELD_NAME;
+import static org.cheeryworks.liteql.model.type.HierarchicalEntity.LEAF_FIELD_NAME;
+import static org.cheeryworks.liteql.model.type.HierarchicalEntity.PARENT_ID_FIELD_NAME;
+import static org.cheeryworks.liteql.model.type.SortableEntity.PRIORITY_FIELD_NAME;
+import static org.cheeryworks.liteql.model.type.SortableEntity.SORT_CODE_FIELD_NAME;
+import static org.cheeryworks.liteql.model.type.field.IdField.ID_FIELD_NAME;
 
-    public static final String SORT_CODE_FIELD_NAME = "sortCode";
-    public static final String PARENT_ID_FIELD_NAME = "parentId";
+public abstract class HierarchicalEntityUtil {
 
     public static List<Map<String, Object>> sortInTree(
             List<Map<String, Object>> dataSet) {
-        List<Map<String, Object>> sortedMapsInTree = new LinkedList<Map<String, Object>>();
+        List<Map<String, Object>> sortedMapsInTree = new LinkedList<>();
 
         if (CollectionUtils.isNotEmpty(dataSet)) {
             Map<String, Object> firstRow = dataSet.get(0);
 
-            Set<String> parentKeyFieldNames = new HashSet<String>();
+            Set<String> parentKeyFieldNames = new HashSet<>();
 
             for (String fieldName : firstRow.keySet()) {
-                if (fieldName.startsWith("parent") && !fieldName.equals(PARENT_ID_FIELD_NAME)) {
+                if (!fieldName.equals(PARENT_ID_FIELD_NAME)) {
                     parentKeyFieldNames.add(fieldName);
                 }
             }
@@ -39,9 +43,9 @@ public abstract class HierarchicalEntityUtil {
                 for (String parentKeyFieldName : parentKeyFieldNames) {
                     Object parentKeyFieldValue = data.get(parentKeyFieldName);
                     if (parentKeyFieldValue == null || StringUtils.isBlank(parentKeyFieldValue.toString())) {
-                        data.put("priority", priority);
+                        data.put(PRIORITY_FIELD_NAME, priority);
                         data.put(SORT_CODE_FIELD_NAME, String.valueOf(sortCode));
-                        data.put("leaf", true);
+                        data.put(LEAF_FIELD_NAME, true);
                         sortedMapsInTree.add(data);
 
                         priority++;
@@ -76,7 +80,7 @@ public abstract class HierarchicalEntityUtil {
                 if (parentKeyFieldValue == null
                         || StringUtils.isBlank(parentKeyFieldValue.toString())
                         || !parentKeyFieldValue.equals(
-                        sortedData.get(getFieldNameByParentFieldName(parentKeyFieldName)))) {
+                        sortedData.get(ID_FIELD_NAME))) {
                     matched = false;
 
                     break;
@@ -84,11 +88,11 @@ public abstract class HierarchicalEntityUtil {
             }
 
             if (matched) {
-                data.put("priority", priority);
+                data.put(PRIORITY_FIELD_NAME, priority);
                 data.put(SORT_CODE_FIELD_NAME, parentSortCode + sortCode);
-                data.put("leaf", true);
+                data.put(LEAF_FIELD_NAME, true);
 
-                sortedData.put("leaf", false);
+                sortedData.put(LEAF_FIELD_NAME, false);
 
                 addChild(sortedData, data);
                 priority++;
@@ -104,57 +108,46 @@ public abstract class HierarchicalEntityUtil {
             List<Map<String, Object>> sortedDataInTree, List<Map<String, Object>> dataSet) {
         for (Map<String, Object> sortedMapInTree : sortedDataInTree) {
             dataSet.add(sortedMapInTree);
-            if (sortedMapInTree.get("children") != null
-                    && ((List<Map<String, Object>>) sortedMapInTree.get("children")).size() > 0) {
-                treeToList((List<Map<String, Object>>) sortedMapInTree.get("children"), dataSet);
+            if (sortedMapInTree.get(CHILDREN_FIELD_NAME) != null
+                    && ((List<Map<String, Object>>) sortedMapInTree.get(CHILDREN_FIELD_NAME)).size() > 0) {
+                treeToList((List<Map<String, Object>>) sortedMapInTree.get(CHILDREN_FIELD_NAME), dataSet);
             }
         }
 
         for (Map<String, Object> data : dataSet) {
-            data.remove("children");
+            data.remove(CHILDREN_FIELD_NAME);
         }
     }
 
-
-    private static String getFieldNameByParentFieldName(String parentKeyFieldName) {
-        return StringUtils.uncapitalize(StringUtils.removeStart(parentKeyFieldName, "parent"));
-    }
-
     private static void addChild(Map<String, Object> parent, Map<String, Object> child) {
-        List<Map<String, Object>> children = (List<Map<String, Object>>) parent.get("children");
+        List<Map<String, Object>> children = (List<Map<String, Object>>) parent.get(CHILDREN_FIELD_NAME);
 
         if (children == null) {
-            children = new LinkedList<Map<String, Object>>();
-            parent.put("children", children);
+            children = new LinkedList<>();
+            parent.put(CHILDREN_FIELD_NAME, children);
         }
 
         children.add(child);
     }
 
-    public static TreeReadResults transformInTree(
-            List<ReadResult> results, Integer expandLevel) {
-        if (expandLevel == null) {
-            expandLevel = 0;
-        }
-
-        List<TreeReadResult> hierarchicalEntities = hierarchicalEntitiesInTreeForMap(results, expandLevel);
+    public static TreeReadResults transformInTree(List<ReadResult> results) {
+        List<TreeReadResult> hierarchicalEntities = hierarchicalEntitiesInTreeForMap(results);
 
         return new TreeReadResults(hierarchicalEntities);
     }
 
-    private static List<TreeReadResult> hierarchicalEntitiesInTreeForMap(
-            List<ReadResult> hierarchicalEntities, int expandLevel) {
+    private static List<TreeReadResult> hierarchicalEntitiesInTreeForMap(List<ReadResult> hierarchicalEntities) {
         List<TreeReadResult> hierarchicalEntitiesInTree = new LinkedList<>();
 
         if (hierarchicalEntities != null && hierarchicalEntities.size() > 0) {
             for (Map<String, Object> hierarchicalEntity : hierarchicalEntities) {
                 boolean isRoot = true;
 
-                String rootSortCode = (String) hierarchicalEntity.get(HierarchicalEntityUtil.SORT_CODE_FIELD_NAME);
+                String rootSortCode = (String) hierarchicalEntity.get(SORT_CODE_FIELD_NAME);
 
                 if (rootSortCode.length() > 4) {
                     for (Map<String, Object> j : hierarchicalEntities) {
-                        String childSortCode = (String) j.get(HierarchicalEntityUtil.SORT_CODE_FIELD_NAME);
+                        String childSortCode = (String) j.get(SORT_CODE_FIELD_NAME);
                         if (childSortCode.equals(rootSortCode.substring(0, rootSortCode.length() - 4))) {
                             isRoot = false;
                             break;
@@ -163,39 +156,32 @@ public abstract class HierarchicalEntityUtil {
                 }
 
                 if (isRoot) {
-                    hierarchicalEntity.put("leaf", true);
+                    hierarchicalEntity.put(LEAF_FIELD_NAME, true);
                     hierarchicalEntitiesInTree.add(new TreeReadResult(hierarchicalEntity));
                 }
             }
 
-            hierarchicalEntitiesInTreeForMap(hierarchicalEntities, hierarchicalEntitiesInTree, expandLevel);
+            hierarchicalEntitiesInTreeForMap(hierarchicalEntities, hierarchicalEntitiesInTree);
         }
 
         return hierarchicalEntitiesInTree;
     }
 
     private static void hierarchicalEntitiesInTreeForMap(
-            List<ReadResult> hierarchicalEntities,
-            List<TreeReadResult> hierarchicalEntitiesInTree,
-            int expandLevel) {
+            List<ReadResult> hierarchicalEntities, List<TreeReadResult> hierarchicalEntitiesInTree) {
         if (hierarchicalEntitiesInTree == null) {
             return;
         }
 
         for (TreeReadResult hierarchicalEntityInTree : hierarchicalEntitiesInTree) {
-            String parentSortCode = (String) hierarchicalEntityInTree.get(HierarchicalEntityUtil.SORT_CODE_FIELD_NAME);
+            String parentSortCode = (String) hierarchicalEntityInTree.get(SORT_CODE_FIELD_NAME);
             for (Map<String, Object> hierarchicalEntity : hierarchicalEntities) {
-                String childSortCode = (String) hierarchicalEntity.get(HierarchicalEntityUtil.SORT_CODE_FIELD_NAME);
+                String childSortCode = (String) hierarchicalEntity.get(SORT_CODE_FIELD_NAME);
                 if (childSortCode.startsWith(parentSortCode)
                         && childSortCode.length() == parentSortCode.length() + 4) {
-                    hierarchicalEntityInTree.put("iconCls", "folder");
-                    hierarchicalEntityInTree.put("leaf", false);
+                    hierarchicalEntityInTree.put(LEAF_FIELD_NAME, false);
 
-                    if (expandLevel == 0 || (parentSortCode.length() / 4 - 1) < expandLevel) {
-                        hierarchicalEntityInTree.put("expanded", true);
-                    }
-
-                    hierarchicalEntity.put("leaf", true);
+                    hierarchicalEntity.put(LEAF_FIELD_NAME, true);
 
                     LinkedList<TreeReadResult> children = hierarchicalEntityInTree.getChildren();
 
@@ -210,8 +196,7 @@ public abstract class HierarchicalEntityUtil {
 
             hierarchicalEntitiesInTreeForMap(
                     hierarchicalEntities,
-                    hierarchicalEntityInTree.getChildren(),
-                    expandLevel);
+                    hierarchicalEntityInTree.getChildren());
         }
     }
 

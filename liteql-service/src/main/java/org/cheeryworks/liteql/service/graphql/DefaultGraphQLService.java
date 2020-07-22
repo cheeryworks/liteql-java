@@ -28,9 +28,8 @@ import org.cheeryworks.liteql.model.type.field.AbstractNullableField;
 import org.cheeryworks.liteql.model.type.field.Field;
 import org.cheeryworks.liteql.model.util.StringUtil;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
-import org.cheeryworks.liteql.service.GraphQLService;
-import org.cheeryworks.liteql.service.QueryService;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -167,7 +166,7 @@ public class DefaultGraphQLService implements GraphQLService {
                     continue;
                 }
 
-                String objectTypeName = GraphQLServiceUtil.getObjectTypeName(domainType);
+                String objectTypeName = GraphQLServiceUtil.toObjectTypeName(domainType);
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()
@@ -231,7 +230,7 @@ public class DefaultGraphQLService implements GraphQLService {
             case Reference:
                 org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
                         = (org.cheeryworks.liteql.model.type.field.ReferenceField) field;
-                return GraphQLServiceUtil.getObjectTypeName(referenceField.getDomainTypeName());
+                return GraphQLServiceUtil.toObjectTypeName(referenceField.getDomainTypeName());
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
         }

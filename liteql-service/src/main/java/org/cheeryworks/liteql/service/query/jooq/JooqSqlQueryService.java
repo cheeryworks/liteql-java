@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
-import org.cheeryworks.liteql.service.QueryAccessDecisionService;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlQueryService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;

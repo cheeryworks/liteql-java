@@ -13,7 +13,7 @@ import org.cheeryworks.liteql.model.type.migration.operation.DropIndexMigrationO
 import org.cheeryworks.liteql.model.type.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.model.type.migration.operation.MigrationOperation;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlParser;
 import org.cheeryworks.liteql.service.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;

@@ -9,6 +9,8 @@ public interface SortableEntity extends Entity {
 
     String SORT_CODE_FIELD_NAME = "sortCode";
 
+    String PRIORITY_FIELD_NAME = "priority";
+
     @Position(1)
     String getSortCode();
 

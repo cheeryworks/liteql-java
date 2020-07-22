@@ -4,8 +4,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.migration.Migration;
-import org.cheeryworks.liteql.service.MigrationService;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

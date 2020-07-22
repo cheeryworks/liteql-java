@@ -23,11 +23,10 @@ import org.cheeryworks.liteql.model.query.read.result.ReadResultsData;
 import org.cheeryworks.liteql.model.type.DomainType;
 import org.cheeryworks.liteql.model.type.TypeName;
 import org.cheeryworks.liteql.model.type.field.ReferenceField;
-import org.cheeryworks.liteql.model.util.LiteQLUtil;
 import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
 import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
-import org.cheeryworks.liteql.service.QueryService;
-import org.cheeryworks.liteql.service.Repository;
+import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.service.repository.Repository;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.DataLoader;
 
@@ -131,10 +130,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     private Object getById(QueryContext queryContext, DataFetchingEnvironment environment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
-        String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
+        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(outputType.getName());
 
         SingleReadQuery singleReadQuery = QueryBuilder
-                .read(LiteQLUtil.getTypeName(domainTypeName))
+                .read(domainTypeName)
                 .fields()
                 .single()
                 .getQuery();
@@ -154,10 +153,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     private List<ReadResult> getByConditions(QueryContext queryContext, DataFetchingEnvironment environment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
-        String domainTypeName = GraphQLServiceUtil.normalizeGraphQLFieldName(outputType.getName());
+        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(outputType.getName());
 
         ReadQuery readQuery = QueryBuilder
-                .read(LiteQLUtil.getTypeName(domainTypeName))
+                .read(domainTypeName)
                 .fields()
                 .getQuery();
 
@@ -196,8 +195,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                                                    String childTypeName, Map<String, Object> keyContext) {
         Map<String, Object> childrenContext = new LinkedHashMap<>();
 
-        TypeName domainTypeName = LiteQLUtil.getTypeName(
-                GraphQLServiceUtil.normalizeGraphQLFieldName(childTypeName));
+        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(childTypeName);
 
         String parentFieldName = getParentFieldName(fieldName, parentTypeName);
 
@@ -237,8 +235,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     }
 
     private String getParentFieldName(String parentGraphQLFieldName, String parentTypeName) {
-        TypeName parentDomainTypeName = LiteQLUtil.getTypeName(
-                GraphQLServiceUtil.normalizeGraphQLFieldName(parentTypeName));
+        TypeName parentDomainTypeName = GraphQLServiceUtil.toDomainTypeName(parentTypeName);
 
         DomainType parentDomainType = getRepository().getDomainType(parentDomainTypeName);
 
