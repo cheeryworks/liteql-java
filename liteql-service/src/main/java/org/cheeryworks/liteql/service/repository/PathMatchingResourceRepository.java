@@ -236,7 +236,7 @@ public class PathMatchingResourceRepository implements Repository {
                 .stream()
                 .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
                 .findFirst()
-                .orElseThrow(() -> {
+                .<IllegalStateException>orElseThrow(() -> {
                     throw new IllegalStateException("Can not get schema [" + schemaName + "]");
                 });
     }
@@ -250,7 +250,7 @@ public class PathMatchingResourceRepository implements Repository {
                 .stream()
                 .filter(traitType -> traitType.getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
-                .orElseThrow(() -> {
+                .<IllegalStateException>orElseThrow(() -> {
                     throw new IllegalStateException("Can not get trait typeName [" + typeName.getFullname() + "]");
                 });
     }
@@ -264,7 +264,7 @@ public class PathMatchingResourceRepository implements Repository {
                 .stream()
                 .filter(domainType -> domainType.getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
-                .orElseThrow(() -> {
+                .<IllegalStateException>orElseThrow(() -> {
                     throw new IllegalStateException("Can not get domain typeName [" + typeName.getFullname() + "]");
                 });
     }
