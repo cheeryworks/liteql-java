@@ -1,25 +1,26 @@
 package org.cheeryworks.liteql.service.query;
 
-import org.cheeryworks.liteql.model.query.PublicQuery;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
-import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
-import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
-import org.cheeryworks.liteql.model.query.read.result.PageReadResults;
-import org.cheeryworks.liteql.model.query.read.result.ReadResult;
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
-import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
-import org.cheeryworks.liteql.model.query.save.CreateQuery;
-import org.cheeryworks.liteql.model.query.save.UpdateQuery;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.read.PageReadQuery;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.query.read.SingleReadQuery;
+import org.cheeryworks.liteql.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.query.read.result.PageReadResults;
+import org.cheeryworks.liteql.query.read.result.ReadResult;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.query.read.result.TreeReadResults;
+import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
+import org.cheeryworks.liteql.query.save.CreateQuery;
+import org.cheeryworks.liteql.query.save.UpdateQuery;
+import org.cheeryworks.liteql.service.LiteQLService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Transactional(readOnly = true)
-public interface QueryService {
+public interface QueryService extends LiteQLService {
 
     QueryAccessDecisionService getQueryAccessDecisionService();
 

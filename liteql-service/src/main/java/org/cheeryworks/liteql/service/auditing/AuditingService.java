@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.auditing;
 
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.UserEntity;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.UserEntity;
 
 import java.util.Map;
 

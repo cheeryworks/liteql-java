@@ -1,28 +1,29 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.model.enums.IndexType;
-import org.cheeryworks.liteql.model.enums.MigrationOperationType;
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.BlobField;
-import org.cheeryworks.liteql.model.type.field.ClobField;
-import org.cheeryworks.liteql.model.type.field.DecimalField;
-import org.cheeryworks.liteql.model.type.field.Field;
-import org.cheeryworks.liteql.model.type.field.IdField;
-import org.cheeryworks.liteql.model.type.field.IntegerField;
-import org.cheeryworks.liteql.model.type.field.LongField;
-import org.cheeryworks.liteql.model.type.field.ReferenceField;
-import org.cheeryworks.liteql.model.type.field.StringField;
-import org.cheeryworks.liteql.model.type.field.TimestampField;
-import org.cheeryworks.liteql.model.type.index.AbstractIndex;
-import org.cheeryworks.liteql.model.type.migration.operation.AbstractIndexMigrationOperation;
-import org.cheeryworks.liteql.model.util.StringUtil;
+import org.cheeryworks.liteql.schema.enums.IndexType;
+import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.BlobField;
+import org.cheeryworks.liteql.schema.field.ClobField;
+import org.cheeryworks.liteql.schema.field.DecimalField;
+import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.schema.field.IdField;
+import org.cheeryworks.liteql.schema.field.IntegerField;
+import org.cheeryworks.liteql.schema.field.LongField;
+import org.cheeryworks.liteql.schema.field.ReferenceField;
+import org.cheeryworks.liteql.schema.field.StringField;
+import org.cheeryworks.liteql.schema.field.TimestampField;
+import org.cheeryworks.liteql.schema.index.AbstractIndex;
+import org.cheeryworks.liteql.schema.migration.operation.AbstractIndexMigrationOperation;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlParser;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
-import org.cheeryworks.liteql.service.util.StringEncoder;
+import org.cheeryworks.liteql.util.StringEncoder;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
@@ -45,22 +46,24 @@ import static org.jooq.impl.DSL.table;
 
 public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
 
-    private Repository repository;
+    private SchemaService schemaService;
 
     private DSLContext dslContext;
 
     private Database database;
 
-    public AbstractJooqSqlParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(sqlCustomizer);
+    public AbstractJooqSqlParser(
+            LiteQLProperties liteQLProperties, SchemaService schemaService,
+            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(liteQLProperties, sqlCustomizer);
 
-        this.repository = repository;
+        this.schemaService = schemaService;
         this.dslContext = dslContext;
         this.database = JooqUtil.getDatabase(dslContext.dialect());
     }
 
-    protected Repository getRepository() {
-        return repository;
+    protected SchemaService getSchemaService() {
+        return schemaService;
     }
 
     protected Database getDatabase() {
@@ -84,7 +87,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
             TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
         String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
-        DomainType domainType = getRepository().getDomainType(domainTypeName);
+        DomainType domainType = getSchemaService().getDomainType(domainTypeName);
 
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
@@ -132,7 +135,7 @@ public abstract class AbstractJooqSqlParser extends AbstractSqlParser {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
         for (Field field : fields) {
-            String fieldName = StringUtil.camelNameToLowerDashConnectedLowercaseName(field.getName());
+            String fieldName = LiteQLUtil.camelNameToLowerDashConnectedLowercaseName(field.getName());
 
             if (field instanceof ReferenceField) {
                 if (((ReferenceField) field).isCollection()) {

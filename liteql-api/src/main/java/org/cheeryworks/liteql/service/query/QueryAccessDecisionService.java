@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.query;
 
-import org.cheeryworks.liteql.model.query.AbstractDomainQuery;
-import org.cheeryworks.liteql.model.type.UserEntity;
+import org.cheeryworks.liteql.query.AbstractDomainQuery;
+import org.cheeryworks.liteql.schema.UserEntity;
 
 public interface QueryAccessDecisionService {
 

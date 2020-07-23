@@ -8,25 +8,25 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.graphql.exception.UnsupportedGraphQLOutputTypeException;
-import org.cheeryworks.liteql.model.query.PublicQuery;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
-import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
-import org.cheeryworks.liteql.model.query.read.result.ReadResult;
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.query.read.result.ReadResultsData;
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.ReferenceField;
-import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
-import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.graphql.exception.UnsupportedGraphQLOutputTypeException;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.read.PageReadQuery;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.query.read.SingleReadQuery;
+import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
+import org.cheeryworks.liteql.query.read.result.ReadResult;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.query.read.result.ReadResultsData;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.ReferenceField;
+import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
+import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.DataLoader;
 
@@ -36,26 +36,26 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.condition;
-import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.field;
+import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.condition;
+import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.field;
 
 public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
-    private Repository repository;
+    private SchemaService schemaService;
 
     private ObjectMapper objectMapper;
 
     private QueryService queryService;
 
     public AbstractGraphQLDataFetcher(
-            Repository repository, ObjectMapper objectMapper, QueryService queryService) {
-        this.repository = repository;
+            SchemaService schemaService, ObjectMapper objectMapper, QueryService queryService) {
+        this.schemaService = schemaService;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
     }
 
-    protected Repository getRepository() {
-        return this.repository;
+    protected SchemaService getSchemaService() {
+        return this.schemaService;
     }
 
     protected QueryService getQueryService() {
@@ -237,7 +237,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     private String getParentFieldName(String parentGraphQLFieldName, String parentTypeName) {
         TypeName parentDomainTypeName = GraphQLServiceUtil.toDomainTypeName(parentTypeName);
 
-        DomainType parentDomainType = getRepository().getDomainType(parentDomainTypeName);
+        DomainType parentDomainType = getSchemaService().getDomainType(parentDomainTypeName);
 
         ReferenceField referenceField = parentDomainType.getReferenceField(parentGraphQLFieldName);
 

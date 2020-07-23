@@ -1,9 +1,10 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
-import org.cheeryworks.liteql.model.query.read.result.ReadResult;
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.query.read.result.ReadResult;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlExecutor;
 import org.cheeryworks.liteql.service.query.sql.SqlQueryExecutor;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -21,8 +22,9 @@ import java.util.Map;
 
 public class JooqSqlQueryExecutor extends AbstractJooqSqlExecutor implements SqlQueryExecutor {
 
-    public JooqSqlQueryExecutor(DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(dslContext, sqlCustomizer);
+    public JooqSqlQueryExecutor(
+            LiteQLProperties liteQLProperties, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(liteQLProperties, dslContext, sqlCustomizer);
     }
 
     @Override

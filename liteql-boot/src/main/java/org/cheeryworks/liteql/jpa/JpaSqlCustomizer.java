@@ -3,11 +3,11 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.model.annotation.ReferenceField;
-import org.cheeryworks.liteql.model.type.Trait;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.util.ClassUtil;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.schema.annotation.ReferenceField;
+import org.cheeryworks.liteql.schema.Trait;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -35,7 +35,13 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
-    public JpaSqlCustomizer() {
+    private LiteQLProperties liteQLProperties = new LiteQLProperties();
+
+    public JpaSqlCustomizer(LiteQLProperties liteQLProperties) {
+        if (liteQLProperties != null) {
+            this.liteQLProperties = liteQLProperties;
+        }
+
         ClassPathScanningCandidateComponentProvider jpaEntityScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
@@ -43,12 +49,12 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
-        for (String packageToScan : LiteQLConstants.getPackageToScan()) {
+        for (String packageToScan : this.liteQLProperties.getPackagesToScan()) {
             jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
-            Class<?> jpaEntityJavaType = ClassUtil.getClass(japEntityBean.getBeanClassName());
+            Class<?> jpaEntityJavaType = LiteQLUtil.getClass(japEntityBean.getBeanClassName());
 
             Table table = jpaEntityJavaType.getAnnotation(Table.class);
 

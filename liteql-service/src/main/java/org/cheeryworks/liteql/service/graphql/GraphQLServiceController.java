@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.graphql;
 
 import graphql.ExecutionResult;
-import org.cheeryworks.liteql.model.query.QueryContext;
+import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

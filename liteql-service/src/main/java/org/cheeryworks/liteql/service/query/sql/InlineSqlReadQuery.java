@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.service.query.sql;
 
-import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 
 import java.util.HashMap;

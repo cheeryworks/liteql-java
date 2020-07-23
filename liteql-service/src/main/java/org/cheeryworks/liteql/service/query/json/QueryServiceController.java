@@ -4,22 +4,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.enums.QueryType;
-import org.cheeryworks.liteql.model.query.Queries;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
-import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
-import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
-import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
-import org.cheeryworks.liteql.model.type.TraitType;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
-import org.cheeryworks.liteql.model.util.LiteQLUtil;
-import org.cheeryworks.liteql.service.query.QueryService;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.Queries;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.read.PageReadQuery;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.query.read.SingleReadQuery;
+import org.cheeryworks.liteql.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
+import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
+import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,22 +39,22 @@ public class QueryServiceController extends AbstractServiceController {
 
     private JsonSchemaGenerator schemaGen;
 
-    private Repository repository;
+    private SchemaService schemaService;
 
     private QueryService queryService;
 
     @Autowired
-    public QueryServiceController(ObjectMapper objectMapper, Repository repository, QueryService queryService) {
+    public QueryServiceController(ObjectMapper objectMapper, SchemaService schemaService, QueryService queryService) {
         this.objectMapper = objectMapper;
         this.schemaGen = new JsonSchemaGenerator(objectMapper);
-        this.repository = repository;
+        this.schemaService = schemaService;
         this.queryService = queryService;
     }
 
     @GetMapping(value = "/liteql/schema")
     public Object getSchemas() {
         try {
-            Set<String> schemas = repository.getSchemaNames();
+            Set<String> schemas = schemaService.getSchemaNames();
 
             return getOkResponseEntity(schemas);
         } catch (Exception ex) {
@@ -70,8 +69,8 @@ public class QueryServiceController extends AbstractServiceController {
         try {
             List<TraitType> types = new ArrayList<>();
 
-            types.addAll(repository.getTraitTypes(schema));
-            types.addAll(repository.getDomainTypes(schema));
+            types.addAll(schemaService.getTraitTypes(schema));
+            types.addAll(schemaService.getDomainTypes(schema));
 
             Map<String, TraitType> typesInMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -92,10 +91,10 @@ public class QueryServiceController extends AbstractServiceController {
         try {
             TypeName typeName = LiteQLUtil.getTypeName(type);
 
-            TraitType traitType = repository.getDomainType(typeName);
+            TraitType traitType = schemaService.getDomainType(typeName);
 
             if (traitType == null) {
-                traitType = repository.getTraitType(typeName);
+                traitType = schemaService.getTraitType(typeName);
             }
 
             return getOkResponseEntity(traitType);
@@ -152,7 +151,7 @@ public class QueryServiceController extends AbstractServiceController {
         try {
             return queryService.execute(
                     queryContext,
-                    LiteQLJsonUtil.toBean(objectMapper, liteQL.toString(), Queries.class));
+                    LiteQLUtil.toBean(objectMapper, liteQL.toString(), Queries.class));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
 

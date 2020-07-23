@@ -1,11 +1,9 @@
 package org.cheeryworks.liteql.util.graphql.builder;
 
-import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.graphql.GraphQLQuery;
-import org.cheeryworks.liteql.model.query.QueryCondition;
-import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLBuilder;
-import org.cheeryworks.liteql.model.util.graphql.builder.GraphQLChildFieldQueryBuilder;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.graphql.GraphQLQuery;
+import org.cheeryworks.liteql.query.QueryCondition;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.cheeryworks.liteql.model.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
+import static org.cheeryworks.liteql.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
 
 public class GraphQLBuilderTest {
 

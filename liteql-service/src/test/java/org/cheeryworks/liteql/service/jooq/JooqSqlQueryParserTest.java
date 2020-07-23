@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.service.jooq;
 
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.util.FileReader;
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.util.FileReader;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.query.jooq.JooqSqlQueryParser;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,8 @@ public class JooqSqlQueryParserTest extends AbstractJooqSqlTest {
     public JooqSqlQueryParserTest() {
         super();
 
-        jooqSqlQueryParser = new JooqSqlQueryParser(getRepository(), getDslContext(), null);
+        jooqSqlQueryParser = new JooqSqlQueryParser(
+                getLiteQLProperties(), getSchemaService(), getDslContext(), null);
     }
 
     @Test
@@ -30,11 +31,11 @@ public class JooqSqlQueryParserTest extends AbstractJooqSqlTest {
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
 
-            ReadQuery readQuery = LiteQLJsonUtil.toBean(getObjectMapper(), readQueryInJson, ReadQuery.class);
+            ReadQuery readQuery = LiteQLUtil.toBean(getObjectMapper(), readQueryInJson, ReadQuery.class);
 
             SqlReadQuery sqlQuery = jooqSqlQueryParser.getSqlReadQuery(readQuery);
 
-            logger.info(LiteQLJsonUtil.toJson(getObjectMapper(), sqlQuery));
+            logger.info(LiteQLUtil.toJson(getObjectMapper(), sqlQuery));
         }
     }
 

@@ -1,8 +1,7 @@
 package org.cheeryworks.liteql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -22,11 +21,9 @@ public abstract class AbstractTest {
     }
 
     public AbstractTest() {
-        System.setProperty(LiteQLConstants.DIAGNOSTIC_ENABLED_KEY, Boolean.TRUE.toString());
-
         Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
 
-        LiteQLJsonUtil.configureObjectMapper(builder);
+        LiteQLUtil.configureObjectMapper(builder);
 
         objectMapper = builder.createXmlMapper(false).build();
     }

@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.service.query.sql;
 
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.Field;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.service.sql.SqlExecutor;
 
 import java.util.Map;

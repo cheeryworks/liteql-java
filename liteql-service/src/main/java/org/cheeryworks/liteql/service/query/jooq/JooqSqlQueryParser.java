@@ -5,35 +5,35 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.query.QueryCondition;
-import org.cheeryworks.liteql.model.query.QueryConditions;
-import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
-import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
-import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
-import org.cheeryworks.liteql.model.query.read.field.FieldDefinitions;
-import org.cheeryworks.liteql.model.query.read.join.JoinedReadQuery;
-import org.cheeryworks.liteql.model.query.read.page.PageRequest;
-import org.cheeryworks.liteql.model.query.read.page.Pageable;
-import org.cheeryworks.liteql.model.query.read.sort.QuerySort;
-import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
-import org.cheeryworks.liteql.model.query.save.CreateQuery;
-import org.cheeryworks.liteql.model.query.save.UpdateQuery;
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.Field;
-import org.cheeryworks.liteql.model.type.field.IdField;
-import org.cheeryworks.liteql.model.type.field.ReferenceField;
-import org.cheeryworks.liteql.model.type.index.Unique;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.QueryCondition;
+import org.cheeryworks.liteql.query.QueryConditions;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.read.AbstractTypedReadQuery;
+import org.cheeryworks.liteql.query.read.PageReadQuery;
+import org.cheeryworks.liteql.query.read.field.FieldDefinition;
+import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
+import org.cheeryworks.liteql.query.read.join.JoinedReadQuery;
+import org.cheeryworks.liteql.query.read.page.PageRequest;
+import org.cheeryworks.liteql.query.read.page.Pageable;
+import org.cheeryworks.liteql.query.read.sort.QuerySort;
+import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
+import org.cheeryworks.liteql.query.save.CreateQuery;
+import org.cheeryworks.liteql.query.save.UpdateQuery;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.schema.field.IdField;
+import org.cheeryworks.liteql.schema.field.ReferenceField;
+import org.cheeryworks.liteql.schema.index.Unique;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlParser;
 import org.cheeryworks.liteql.service.query.sql.InlineSqlDeleteQuery;
 import org.cheeryworks.liteql.service.query.sql.InlineSqlReadQuery;
 import org.cheeryworks.liteql.service.query.sql.InlineSqlSaveQuery;
 import org.cheeryworks.liteql.service.query.sql.SqlQueryParser;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
@@ -77,8 +77,10 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
     private static Logger logger = LoggerFactory.getLogger(JooqSqlQueryParser.class);
 
-    public JooqSqlQueryParser(Repository repository, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(repository, dslContext, sqlCustomizer);
+    public JooqSqlQueryParser(
+            LiteQLProperties liteQLProperties, SchemaService schemaService,
+            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+        super(liteQLProperties, schemaService, dslContext, sqlCustomizer);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 null, TABLE_ALIAS_PREFIX, getSqlCustomizer());
 
         List<org.jooq.Field<Object>> fields = getSelectFields(
-                getRepository().getDomainType(readQuery.getDomainTypeName()),
+                getSchemaService().getDomainType(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
         List<JooqJoinedTable> joinedTables = parseJoins(readQuery.getJoins(), TABLE_ALIAS_PREFIX, sqlReadQuery);
@@ -168,7 +170,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
 
         sqlReadQuery.setSqlParameters(selectConditionStep.getBindValues());
 
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
+        if (getLiteQLProperties().isDiagnosticEnabled()) {
             logger.info("SqlReadQuery:\n" + sqlReadQuery.toString());
         }
 
@@ -216,7 +218,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
                 joinedTable.setTableAlias(joinedTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
                         getSelectFields(
-                                getRepository().getDomainType(joinedReadQuery.getDomainTypeName()),
+                                getSchemaService().getDomainType(joinedReadQuery.getDomainTypeName()),
                                 joinedReadQuery.getFields(), joinedTable.getTableAlias(), sqlReadQuery));
 
                 QueryConditions joinConditions = new QueryConditions();
@@ -387,7 +389,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
             throw new IllegalArgumentException("Unsupported query domainType " + saveQuery.getClass().getSimpleName());
         }
 
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
+        if (getLiteQLProperties().isDiagnosticEnabled()) {
             logger.info(sqlSaveQuery.toString());
         }
 
@@ -453,7 +455,7 @@ public class JooqSqlQueryParser extends AbstractJooqSqlParser implements SqlQuer
         sqlDeleteQuery.setSql(deleteFinalStep.getSQL());
         sqlDeleteQuery.setSqlParameters(deleteFinalStep.getBindValues());
 
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
+        if (getLiteQLProperties().isDiagnosticEnabled()) {
             logger.info("SqlDeleteQuery:\n" + sqlDeleteQuery.toString());
         }
 

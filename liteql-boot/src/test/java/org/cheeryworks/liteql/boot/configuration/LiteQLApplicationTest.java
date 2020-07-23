@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.boot.configuration;
 
-import org.cheeryworks.liteql.service.migration.MigrationService;
+import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

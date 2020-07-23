@@ -21,15 +21,18 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.graphql.Scalars;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.field.AbstractNullableField;
-import org.cheeryworks.liteql.model.type.field.Field;
-import org.cheeryworks.liteql.model.util.StringUtil;
-import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.graphql.Scalars;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.field.AbstractNullableField;
+import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.schema.field.ReferenceField;
+import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.service.query.QueryService;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -47,11 +50,11 @@ import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
-public class DefaultGraphQLService implements GraphQLService {
+public class DefaultGraphQLService extends AbstractLiteQLService implements GraphQLService {
 
     private static final String EMPTY_SCHEMA;
 
-    private Repository repository;
+    private SchemaService schemaService;
 
     private ObjectMapper objectMapper;
 
@@ -86,14 +89,18 @@ public class DefaultGraphQLService implements GraphQLService {
         EMPTY_SCHEMA = emptySchemaBuilder.toString();
     }
 
-    public DefaultGraphQLService(Repository repository, ObjectMapper objectMapper, QueryService queryService) {
-        this.repository = repository;
+    public DefaultGraphQLService(
+            LiteQLProperties liteQLProperties, SchemaService schemaService,
+            ObjectMapper objectMapper, QueryService queryService) {
+        super(liteQLProperties);
+
+        this.schemaService = schemaService;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.scalars = new Scalars(objectMapper);
 
-        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(repository, objectMapper, queryService);
-        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(repository, objectMapper, queryService);
+        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(schemaService, objectMapper, queryService);
+        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(schemaService, objectMapper, queryService);
 
         DataLoader<String, Map<String, Object>> defaultDataLoader
                 = DataLoader.newDataLoader(new GraphQLBatchLoader(queryService));
@@ -138,7 +145,7 @@ public class DefaultGraphQLService implements GraphQLService {
                 operationTypeNames.add(operationTypeDefinition.getTypeName().getName());
             }
 
-            generateObjectTypeDefinitions(repository, scalars, typeDefinitionRegistry);
+            generateObjectTypeDefinitions(schemaService, scalars, typeDefinitionRegistry);
 
             generateDefaultQueries(schemaParser, typeDefinitionRegistry, operationTypeNames);
 
@@ -157,11 +164,11 @@ public class DefaultGraphQLService implements GraphQLService {
     }
 
     public void generateObjectTypeDefinitions(
-            Repository repository, Scalars scalars, TypeDefinitionRegistry typeDefinitionRegistry) {
+            SchemaService schemaService, Scalars scalars, TypeDefinitionRegistry typeDefinitionRegistry) {
         Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
 
-        for (String schema : repository.getSchemaNames()) {
-            for (DomainType domainType : repository.getDomainTypes(schema)) {
+        for (String schema : schemaService.getSchemaNames()) {
+            for (DomainType domainType : schemaService.getDomainTypes(schema)) {
                 if (!domainType.isGraphQLType()) {
                     continue;
                 }
@@ -228,8 +235,8 @@ public class DefaultGraphQLService implements GraphQLService {
             case Blob:
                 return graphql.Scalars.GraphQLByte.getName();
             case Reference:
-                org.cheeryworks.liteql.model.type.field.ReferenceField referenceField
-                        = (org.cheeryworks.liteql.model.type.field.ReferenceField) field;
+                ReferenceField referenceField
+                        = (ReferenceField) field;
                 return GraphQLServiceUtil.toObjectTypeName(referenceField.getDomainTypeName());
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
@@ -381,7 +388,7 @@ public class DefaultGraphQLService implements GraphQLService {
                         .append("(id: " + graphql.Scalars.GraphQLID.getName() + "!): ")
                         .append(typeEntry.getKey()).append("!");
 
-                queryName = StringUtils.uncapitalize(StringUtil.plural(typeEntry.getKey()));
+                queryName = StringUtils.uncapitalize(LiteQLUtil.plural(typeEntry.getKey()));
 
                 queryDefinitionBuilder
                         .append("  ").append(queryName).append("(");

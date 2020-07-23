@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.service.schema;
 
-import org.cheeryworks.liteql.model.type.TypeName;
+import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.service.sql.SqlParser;
 
 public interface SqlSchemaParser extends SqlParser {

@@ -1,9 +1,9 @@
 package org.cheeryworks.liteql.service.auditing;
 
-import org.cheeryworks.liteql.model.type.AuditEntity;
-import org.cheeryworks.liteql.model.type.DomainType;
-import org.cheeryworks.liteql.model.type.Trait;
-import org.cheeryworks.liteql.model.type.UserEntity;
+import org.cheeryworks.liteql.schema.AuditEntity;
+import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.Trait;
+import org.cheeryworks.liteql.schema.UserEntity;
 
 import java.sql.Timestamp;
 import java.util.Map;

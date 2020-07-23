@@ -1,8 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
-import org.cheeryworks.liteql.service.AbstractSqlTest;
+import org.cheeryworks.liteql.service.sql.AbstractSqlTest;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.DSLContext;
 import org.jooq.conf.RenderNameCase;
@@ -31,7 +30,7 @@ public abstract class AbstractJooqSqlTest extends AbstractSqlTest {
         settings.setRenderQuotedNames(RenderQuotedNames.NEVER);
         settings.setRenderNameCase(RenderNameCase.LOWER);
 
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
+        if (getLiteQLProperties().isDiagnosticEnabled()) {
             settings.withRenderFormatted(true);
         }
 

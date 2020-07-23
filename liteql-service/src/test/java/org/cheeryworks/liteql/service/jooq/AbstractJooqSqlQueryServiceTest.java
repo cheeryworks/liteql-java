@@ -2,9 +2,9 @@ package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.service.auditing.DefaultAuditingService;
+import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqSqlQueryService;
 import org.cheeryworks.liteql.service.schema.jooq.JooqSqlSchemaParser;
 import org.mockito.Mockito;
@@ -22,7 +22,7 @@ public class AbstractJooqSqlQueryServiceTest extends AbstractJooqSqlTest {
         super();
 
         queryService = new JooqSqlQueryService(
-                getRepository(), getDslContext(), null,
+                getLiteQLProperties(), getSchemaService(), getDslContext(), null,
                 new DefaultAuditingService(), null,
                 Mockito.mock(ApplicationEventPublisher.class));
     }
@@ -38,7 +38,8 @@ public class AbstractJooqSqlQueryServiceTest extends AbstractJooqSqlTest {
     @Override
     protected String[] getInitSqls() {
         try {
-            JooqSqlSchemaParser jooqSqlSchemaParser = new JooqSqlSchemaParser(getRepository(), getDslContext(), null);
+            JooqSqlSchemaParser jooqSqlSchemaParser = new JooqSqlSchemaParser(
+                    getLiteQLProperties(), getSchemaService(), getDslContext(), null);
 
             String schemaSqls = jooqSqlSchemaParser.repositoryToSql().replaceAll("\n", "");
 

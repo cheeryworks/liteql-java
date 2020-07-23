@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.spring.security.web;
 
-import org.cheeryworks.liteql.model.query.DefaultQueryContext;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.type.UserEntity;
+import org.cheeryworks.liteql.query.DefaultQueryContext;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.schema.UserEntity;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

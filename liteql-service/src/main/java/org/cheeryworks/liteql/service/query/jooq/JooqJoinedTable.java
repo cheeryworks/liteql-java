@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
-import org.cheeryworks.liteql.model.query.QueryCondition;
-import org.cheeryworks.liteql.model.query.read.field.FieldDefinition;
+import org.cheeryworks.liteql.query.QueryCondition;
+import org.cheeryworks.liteql.query.read.field.FieldDefinition;
 import org.jooq.Condition;
 import org.jooq.Field;
 

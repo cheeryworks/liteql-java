@@ -1,13 +1,13 @@
 package org.cheeryworks.liteql.service.graphql;
 
 import graphql.schema.DataFetchingEnvironment;
-import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.util.builder.query.QueryBuilder;
-import org.cheeryworks.liteql.model.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
+import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.dataloader.BatchLoaderEnvironment;
@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static org.cheeryworks.liteql.model.util.builder.query.QueryBuilderUtil.condition;
+import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.condition;
 
 public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<String, Object>> {
 

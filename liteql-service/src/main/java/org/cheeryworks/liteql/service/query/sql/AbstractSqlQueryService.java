@@ -3,41 +3,43 @@ package org.cheeryworks.liteql.service.query.sql;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.model.enums.ConditionClause;
-import org.cheeryworks.liteql.model.enums.ConditionType;
-import org.cheeryworks.liteql.model.enums.QueryType;
-import org.cheeryworks.liteql.model.query.PublicQuery;
-import org.cheeryworks.liteql.model.query.Queries;
-import org.cheeryworks.liteql.model.query.QueryContext;
-import org.cheeryworks.liteql.model.query.delete.DeleteQuery;
-import org.cheeryworks.liteql.model.query.diagnostic.SaveQueryDiagnostic;
-import org.cheeryworks.liteql.model.query.event.AfterCreateEvent;
-import org.cheeryworks.liteql.model.query.event.AfterDeleteEvent;
-import org.cheeryworks.liteql.model.query.event.AfterReadEvent;
-import org.cheeryworks.liteql.model.query.event.AfterUpdateEvent;
-import org.cheeryworks.liteql.model.query.event.BeforeCreateEvent;
-import org.cheeryworks.liteql.model.query.event.BeforeDeleteEvent;
-import org.cheeryworks.liteql.model.query.event.BeforeUpdateEvent;
-import org.cheeryworks.liteql.model.query.exception.UnsupportedQueryException;
-import org.cheeryworks.liteql.model.query.read.AbstractTypedReadQuery;
-import org.cheeryworks.liteql.model.query.read.PageReadQuery;
-import org.cheeryworks.liteql.model.query.read.ReadQuery;
-import org.cheeryworks.liteql.model.query.read.SingleReadQuery;
-import org.cheeryworks.liteql.model.query.read.TreeReadQuery;
-import org.cheeryworks.liteql.model.query.read.result.PageReadResults;
-import org.cheeryworks.liteql.model.query.read.result.ReadResult;
-import org.cheeryworks.liteql.model.query.read.result.ReadResults;
-import org.cheeryworks.liteql.model.query.read.result.TreeReadResults;
-import org.cheeryworks.liteql.model.query.save.AbstractSaveQuery;
-import org.cheeryworks.liteql.model.query.save.CreateQuery;
-import org.cheeryworks.liteql.model.query.save.SaveQueries;
-import org.cheeryworks.liteql.model.query.save.UpdateQuery;
-import org.cheeryworks.liteql.model.type.TypeName;
-import org.cheeryworks.liteql.model.type.field.IdField;
-import org.cheeryworks.liteql.model.util.LiteQLConstants;
+import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.Queries;
+import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.diagnostic.SaveQueryDiagnostic;
+import org.cheeryworks.liteql.query.event.AfterCreateEvent;
+import org.cheeryworks.liteql.query.event.AfterDeleteEvent;
+import org.cheeryworks.liteql.query.event.AfterReadEvent;
+import org.cheeryworks.liteql.query.event.AfterUpdateEvent;
+import org.cheeryworks.liteql.query.event.BeforeCreateEvent;
+import org.cheeryworks.liteql.query.event.BeforeDeleteEvent;
+import org.cheeryworks.liteql.query.event.BeforeUpdateEvent;
+import org.cheeryworks.liteql.query.exception.UnsupportedQueryException;
+import org.cheeryworks.liteql.query.read.AbstractTypedReadQuery;
+import org.cheeryworks.liteql.query.read.PageReadQuery;
+import org.cheeryworks.liteql.query.read.ReadQuery;
+import org.cheeryworks.liteql.query.read.SingleReadQuery;
+import org.cheeryworks.liteql.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.query.read.result.PageReadResults;
+import org.cheeryworks.liteql.query.read.result.ReadResult;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
+import org.cheeryworks.liteql.query.read.result.TreeReadResults;
+import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
+import org.cheeryworks.liteql.query.save.CreateQuery;
+import org.cheeryworks.liteql.query.save.SaveQueries;
+import org.cheeryworks.liteql.query.save.UpdateQuery;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.service.auditing.AuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
-import org.cheeryworks.liteql.service.repository.Repository;
+import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.sql.AbstractSqlService;
+import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
@@ -59,11 +61,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractSqlQueryService implements SqlQueryService {
+public abstract class AbstractSqlQueryService extends AbstractSqlService implements SqlQueryService {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractSqlQueryService.class);
 
-    private Repository repository;
+    private SchemaService schemaService;
 
     private SqlQueryParser sqlQueryParser;
 
@@ -75,26 +77,17 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
 
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
-
-    public void setSqlQueryParser(SqlQueryParser sqlQueryParser) {
-        this.sqlQueryParser = sqlQueryParser;
-    }
-
-    public void setSqlQueryExecutor(SqlQueryExecutor sqlQueryExecutor) {
-        this.sqlQueryExecutor = sqlQueryExecutor;
-    }
-
     public AbstractSqlQueryService(
-            Repository repository,
+            LiteQLProperties liteQLProperties,
+            SchemaService schemaService,
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
+            SqlCustomizer sqlCustomizer,
             AuditingService auditingService,
             QueryAccessDecisionService queryAccessDecisionService,
             ApplicationEventPublisher applicationEventPublisher) {
-        this.repository = repository;
+        super(liteQLProperties, sqlCustomizer);
+        this.schemaService = schemaService;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.auditingService = auditingService;
@@ -326,11 +319,11 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (saveQuery instanceof CreateQuery) {
                     auditingService.auditingDomainObject(
-                            saveQuery.getData(), repository.getDomainType(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 } else {
                     auditingService.auditingExistedDomainObject(
-                            saveQuery.getData(), repository.getDomainType(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 }
             }
@@ -345,7 +338,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
                 : saveQueriesWithType.entrySet()) {
             List<AbstractSaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
-                    repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
+                    schemaService.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (CollectionUtils.isNotEmpty(saveQuery.getAssociations())) {
@@ -467,7 +460,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
-                        saveQuery, repository.getDomainType(saveQueriesWithTypeEntry.getKey()));
+                        saveQuery, schemaService.getDomainType(saveQueriesWithTypeEntry.getKey()));
 
                 if (sql == null) {
                     sql = sqlSaveQuery.getSql();
@@ -497,7 +490,7 @@ public abstract class AbstractSqlQueryService implements SqlQueryService {
     private void printDiagnosticMessages(
             SaveQueryDiagnostic saveQueryDiagnostic, long totalDuration,
             Integer level, Set<TypeName> domainTypeNames) {
-        if (LiteQLConstants.DIAGNOSTIC_ENABLED) {
+        if (getLiteQLProperties().isDiagnosticEnabled()) {
             int messageLength = 50;
             String beginMessage = "Diagnostic Messages (Save)";
 

@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.jackson;
 
-import org.cheeryworks.liteql.model.util.LiteQLJsonUtil;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
@@ -8,7 +8,7 @@ public class LiteQLJackson2ObjectMapperBuilderCustomizer implements Jackson2Obje
 
     @Override
     public void customize(Jackson2ObjectMapperBuilder builder) {
-        LiteQLJsonUtil.configureObjectMapper(builder);
+        LiteQLUtil.configureObjectMapper(builder);
     }
 
 }
