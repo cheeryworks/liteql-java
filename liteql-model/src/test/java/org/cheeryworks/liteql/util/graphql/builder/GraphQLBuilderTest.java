@@ -1,9 +1,10 @@
 package org.cheeryworks.liteql.util.graphql.builder;
 
-import org.cheeryworks.liteql.query.enums.ConditionClause;
-import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.AbstractTest;
 import org.cheeryworks.liteql.graphql.GraphQLQuery;
 import org.cheeryworks.liteql.query.QueryCondition;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import java.util.List;
 
 import static org.cheeryworks.liteql.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
 
-public class GraphQLBuilderTest {
+public class GraphQLBuilderTest extends AbstractTest {
 
     private Logger logger = LoggerFactory.getLogger(GraphQLBuilderTest.class);
 
@@ -27,7 +28,7 @@ public class GraphQLBuilderTest {
 
         GraphQLQuery query = GraphQLBuilder
                 .query()
-                .variable("conditions", QueryCondition.asMap(conditions), "[Condition!]")
+                .variable("conditions", conditions, "[Condition!]")
                 .fields(
                         field("dictionaries")
                                 .argument("conditions", "conditions")

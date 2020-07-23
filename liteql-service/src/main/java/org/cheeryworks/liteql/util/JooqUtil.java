@@ -1,10 +1,9 @@
 package org.cheeryworks.liteql.util;
 
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryConditions;
-import org.cheeryworks.liteql.query.condition.ConditionValueConverter;
+import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.read.page.Pageable;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -20,14 +19,11 @@ import org.jooq.impl.SQLDataType;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 import static org.cheeryworks.liteql.query.enums.ConditionClause.IN;
 import static org.cheeryworks.liteql.query.enums.ConditionClause.NOT_NULL;
@@ -51,8 +47,6 @@ public class JooqUtil {
 
     public static final Map<Integer, Class> SUPPORTED_DATA_TYPES = new HashMap<>();
 
-    public static final Map<ConditionType, ConditionValueConverter> CONDITION_VALUE_CONVERTERS;
-
     static {
         SUPPORTED_DATA_TYPES.put(Types.VARCHAR, String.class);
         SUPPORTED_DATA_TYPES.put(Types.BIGINT, Long.class);
@@ -62,19 +56,6 @@ public class JooqUtil {
         SUPPORTED_DATA_TYPES.put(Types.TIMESTAMP, Timestamp.class);
         SUPPORTED_DATA_TYPES.put(Types.CLOB, String.class);
         SUPPORTED_DATA_TYPES.put(Types.BLOB, byte[].class);
-
-        Map<ConditionType, ConditionValueConverter> conditionValueConverters
-                = new HashMap<>();
-        Iterator<ConditionValueConverter> conditionValueConverterIterator
-                = ServiceLoader.load(ConditionValueConverter.class).iterator();
-
-        while (conditionValueConverterIterator.hasNext()) {
-            ConditionValueConverter conditionValueConverter = conditionValueConverterIterator.next();
-
-            conditionValueConverters.put(conditionValueConverter.getConditionType(), conditionValueConverter);
-        }
-
-        CONDITION_VALUE_CONVERTERS = Collections.unmodifiableMap(conditionValueConverters);
     }
 
     public static DataType<String> getStringDataType() {
@@ -442,7 +423,7 @@ public class JooqUtil {
         if (queryCondition.getValue() instanceof List) {
             List<Object> transformedValues = new LinkedList<Object>();
             for (Object value : (List) queryCondition.getValue()) {
-                transformedValues.add(transformValue(queryCondition.getType(), value));
+                transformedValues.add(LiteQLUtil.transformValue(queryCondition.getType(), value));
             }
 
             if (IN.equals(queryCondition.getCondition()) && transformedValues.size() > 500) {
@@ -451,15 +432,7 @@ public class JooqUtil {
 
             return transformedValues;
         } else {
-            return transformValue(queryCondition.getType(), queryCondition.getValue());
-        }
-    }
-
-    private static Object transformValue(ConditionType conditionType, Object value) {
-        try {
-            return CONDITION_VALUE_CONVERTERS.get(conditionType).convert(value);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(ex.getMessage(), ex);
+            return LiteQLUtil.transformValue(queryCondition.getType(), queryCondition.getValue());
         }
     }
 

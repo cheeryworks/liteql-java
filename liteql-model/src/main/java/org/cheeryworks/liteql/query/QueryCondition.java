@@ -51,11 +51,9 @@ public class QueryCondition implements Serializable {
     public ConditionType getType() {
         if (type == null && value != null) {
             if (value instanceof List) {
-                return ConditionType.valueOf(((List) value).get(0).getClass().getSimpleName());
-            } else if (ConditionClause.LENGTH.equals(condition)) {
-                return ConditionType.String;
+                return ConditionType.getConditionType((((List) value).get(0).getClass()));
             } else {
-                return ConditionType.valueOf(value.getClass().getSimpleName());
+                return ConditionType.getConditionType(value.getClass());
             }
         }
 

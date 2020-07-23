@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.query.condition;
+package org.cheeryworks.liteql.query.condition.converter;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.cheeryworks.liteql.query.enums.ConditionType;

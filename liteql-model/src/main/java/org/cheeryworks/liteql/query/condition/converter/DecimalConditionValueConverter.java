@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.query.condition;
+package org.cheeryworks.liteql.query.condition.converter;
 
 import org.cheeryworks.liteql.query.enums.ConditionType;
 

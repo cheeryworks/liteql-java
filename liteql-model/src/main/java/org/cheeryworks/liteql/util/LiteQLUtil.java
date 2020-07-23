@@ -6,17 +6,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.QueryConditions;
+import org.cheeryworks.liteql.query.condition.converter.BooleanConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.ConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.DecimalConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.FieldConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.IntegerConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.LongConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.StringConditionValueConverter;
+import org.cheeryworks.liteql.query.condition.converter.TimestampConditionValueConverter;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionOperator;
 import org.cheeryworks.liteql.query.enums.ConditionType;
-import org.cheeryworks.liteql.schema.enums.DataType;
-import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.query.enums.QueryType;
-import org.cheeryworks.liteql.query.PublicQuery;
-import org.cheeryworks.liteql.query.QueryConditions;
 import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.query.save.SaveQueryAssociations;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.enums.DataType;
+import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.util.jackson.deserializer.ConditionClauseDeserializer;
@@ -43,51 +51,34 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 public abstract class LiteQLUtil {
 
-    private static final Map<String, ConditionType> CONDITION_TYPES = new HashMap<>();
+    private static final Map<ConditionType, ConditionValueConverter> CONDITION_VALUE_CONVERTERS;
 
     static {
-        Iterator<ConditionType> conditionTypeIterator = ServiceLoader.load(ConditionType.class).iterator();
+        Map<ConditionType, ConditionValueConverter> conditionValueConverters = new HashMap<>();
 
-        while (conditionTypeIterator.hasNext()) {
-            ConditionType conditionType = conditionTypeIterator.next();
+        conditionValueConverters.put(ConditionType.Field, new FieldConditionValueConverter());
+        conditionValueConverters.put(ConditionType.String, new StringConditionValueConverter());
+        conditionValueConverters.put(ConditionType.Long, new LongConditionValueConverter());
+        conditionValueConverters.put(ConditionType.Integer, new IntegerConditionValueConverter());
+        conditionValueConverters.put(ConditionType.Timestamp, new TimestampConditionValueConverter());
+        conditionValueConverters.put(ConditionType.Boolean, new BooleanConditionValueConverter());
+        conditionValueConverters.put(ConditionType.Decimal, new DecimalConditionValueConverter());
 
-            CONDITION_TYPES.put(conditionType.name().toLowerCase(), conditionType);
-        }
+        CONDITION_VALUE_CONVERTERS = Collections.unmodifiableMap(conditionValueConverters);
     }
 
     private LiteQLUtil() {
 
-    }
-
-    public static ConditionType getConditionTypeByName(String conditionTypeName) {
-        if (CONDITION_TYPES.containsKey(conditionTypeName)) {
-            return CONDITION_TYPES.get(conditionTypeName.toLowerCase());
-        }
-
-        throw new IllegalArgumentException("Unsupported condition type: " + conditionTypeName);
-    }
-
-    public static ConditionType getConditionTypeByValue(Object value) {
-        String conditionTypeName;
-
-        if (value instanceof List) {
-            conditionTypeName = ((List) value).get(0).getClass().getSimpleName();
-        } else {
-            conditionTypeName = value.getClass().getSimpleName().toLowerCase();
-        }
-
-        return getConditionTypeByName(conditionTypeName);
     }
 
     public static Class<?> getClass(String className) {
@@ -234,6 +225,14 @@ public abstract class LiteQLUtil {
 
     public static String plural(String word) {
         return English.plural(word);
+    }
+
+    public static Object transformValue(ConditionType conditionType, Object value) {
+        try {
+            return CONDITION_VALUE_CONVERTERS.get(conditionType).convert(value);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
     }
 
 }

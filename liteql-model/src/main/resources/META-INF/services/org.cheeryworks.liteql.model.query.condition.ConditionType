@@ -1,6 +1,0 @@
-org.cheeryworks.liteql.model.query.condition.type.StringConditionType
-org.cheeryworks.liteql.model.query.condition.type.IntegerConditionType
-org.cheeryworks.liteql.model.query.condition.type.DecimalConditionType
-org.cheeryworks.liteql.model.query.condition.type.BooleanConditionType
-org.cheeryworks.liteql.model.query.condition.type.TimestampConditionType
-org.cheeryworks.liteql.model.query.condition.type.FieldConditionType

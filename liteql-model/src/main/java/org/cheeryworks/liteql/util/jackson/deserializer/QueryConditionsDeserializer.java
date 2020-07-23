@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryConditions;
-import org.cheeryworks.liteql.util.LiteQLUtil;
 
 import java.io.IOException;
 
@@ -26,10 +25,6 @@ public class QueryConditionsDeserializer extends StdDeserializer<QueryConditions
         for (JsonNode queryConditionNode : node) {
             QueryCondition queryCondition = jsonParser.getCodec().treeToValue(
                     queryConditionNode, QueryCondition.class);
-
-            if (queryCondition.getType() == null) {
-                queryCondition.setType(LiteQLUtil.getConditionTypeByValue(queryCondition.getValue()));
-            }
 
             queryConditions.add(queryCondition);
         }
