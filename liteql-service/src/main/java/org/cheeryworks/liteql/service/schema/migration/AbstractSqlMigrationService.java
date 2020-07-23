@@ -8,7 +8,9 @@ import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractSqlMigrationService implements MigrationService {
 
@@ -64,14 +66,32 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
                         continue;
                     }
 
+                    Set<String> baselineVersions = new LinkedHashSet<>();
+
+                    migrationOfDomainType.getValue().forEach((name, migration) -> {
+                        if (migration.isBaseline()) {
+                            baselineVersions.add(migration.getVersion());
+                        }
+                    });
+
+                    String latestBaselineVersion = baselineVersions.stream().max(String.CASE_INSENSITIVE_ORDER).get();
+
                     for (Map.Entry<String, Migration> migrationEntry : migrationOfDomainType.getValue().entrySet()) {
                         Migration migration = migrationEntry.getValue();
 
-                        if (StringUtils.isBlank(latestVersion) || migration.getVersion().compareTo(latestVersion) > 0) {
-                            getSqlMigrationExecutor().migrate(
-                                    schema, migration.getVersion(), migration.getDescription(),
-                                    getSqlMigrationParser().migrationToSql(migration));
+                        if (StringUtils.isBlank(latestVersion)
+                                && migration.getVersion().compareTo(latestBaselineVersion) < 0) {
+                            continue;
                         }
+
+                        if (StringUtils.isNotBlank(latestVersion)
+                                && (migration.getVersion().compareTo(latestVersion) <= 0 || migration.isBaseline())) {
+                            continue;
+                        }
+
+                        getSqlMigrationExecutor().migrate(
+                                schema, migration.getVersion(), migration.getDescription(),
+                                getSqlMigrationParser().migrationToSql(migration));
                     }
                 }
 

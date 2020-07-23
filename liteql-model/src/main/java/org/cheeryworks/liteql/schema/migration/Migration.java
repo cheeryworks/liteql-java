@@ -9,6 +9,12 @@ import java.util.List;
 
 public class Migration implements Serializable {
 
+    public static final String DESCRIPTION_CONCAT = "__";
+
+    public static final String VERSION_CONCAT = "_";
+
+    public static final String VERSION_BASELINE_SUFFIX = ".0";
+
     public static final String STATE_PENDING = "Pending";
 
     public static final String STATE_SUCCESS = "Success";
@@ -33,10 +39,21 @@ public class Migration implements Serializable {
 
     public String getVersion() {
         if (StringUtils.isNotBlank(name)) {
-            return name.split("__")[0];
+            return name.split(DESCRIPTION_CONCAT)[0];
         }
 
         return null;
+    }
+
+    public boolean isBaseline() {
+        if (StringUtils.isNotBlank(name)) {
+            return name
+                    .split(DESCRIPTION_CONCAT)[0]
+                    .split(VERSION_CONCAT)[0]
+                    .endsWith(VERSION_BASELINE_SUFFIX);
+        }
+
+        return false;
     }
 
     public TypeName getDomainTypeName() {
@@ -49,7 +66,7 @@ public class Migration implements Serializable {
 
     public String getDescription() {
         if (StringUtils.isBlank(description) && StringUtils.isNotBlank(name)) {
-            return name.split("__")[1];
+            return name.split(DESCRIPTION_CONCAT)[1];
         }
 
         return description;
