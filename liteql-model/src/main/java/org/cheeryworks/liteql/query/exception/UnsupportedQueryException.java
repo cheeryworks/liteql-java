@@ -1,8 +1,9 @@
 package org.cheeryworks.liteql.query.exception;
 
+import org.cheeryworks.liteql.exception.LiteQLException;
 import org.cheeryworks.liteql.query.PublicQuery;
 
-public class UnsupportedQueryException extends RuntimeException {
+public class UnsupportedQueryException extends LiteQLException {
 
     private PublicQuery query;
 
