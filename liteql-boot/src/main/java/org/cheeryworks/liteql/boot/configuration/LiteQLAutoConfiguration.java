@@ -17,7 +17,7 @@ import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqSqlQueryService;
 import org.cheeryworks.liteql.service.query.json.QueryServiceController;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaService;
+import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -72,7 +72,7 @@ public class LiteQLAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(SchemaService.class)
     public SchemaService repository(LiteQLProperties liteQLProperties, ObjectMapper objectMapper) {
-        return new JooqSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
+        return new DefaultSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
     }
 
     @Bean

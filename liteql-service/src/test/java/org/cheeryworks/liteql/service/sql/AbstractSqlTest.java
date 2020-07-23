@@ -4,7 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.cheeryworks.liteql.AbstractTest;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaService;
+import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Script;
@@ -45,7 +45,7 @@ public abstract class AbstractSqlTest extends AbstractTest {
     }
 
     public AbstractSqlTest() {
-        schemaService = new JooqSchemaService(
+        schemaService = new DefaultSchemaService(
                 getLiteQLProperties(), getObjectMapper(), "classpath*:/liteql");
 
         database = Database.H2;

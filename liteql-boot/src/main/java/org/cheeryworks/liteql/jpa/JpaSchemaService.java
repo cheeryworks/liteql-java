@@ -32,7 +32,7 @@ import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.util.LiteQLUtil;
-import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaService;
+import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -65,13 +65,13 @@ import java.util.TreeSet;
 
 public class JpaSchemaService extends AbstractSqlService implements SchemaService {
 
-    private JooqSchemaService repository;
+    private DefaultSchemaService repository;
 
     public JpaSchemaService(
             LiteQLProperties liteQLProperties, ObjectMapper objectMapper, SqlCustomizer sqlCustomizer) {
         super(liteQLProperties, sqlCustomizer);
 
-        this.repository = new JooqSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
+        this.repository = new DefaultSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
 
         Map<String, Set<TypeName>> typeNameWithinSchemas = getTypeNameWithinSchemas();
 

@@ -1,18 +1,17 @@
-package org.cheeryworks.liteql.service.schema.jooq;
+package org.cheeryworks.liteql.service.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.annotation.TraitInstance;
 import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.Schema;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.annotation.TraitInstance;
 import org.cheeryworks.liteql.schema.migration.Migration;
-import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
-import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -36,7 +35,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class JooqSchemaService extends AbstractLiteQLService implements SchemaService {
+public class DefaultSchemaService extends AbstractLiteQLService implements SchemaService {
 
     private ObjectMapper objectMapper;
 
@@ -46,7 +45,7 @@ public class JooqSchemaService extends AbstractLiteQLService implements SchemaSe
 
     private Map<Class, Class> traitImplements = initTraitImplements();
 
-    public JooqSchemaService(
+    public DefaultSchemaService(
             LiteQLProperties liteQLProperties, ObjectMapper objectMapper, String... locationPatterns) {
         super(liteQLProperties);
 
