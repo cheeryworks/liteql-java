@@ -1,12 +1,14 @@
 package org.cheeryworks.liteql.query.read;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.read.result.ReadResult;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
 
 import java.util.LinkedList;
 
-public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery> implements PublicQuery {
+public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery, ReadResult> implements PublicQuery {
 
     public SingleReadQuery() {
 
@@ -29,8 +31,19 @@ public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery> imp
         }
     }
 
+    @Override
     public QueryType getQueryType() {
         return QueryType.SingleRead;
+    }
+
+    public ReadResult getResult(ReadResults readResults) {
+        if (readResults.getTotal() == 0) {
+            return null;
+        } else if (readResults.getTotal() > 1) {
+            throw new IllegalStateException("More than one result found");
+        }
+
+        return readResults.get(0);
     }
 
 }

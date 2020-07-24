@@ -1,12 +1,14 @@
 package org.cheeryworks.liteql.query.read;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.read.result.PageReadResults;
+import org.cheeryworks.liteql.query.read.result.ReadResults;
 
 import java.util.LinkedList;
 
-public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery> implements PublicQuery {
+public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery, PageReadResults> implements PublicQuery {
 
     private Integer page;
 
@@ -52,8 +54,18 @@ public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery> impleme
         setSize(size);
     }
 
+    @Override
     public QueryType getQueryType() {
         return QueryType.PageRead;
+    }
+
+    @Override
+    public PageReadResults getResult(ReadResults readResults) {
+        return new PageReadResults(
+                readResults,
+                getPage(),
+                getSize(),
+                readResults.getTotal());
     }
 
 }

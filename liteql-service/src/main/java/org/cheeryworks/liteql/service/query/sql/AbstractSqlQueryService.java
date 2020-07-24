@@ -4,14 +4,14 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.query.enums.ConditionClause;
-import org.cheeryworks.liteql.query.enums.ConditionType;
-import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.Queries;
 import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.query.diagnostic.SaveQueryDiagnostic;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.event.AfterCreateEvent;
 import org.cheeryworks.liteql.query.event.AfterDeleteEvent;
 import org.cheeryworks.liteql.query.event.AfterReadEvent;
@@ -43,7 +43,6 @@ import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
-import org.cheeryworks.liteql.util.HierarchicalEntityUtil;
 import org.cheeryworks.liteql.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,45 +105,35 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     @Override
     public ReadResults read(QueryContext queryContext, ReadQuery readQuery) {
-        return (ReadResults) query(queryContext, readQuery);
+        return readQuery.getResult(query(queryContext, readQuery));
     }
 
     @Override
     public ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery) {
-        return (ReadResult) query(queryContext, singleReadQuery);
+        return singleReadQuery.getResult(query(queryContext, singleReadQuery));
     }
 
     @Override
     public TreeReadResults read(QueryContext queryContext, TreeReadQuery treeReadQuery) {
-        return (TreeReadResults) query(queryContext, treeReadQuery);
+        return treeReadQuery.getResult(query(queryContext, treeReadQuery));
     }
 
     @Override
     public PageReadResults read(QueryContext queryContext, PageReadQuery pageReadQuery) {
-        return (PageReadResults) query(queryContext, pageReadQuery);
+        return pageReadQuery.getResult(query(queryContext, pageReadQuery));
     }
 
-    private Object query(QueryContext queryContext, AbstractTypedReadQuery readQuery) {
+    private <T extends AbstractTypedReadQuery> ReadResults query(QueryContext queryContext, T readQuery) {
+        getQueryAccessDecisionService().decide(queryContext.getUser(), readQuery);
+
         ReadResults results = internalRead(readQuery);
 
-        query(queryContext, readQuery.getAssociations(), results);
-
-        if (readQuery instanceof SingleReadQuery) {
-            return results.get(0);
-        } else if (readQuery instanceof TreeReadQuery) {
-            return HierarchicalEntityUtil.transformInTree(results);
-        } else if (readQuery instanceof PageReadQuery) {
-            return new PageReadResults(
-                    results,
-                    ((PageReadQuery) readQuery).getPage(),
-                    ((PageReadQuery) readQuery).getSize(),
-                    results.getTotal());
-        }
+        query(readQuery.getAssociations(), results);
 
         return results;
     }
 
-    private void query(QueryContext queryContext, List<ReadQuery> readQueries, ReadResults results) {
+    private void query(List<ReadQuery> readQueries, ReadResults results) {
         if (CollectionUtils.isNotEmpty(readQueries)) {
             for (ReadQuery readQuery : readQueries) {
                 if (readQuery.getReferences() == null) {
@@ -170,7 +159,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
                     }
                 }
 
-                query(queryContext, readQuery.getAssociations(), results);
+                query(readQuery.getAssociations(), results);
             }
         }
     }
@@ -220,6 +209,10 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     @Override
     public List<AbstractSaveQuery> save(QueryContext queryContext, List<AbstractSaveQuery> saveQueries) {
+        for (AbstractSaveQuery saveQuery : saveQueries) {
+            getQueryAccessDecisionService().decide(queryContext.getUser(), saveQuery);
+        }
+
         long currentTime = System.currentTimeMillis();
         SaveQueryDiagnostic saveQueryDiagnostic = new SaveQueryDiagnostic();
 
@@ -554,6 +547,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     @Override
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
+        getQueryAccessDecisionService().decide(queryContext.getUser(), deleteQuery);
+        
         ReadResults results = null;
 
         if (!deleteQuery.isTruncated()) {
@@ -619,27 +614,17 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         if (query instanceof AbstractTypedReadQuery) {
             AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
 
-            getQueryAccessDecisionService().decide(queryContext.getUser(), readQuery);
-
             return query(queryContext, readQuery);
         } else if (query instanceof AbstractSaveQuery) {
             AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
-
-            getQueryAccessDecisionService().decide(queryContext.getUser(), saveQuery);
 
             return save(queryContext, saveQuery);
         } else if (query instanceof SaveQueries) {
             SaveQueries saveQueries = (SaveQueries) query;
 
-            for (AbstractSaveQuery saveQuery : saveQueries) {
-                getQueryAccessDecisionService().decide(queryContext.getUser(), saveQuery);
-            }
-
             return save(queryContext, saveQueries);
         } else if (query instanceof DeleteQuery) {
             DeleteQuery deleteQuery = (DeleteQuery) query;
-
-            getQueryAccessDecisionService().decide(queryContext.getUser(), deleteQuery);
 
             return delete(queryContext, deleteQuery);
         } else if (query instanceof Queries) {
