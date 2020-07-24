@@ -2,21 +2,15 @@ package org.cheeryworks.liteql.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryConditions;
-import org.cheeryworks.liteql.query.condition.converter.BooleanConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.ConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.DecimalConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.FieldConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.IntegerConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.LongConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.StringConditionValueConverter;
-import org.cheeryworks.liteql.query.condition.converter.TimestampConditionValueConverter;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionOperator;
 import org.cheeryworks.liteql.query.enums.ConditionType;
@@ -55,7 +49,6 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -72,22 +65,6 @@ import static org.cheeryworks.liteql.schema.SortableEntity.SORT_CODE_FIELD_NAME;
 import static org.cheeryworks.liteql.schema.field.IdField.ID_FIELD_NAME;
 
 public abstract class LiteQLUtil {
-
-    private static final Map<ConditionType, ConditionValueConverter> CONDITION_VALUE_CONVERTERS;
-
-    static {
-        Map<ConditionType, ConditionValueConverter> conditionValueConverters = new HashMap<>();
-
-        conditionValueConverters.put(ConditionType.Field, new FieldConditionValueConverter());
-        conditionValueConverters.put(ConditionType.String, new StringConditionValueConverter());
-        conditionValueConverters.put(ConditionType.Long, new LongConditionValueConverter());
-        conditionValueConverters.put(ConditionType.Integer, new IntegerConditionValueConverter());
-        conditionValueConverters.put(ConditionType.Timestamp, new TimestampConditionValueConverter());
-        conditionValueConverters.put(ConditionType.Boolean, new BooleanConditionValueConverter());
-        conditionValueConverters.put(ConditionType.Decimal, new DecimalConditionValueConverter());
-
-        CONDITION_VALUE_CONVERTERS = Collections.unmodifiableMap(conditionValueConverters);
-    }
 
     private LiteQLUtil() {
 
@@ -145,7 +122,22 @@ public abstract class LiteQLUtil {
         return null;
     }
 
-    public static void configureObjectMapper(Jackson2ObjectMapperBuilder builder) {
+    public static <T> void configureObjectMapper(Jackson2ObjectMapperBuilder builder) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        SimpleModule module = new SimpleModule();
+
+        Map<Class<T>, JsonDeserializer<? extends T>> deserializers = new HashMap<>();
+
+        deserializers.forEach((type, deserializer) -> {
+            module.addDeserializer(type, deserializer);
+        });
+
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
         builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT);
         builder.featuresToDisable(
                 SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
@@ -237,14 +229,6 @@ public abstract class LiteQLUtil {
 
     public static String plural(String word) {
         return English.plural(word);
-    }
-
-    public static Object transformValue(ConditionType conditionType, Object value) {
-        try {
-            return CONDITION_VALUE_CONVERTERS.get(conditionType).convert(value);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(ex.getMessage(), ex);
-        }
     }
 
     public static List<Map<String, Object>> sortInTree(

@@ -421,9 +421,9 @@ public class JooqUtil {
 
     private static Object transformValue(QueryCondition queryCondition) {
         if (queryCondition.getValue() instanceof List) {
-            List<Object> transformedValues = new LinkedList<Object>();
+            List<Object> transformedValues = new LinkedList<>();
             for (Object value : (List) queryCondition.getValue()) {
-                transformedValues.add(LiteQLUtil.transformValue(queryCondition.getType(), value));
+                transformedValues.add(value);
             }
 
             if (IN.equals(queryCondition.getCondition()) && transformedValues.size() > 500) {
@@ -432,7 +432,7 @@ public class JooqUtil {
 
             return transformedValues;
         } else {
-            return LiteQLUtil.transformValue(queryCondition.getType(), queryCondition.getValue());
+            return queryCondition.getValue();
         }
     }
 
