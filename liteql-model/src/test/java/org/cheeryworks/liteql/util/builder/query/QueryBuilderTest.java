@@ -35,7 +35,7 @@ public class QueryBuilderTest extends AbstractTest {
                 .read(new TypeName("liteql_test", "user"))
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), readQuery));
+        logger.info(LiteQLUtil.toJson(readQuery));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), singleReadQuery));
+        logger.info(LiteQLUtil.toJson(singleReadQuery));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), saveQuery));
+        logger.info(LiteQLUtil.toJson(saveQuery));
     }
 
     @Test
@@ -176,7 +176,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQueries();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), saveQueries));
+        logger.info(LiteQLUtil.toJson(saveQueries));
     }
 
     @Test
@@ -189,7 +189,7 @@ public class QueryBuilderTest extends AbstractTest {
                 .truncated()
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), deleteQuery));
+        logger.info(LiteQLUtil.toJson(deleteQuery));
     }
 
     @Test
@@ -209,7 +209,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQueries();
 
-        logger.info(LiteQLUtil.toJson(getObjectMapper(), deleteQueries));
+        logger.info(LiteQLUtil.toJson(deleteQueries));
     }
 
 }

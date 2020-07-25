@@ -12,13 +12,13 @@ import org.cheeryworks.liteql.query.diagnostic.SaveQueryDiagnostic;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.enums.QueryType;
-import org.cheeryworks.liteql.query.event.AfterCreateEvent;
-import org.cheeryworks.liteql.query.event.AfterDeleteEvent;
-import org.cheeryworks.liteql.query.event.AfterReadEvent;
-import org.cheeryworks.liteql.query.event.AfterUpdateEvent;
-import org.cheeryworks.liteql.query.event.BeforeCreateEvent;
-import org.cheeryworks.liteql.query.event.BeforeDeleteEvent;
-import org.cheeryworks.liteql.query.event.BeforeUpdateEvent;
+import org.cheeryworks.liteql.query.event.AfterCreateQueryEvent;
+import org.cheeryworks.liteql.query.event.AfterDeleteQueryEvent;
+import org.cheeryworks.liteql.query.event.AfterReadQueryEvent;
+import org.cheeryworks.liteql.query.event.AfterUpdateQueryEvent;
+import org.cheeryworks.liteql.query.event.BeforeCreateQueryEvent;
+import org.cheeryworks.liteql.query.event.BeforeDeleteQueryEvent;
+import org.cheeryworks.liteql.query.event.BeforeUpdateQueryEvent;
 import org.cheeryworks.liteql.query.exception.UnsupportedQueryException;
 import org.cheeryworks.liteql.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.query.read.PageReadQuery;
@@ -35,8 +35,9 @@ import org.cheeryworks.liteql.query.save.SaveQueries;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.IdField;
-import org.cheeryworks.liteql.service.auditing.AuditingService;
+import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
+import org.cheeryworks.liteql.service.query.QueryEventPublisher;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -46,7 +47,6 @@ import org.cheeryworks.liteql.sql.SqlSaveQuery;
 import org.cheeryworks.liteql.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -70,11 +70,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     private SqlQueryExecutor sqlQueryExecutor;
 
-    private AuditingService auditingService;
+    private QueryAuditingService queryAuditingService;
 
     private QueryAccessDecisionService queryAccessDecisionService = new DefaultQueryAccessDecisionService();
 
-    private ApplicationEventPublisher applicationEventPublisher;
+    private QueryEventPublisher queryEventPublisher;
 
     public AbstractSqlQueryService(
             LiteQLProperties liteQLProperties,
@@ -82,20 +82,20 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
             SqlCustomizer sqlCustomizer,
-            AuditingService auditingService,
+            QueryAuditingService queryAuditingService,
             QueryAccessDecisionService queryAccessDecisionService,
-            ApplicationEventPublisher applicationEventPublisher) {
+            QueryEventPublisher queryEventPublisher) {
         super(liteQLProperties, sqlCustomizer);
         this.schemaService = schemaService;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
-        this.auditingService = auditingService;
+        this.queryAuditingService = queryAuditingService;
 
         if (queryAccessDecisionService != null) {
             this.queryAccessDecisionService = queryAccessDecisionService;
         }
 
-        this.applicationEventPublisher = applicationEventPublisher;
+        this.queryEventPublisher = queryEventPublisher;
     }
 
     @Override
@@ -169,10 +169,10 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
         ReadResults results = getResults(readQuery.getDomainTypeName(), sqlReadQuery);
 
-        applicationEventPublisher.publishEvent(
-                new AfterReadEvent(
+        queryEventPublisher.publish(
+                new AfterReadQueryEvent(
                         results.getData().stream().collect(Collectors.toList()),
-                        readQuery.getDomainTypeName()));
+                        readQuery.getDomainTypeName(), readQuery.getQueryType()));
 
         if (readQuery instanceof PageReadQuery) {
             return new ReadResults(results, getTotal(sqlReadQuery));
@@ -311,11 +311,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         for (List<AbstractSaveQuery> saveQueries : saveQueriesWithType.values()) {
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (saveQuery instanceof CreateQuery) {
-                    auditingService.auditingDomainObject(
+                    queryAuditingService.auditingDomainObject(
                             saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 } else {
-                    auditingService.auditingExistedDomainObject(
+                    queryAuditingService.auditingExistedDomainObject(
                             saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 }
@@ -386,21 +386,25 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (Map.Entry<TypeName, List<Map<String, Object>>> dataSetEntry : persistDataSet.entrySet()) {
                 if (before) {
-                    applicationEventPublisher.publishEvent(
-                            new BeforeCreateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
+                    queryEventPublisher.publish(
+                            new BeforeCreateQueryEvent(
+                                    dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
                 } else {
-                    applicationEventPublisher.publishEvent(
-                            new AfterCreateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
+                    queryEventPublisher.publish(
+                            new AfterCreateQueryEvent(
+                                    dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
                 }
             }
 
             for (Map.Entry<TypeName, List<Map<String, Object>>> dataSetEntry : updateDataSet.entrySet()) {
                 if (before) {
-                    applicationEventPublisher.publishEvent(
-                            new BeforeUpdateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
+                    queryEventPublisher.publish(
+                            new BeforeUpdateQueryEvent(
+                                    dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
                 } else {
-                    applicationEventPublisher.publishEvent(
-                            new AfterUpdateEvent(dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
+                    queryEventPublisher.publish(
+                            new AfterUpdateQueryEvent(
+                                    dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
                 }
             }
         }
@@ -548,7 +552,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     @Override
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
         getQueryAccessDecisionService().decide(queryContext.getUser(), deleteQuery);
-        
+
         ReadResults results = null;
 
         if (!deleteQuery.isTruncated()) {
@@ -578,8 +582,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             }
 
             if (CollectionUtils.isNotEmpty(results)) {
-                applicationEventPublisher.publishEvent(
-                        new BeforeDeleteEvent(
+                queryEventPublisher.publish(
+                        new BeforeDeleteQueryEvent(
                                 results.getData().stream().collect(Collectors.toList()),
                                 deleteQuery.getDomainTypeName(), QueryType.Delete));
             }
@@ -592,8 +596,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
         if (!deleteQuery.isTruncated()) {
             if (CollectionUtils.isNotEmpty(results)) {
-                applicationEventPublisher.publishEvent(
-                        new AfterDeleteEvent(
+                queryEventPublisher.publish(
+                        new AfterDeleteQueryEvent(
                                 results.getData().stream().collect(Collectors.toList()),
                                 deleteQuery.getDomainTypeName(), QueryType.Delete));
             }

@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.service.graphql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -8,11 +7,11 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.query.enums.ConditionClause;
-import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.graphql.exception.UnsupportedGraphQLOutputTypeException;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.read.PageReadQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
@@ -23,11 +22,11 @@ import org.cheeryworks.liteql.query.read.result.ReadResultsData;
 import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
-import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
+import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
 import org.dataloader.DataLoader;
 
 import java.util.Arrays;
@@ -43,14 +42,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
     private SchemaService schemaService;
 
-    private ObjectMapper objectMapper;
-
     private QueryService queryService;
 
-    public AbstractGraphQLDataFetcher(
-            SchemaService schemaService, ObjectMapper objectMapper, QueryService queryService) {
+    public AbstractGraphQLDataFetcher(SchemaService schemaService, QueryService queryService) {
         this.schemaService = schemaService;
-        this.objectMapper = objectMapper;
         this.queryService = queryService;
     }
 
@@ -163,11 +158,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         FieldDefinitions fields = GraphQLServiceUtil.getFieldsFromSelections(
                 outputType, environment.getField().getSelectionSet().getSelections());
 
-        GraphQLServiceUtil.parseConditions(
-                readQuery, fields, environment, objectMapper);
+        GraphQLServiceUtil.parseConditions(readQuery, fields, environment);
 
-        GraphQLServiceUtil.parseSorts(
-                readQuery, fields, environment, objectMapper);
+        GraphQLServiceUtil.parseSorts(readQuery, fields, environment);
 
         readQuery.setFields(fields);
 
@@ -217,11 +210,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         FieldDefinitions fields = readQuery.getFields();
 
-        GraphQLServiceUtil.parseConditions(
-                readQuery, fields, dataFetchingEnvironment, objectMapper);
+        GraphQLServiceUtil.parseConditions(readQuery, fields, dataFetchingEnvironment);
 
-        GraphQLServiceUtil.parseSorts(
-                readQuery, fields, dataFetchingEnvironment, objectMapper);
+        GraphQLServiceUtil.parseSorts(readQuery, fields, dataFetchingEnvironment);
 
         readQuery.setFields(fields);
 

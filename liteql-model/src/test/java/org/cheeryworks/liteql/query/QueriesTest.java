@@ -15,9 +15,9 @@ public class QueriesTest extends AbstractTest {
                 getClass().getResource("/liteql/liteql_test/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
-            Queries queries = LiteQLUtil.toBean(getObjectMapper(), queriesJsonFile, Queries.class);
+            Queries queries = LiteQLUtil.toBean(queriesJsonFile, Queries.class);
 
-            getLogger().info(LiteQLUtil.toJson(getObjectMapper(), queries));
+            getLogger().info(LiteQLUtil.toJson(queries));
         }
     }
 

@@ -1,4 +1,5 @@
 package org.cheeryworks.liteql.service.sql;
 
-class DefaultSqlCustomizer implements SqlCustomizer {
+public class DefaultSqlCustomizer implements SqlCustomizer {
+
 }

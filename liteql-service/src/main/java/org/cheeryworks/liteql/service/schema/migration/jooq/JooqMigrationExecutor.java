@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.service.schema.migration.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.schema.migration.Migration;
-import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlExecutor;
+import org.cheeryworks.liteql.service.jooq.AbstractJooqExecutor;
 import org.cheeryworks.liteql.service.schema.migration.SqlMigrationExecutor;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.JooqUtil;
@@ -23,7 +23,7 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.table;
 
-public class JooqMigrationExecutor extends AbstractJooqSqlExecutor implements SqlMigrationExecutor {
+public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMigrationExecutor {
 
     private static Logger logger = LoggerFactory.getLogger(JooqMigrationExecutor.class);
 

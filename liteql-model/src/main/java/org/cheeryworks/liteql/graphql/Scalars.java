@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.graphql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.StringValue;
@@ -9,6 +8,7 @@ import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
 import graphql.schema.CoercingSerializeException;
 import graphql.schema.GraphQLScalarType;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 
 import java.math.BigDecimal;
@@ -16,48 +16,28 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public class Scalars {
+public abstract class Scalars {
 
     private static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE);
 
-    private ObjectMapper objectMapper;
+    public static final GraphQLScalarType LONG;
+    public static final GraphQLScalarType DECIMAL;
+    public static final GraphQLScalarType CONDITION_VALUE;
+    public static final GraphQLScalarType TIMESTAMP;
 
-    private GraphQLScalarType scalarLong;
-    private GraphQLScalarType scalarBigDecimal;
-    private GraphQLScalarType scalarValue;
-    private GraphQLScalarType scalarDate;
-
-    public Scalars(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-
-        this.scalarLong = buildScalarLong();
-        this.scalarBigDecimal = buildScalarBigDecimal();
-        this.scalarValue = buildScalarValue();
-        this.scalarDate = buildScalarDate();
+    static {
+        LONG = buildScalarLong();
+        DECIMAL = buildScalarDecimal();
+        CONDITION_VALUE = buildScalarConditionValue();
+        TIMESTAMP = buildScalarTimestamp();
     }
 
-    public GraphQLScalarType getScalarLong() {
-        return scalarLong;
-    }
-
-    public GraphQLScalarType getScalarBigDecimal() {
-        return scalarBigDecimal;
-    }
-
-    public GraphQLScalarType getScalarValue() {
-        return scalarValue;
-    }
-
-    public GraphQLScalarType getScalarDate() {
-        return scalarDate;
-    }
-
-    private boolean isNumberIsh(Object input) {
+    private static boolean isNumberIsh(Object input) {
         return input instanceof Number || input instanceof String;
     }
 
-    private String typeName(Object input) {
+    private static String typeName(Object input) {
         if (input == null) {
             return "null";
         }
@@ -65,7 +45,7 @@ public class Scalars {
         return input.getClass().getSimpleName();
     }
 
-    private GraphQLScalarType buildScalarLong() {
+    private static GraphQLScalarType buildScalarLong() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_LONG_NAME)
                 .coercing(new Coercing<Long, Long>() {
@@ -138,7 +118,7 @@ public class Scalars {
                 }).build();
     }
 
-    private GraphQLScalarType buildScalarBigDecimal() {
+    private static GraphQLScalarType buildScalarDecimal() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_DECIMAL_NAME)
                 .coercing(
@@ -202,10 +182,9 @@ public class Scalars {
                 .build();
     }
 
-    private GraphQLScalarType buildScalarValue() {
+    private static GraphQLScalarType buildScalarConditionValue() {
         return GraphQLScalarType.newScalar()
                 .name(GraphQLConstants.SCALAR_CONDITION_VALUE_NAME)
-                .description("Condition Value Type")
                 .coercing(
                         new Coercing() {
                             @Override
@@ -226,22 +205,26 @@ public class Scalars {
                 ).build();
     }
 
-    private GraphQLScalarType buildScalarDate() {
+    private static GraphQLScalarType buildScalarTimestamp() {
         return GraphQLScalarType.newScalar()
-                .name(GraphQLConstants.SCALAR_DATE_NAME)
-                .description("Date Field")
+                .name(GraphQLConstants.SCALAR_TIMESTAMP_NAME)
                 .coercing(
                         new Coercing() {
                             @Override
                             public Object serialize(Object dataFetcherResult) {
-                                return objectMapper.getDateFormat().format(dataFetcherResult);
+                                return LiteQLUtil.OBJECT_MAPPER.getDateFormat().format(dataFetcherResult);
                             }
 
                             @Override
                             public Timestamp parseValue(Object input) {
                                 try {
+                                    if (!(input instanceof StringValue)) {
+                                        return null;
+                                    }
+
+                                    String value = ((StringValue) input).getValue();
                                     return new Timestamp(
-                                            objectMapper.getDateFormat().parse((String) input).getTime());
+                                            LiteQLUtil.OBJECT_MAPPER.getDateFormat().parse(value).getTime());
                                 } catch (Exception ex) {
                                     throw new IllegalArgumentException("Parsing date failed, " + ex.getMessage());
                                 }
@@ -249,16 +232,7 @@ public class Scalars {
 
                             @Override
                             public Date parseLiteral(Object input) {
-                                try {
-                                    if (!(input instanceof StringValue)) {
-                                        return null;
-                                    }
-
-                                    String value = ((StringValue) input).getValue();
-                                    return new Timestamp(objectMapper.getDateFormat().parse(value).getTime());
-                                } catch (Exception ex) {
-                                    throw new IllegalArgumentException("Parsing date failed, " + ex.getMessage());
-                                }
+                                return parseValue(input);
                             }
                         }
                 ).build();

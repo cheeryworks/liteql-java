@@ -1,30 +1,31 @@
 package org.cheeryworks.liteql.boot.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.boot.configuration.jackson.LiteQLJacksonAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.jooq.LiteQLJooqAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.jpa.LiteQLJpaAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.spring.security.web.LiteQLSecurityAutoConfiguration;
-import org.cheeryworks.liteql.util.LiteQLUtil;
-import org.cheeryworks.liteql.service.auditing.AuditingService;
-import org.cheeryworks.liteql.service.auditing.DefaultAuditingService;
 import org.cheeryworks.liteql.service.graphql.DefaultGraphQLService;
 import org.cheeryworks.liteql.service.graphql.GraphQLService;
-import org.cheeryworks.liteql.service.graphql.GraphQLServiceController;
+import org.cheeryworks.liteql.service.graphql.json.spring.GraphQLServiceController;
+import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
+import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryService;
-import org.cheeryworks.liteql.service.query.jooq.JooqSqlQueryService;
-import org.cheeryworks.liteql.service.query.json.QueryServiceController;
-import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
+import org.cheeryworks.liteql.service.query.json.spring.QueryServiceController;
+import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
+import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationService;
+import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.spring.LiteQLSpringProperties;
+import org.cheeryworks.liteql.spring.context.SpringQueryEventPublisher;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,12 +36,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(LiteQLProperties.class)
+@EnableConfigurationProperties(LiteQLSpringProperties.class)
 @ConditionalOnProperty(
-        prefix = LiteQLProperties.PREFIX,
+        prefix = LiteQLSpringProperties.PREFIX,
         name = "enabled", matchIfMissing = true
 )
 @AutoConfigureAfter({
@@ -60,32 +60,35 @@ public class LiteQLAutoConfiguration {
     private static Logger logger = LoggerFactory.getLogger(LiteQLAutoConfiguration.class);
 
     @Bean
-    @ConditionalOnMissingBean(ObjectMapper.class)
-    public ObjectMapper objectMapper() {
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-
-        LiteQLUtil.configureObjectMapper(builder);
-
-        return builder.createXmlMapper(false).build();
-    }
-
-    @Bean
     @ConditionalOnMissingBean(SchemaService.class)
-    public SchemaService repository(LiteQLProperties liteQLProperties, ObjectMapper objectMapper) {
-        return new DefaultSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
+    public SchemaService repository(LiteQLProperties liteQLProperties) {
+        return new DefaultSchemaService(liteQLProperties, "classpath*:/liteql");
     }
 
     @Bean
-    public AuditingService auditingService() {
-        return new DefaultAuditingService();
+    @ConditionalOnMissingBean(QueryAuditingService.class)
+    public QueryAuditingService auditingService() {
+        return new DefaultQueryAuditingService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(QueryAccessDecisionService.class)
+    public QueryAccessDecisionService queryAccessDecisionService() {
+        return new DefaultQueryAccessDecisionService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SqlCustomizer.class)
+    public SqlCustomizer sqlCustomizer() {
+        return new DefaultSqlCustomizer();
     }
 
     @Bean
     public MigrationService migrationService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService, ObjectProvider<DSLContext> dslContext,
-            ObjectProvider<SqlCustomizer> sqlCustomizer) {
+            LiteQLProperties liteQLProperties, SchemaService schemaService,
+            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
         MigrationService migrationService = new JooqMigrationService(
-                liteQLProperties, schemaService, dslContext.getIfAvailable(), sqlCustomizer.getIfAvailable());
+                liteQLProperties, schemaService, dslContext, sqlCustomizer);
 
         logger.info("MigrationService is ready.");
 
@@ -100,15 +103,15 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     public QueryService queryService(
-            LiteQLProperties liteQLProperties,
-            SchemaService schemaService, ObjectProvider<DSLContext> dslContext,
-            ObjectProvider<SqlCustomizer> sqlCustomizer,
-            AuditingService auditingService,
-            ObjectProvider<QueryAccessDecisionService> queryAccessDecisionService,
+            LiteQLProperties liteQLProperties, SchemaService schemaService,
+            DSLContext dslContext, SqlCustomizer sqlCustomizer,
+            QueryAuditingService queryAuditingService,
+            QueryAccessDecisionService queryAccessDecisionService,
             ApplicationEventPublisher applicationEventPublisher) {
-        QueryService queryService = new JooqSqlQueryService(
-                liteQLProperties, schemaService, dslContext.getIfAvailable(), sqlCustomizer.getIfAvailable(),
-                auditingService, queryAccessDecisionService.getIfAvailable(), applicationEventPublisher);
+        QueryService queryService = new JooqQueryService(
+                liteQLProperties, schemaService, dslContext, sqlCustomizer,
+                queryAuditingService, queryAccessDecisionService,
+                new SpringQueryEventPublisher(applicationEventPublisher));
 
         logger.info("QueryService is ready.");
 
@@ -117,10 +120,8 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     public GraphQLService graphQLService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            ObjectMapper objectMapper, QueryService queryService) {
-        GraphQLService graphQLService = new DefaultGraphQLService(
-                liteQLProperties, schemaService, objectMapper, queryService);
+            LiteQLProperties liteQLProperties, SchemaService schemaService, QueryService queryService) {
+        GraphQLService graphQLService = new DefaultGraphQLService(liteQLProperties, schemaService, queryService);
 
         logger.info("GraphQLService is ready.");
 

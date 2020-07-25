@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class JooqMigrationServiceTest extends AbstractJooqSqlTest {
+public class JooqMigrationServiceTest extends AbstractJooqTest {
 
     private JooqMigrationService jooqMigrationService;
 
@@ -14,7 +14,7 @@ public class JooqMigrationServiceTest extends AbstractJooqSqlTest {
         super();
 
         jooqMigrationService = new JooqMigrationService(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), null);
+                getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
     }
 
     @Test

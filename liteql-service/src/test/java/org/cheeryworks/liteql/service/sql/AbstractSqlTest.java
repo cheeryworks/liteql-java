@@ -8,6 +8,7 @@ import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Script;
+import org.mockito.Mockito;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -15,8 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public abstract class AbstractSqlTest extends AbstractTest {
-
-    private SchemaService schemaService;
 
     private Database database;
 
@@ -28,9 +27,9 @@ public abstract class AbstractSqlTest extends AbstractTest {
 
     private LiteQLProperties liteQLProperties;
 
-    public SchemaService getSchemaService() {
-        return schemaService;
-    }
+    private SchemaService schemaService;
+
+    private SqlCustomizer sqlCustomizer;
 
     public Database getDatabase() {
         return database;
@@ -44,10 +43,15 @@ public abstract class AbstractSqlTest extends AbstractTest {
         return liteQLProperties;
     }
 
-    public AbstractSqlTest() {
-        schemaService = new DefaultSchemaService(
-                getLiteQLProperties(), getObjectMapper(), "classpath*:/liteql");
+    public SchemaService getSchemaService() {
+        return schemaService;
+    }
 
+    public SqlCustomizer getSqlCustomizer() {
+        return sqlCustomizer;
+    }
+
+    public AbstractSqlTest() {
         database = Database.H2;
 
         databaseName = UUID.randomUUID().toString().substring(0, 6);
@@ -60,9 +64,13 @@ public abstract class AbstractSqlTest extends AbstractTest {
 
         dataSource = h2DataSource;
 
-        liteQLProperties = new LiteQLProperties();
+        liteQLProperties = Mockito.mock(LiteQLProperties.class);
 
         liteQLProperties.setDiagnosticEnabled(true);
+
+        schemaService = new DefaultSchemaService(getLiteQLProperties(), "classpath*:/liteql");
+
+        sqlCustomizer = new DefaultSqlCustomizer();
     }
 
     protected void exportAndPrintDdl() {

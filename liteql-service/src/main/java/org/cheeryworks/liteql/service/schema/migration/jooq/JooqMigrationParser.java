@@ -14,7 +14,7 @@ import org.cheeryworks.liteql.schema.migration.operation.DropIndexMigrationOpera
 import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
-import org.cheeryworks.liteql.service.jooq.AbstractJooqSqlParser;
+import org.cheeryworks.liteql.service.jooq.AbstractJooqParser;
 import org.cheeryworks.liteql.service.schema.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class JooqMigrationParser extends AbstractJooqSqlParser implements SqlMigrationParser {
+public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrationParser {
 
     public JooqMigrationParser(
             LiteQLProperties liteQLProperties, SchemaService schemaService,

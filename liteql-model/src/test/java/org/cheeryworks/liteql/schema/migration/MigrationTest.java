@@ -16,10 +16,9 @@ public class MigrationTest extends AbstractTest {
 
         for (Map.Entry<String, String> migrationInJsonFile : migrationInJsonFiles.entrySet()) {
             if (migrationInJsonFile.getKey().contains("/migrations/")) {
-                Migration migration = LiteQLUtil.toBean(
-                        getObjectMapper(), migrationInJsonFile.getValue(), Migration.class);
+                Migration migration = LiteQLUtil.toBean(migrationInJsonFile.getValue(), Migration.class);
 
-                getLogger().info(LiteQLUtil.toJson(getObjectMapper(), migration));
+                getLogger().info(LiteQLUtil.toJson(migration));
             }
         }
     }

@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.Field;
 import graphql.language.Selection;
 import graphql.schema.DataFetchingEnvironment;
@@ -37,17 +36,15 @@ public abstract class GraphQLServiceUtil {
     }
 
     public static void parseConditions(
-            AbstractTypedReadQuery readQuery, FieldDefinitions fields,
-            DataFetchingEnvironment environment, ObjectMapper objectMapper) {
+            AbstractTypedReadQuery readQuery, FieldDefinitions fields, DataFetchingEnvironment environment) {
         String conditions = "[]";
 
         if (environment.containsArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS)) {
             conditions = LiteQLUtil.toJson(
-                    objectMapper,
                     environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS));
         }
 
-        QueryCondition[] queryConditions = LiteQLUtil.toBean(objectMapper, conditions, QueryCondition[].class);
+        QueryCondition[] queryConditions = LiteQLUtil.toBean(conditions, QueryCondition[].class);
 
         for (QueryCondition queryCondition : queryConditions) {
             fields.add(new FieldDefinition(queryCondition.getField()));
@@ -57,17 +54,15 @@ public abstract class GraphQLServiceUtil {
     }
 
     public static void parseSorts(
-            AbstractTypedReadQuery readQuery, FieldDefinitions fields,
-            DataFetchingEnvironment environment, ObjectMapper objectMapper) {
+            AbstractTypedReadQuery readQuery, FieldDefinitions fields, DataFetchingEnvironment environment) {
         String sorts = "[]";
 
         if (environment.containsArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY)) {
             sorts = LiteQLUtil.toJson(
-                    objectMapper,
                     environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY));
         }
 
-        QuerySort[] querySorts = LiteQLUtil.toBean(objectMapper, sorts, QuerySort[].class);
+        QuerySort[] querySorts = LiteQLUtil.toBean(sorts, QuerySort[].class);
 
         for (QuerySort querySort : querySorts) {
             fields.add(new FieldDefinition(querySort.getField()));

@@ -2,7 +2,6 @@ package org.cheeryworks.liteql.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -45,11 +44,9 @@ import org.cheeryworks.liteql.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.MigrationOperationTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.QueryTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -66,8 +63,47 @@ import static org.cheeryworks.liteql.schema.field.IdField.ID_FIELD_NAME;
 
 public abstract class LiteQLUtil {
 
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
+        OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        OBJECT_MAPPER.registerModule(getLiteQLJsonModule());
+    }
+
     private LiteQLUtil() {
 
+    }
+
+    public static SimpleModule getLiteQLJsonModule() {
+        SimpleModule module = new SimpleModule();
+
+        module.addDeserializer(DataType.class, new DataTypeDeserializer());
+        module.addDeserializer(ConditionClause.class, new ConditionClauseDeserializer());
+        module.addDeserializer(ConditionOperator.class, new ConditionOperatorDeserializer());
+        module.addDeserializer(ConditionType.class, new ConditionTypeDeserializer());
+        module.addDeserializer(TypeName.class, new TypeNameDeserializer());
+        module.addDeserializer(FieldDefinitions.class, new FieldDefinitionsDeserializer());
+        module.addDeserializer(Field.class, new FieldDeserializer());
+        module.addDeserializer(MigrationOperation.class, new MigrationOperationDeserializer());
+        module.addDeserializer(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
+        module.addDeserializer(PublicQuery.class, new PublicQueryDeserializer());
+        module.addDeserializer(QueryConditions.class, new QueryConditionsDeserializer());
+        module.addDeserializer(QueryType.class, new QueryTypeDeserializer());
+        module.addDeserializer(SaveQueryAssociations.class, new SaveQueryAssociationsDeserializer());
+
+        module.addSerializer(DataType.class, new DataTypeSerializer());
+        module.addSerializer(ConditionClause.class, new ConditionClauseSerializer());
+        module.addSerializer(ConditionOperator.class, new ConditionOperatorSerializer());
+        module.addSerializer(ConditionType.class, new ConditionTypeSerializer());
+        module.addSerializer(TypeName.class, new TypeNameSerializer());
+        module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
+        module.addSerializer(QueryType.class, new QueryTypeSerializer());
+
+        return module;
     }
 
     public static Class<?> getClass(String className) {
@@ -88,12 +124,12 @@ public abstract class LiteQLUtil {
         return typeName;
     }
 
-    public static <T> T toBean(ObjectMapper objectMapper, String content, Class<T> clazz) {
+    public static <T> T toBean(String content, Class<T> clazz) {
         T bean = null;
 
         if (StringUtils.isNotBlank(content)) {
             try {
-                bean = objectMapper.readValue(content, clazz);
+                bean = OBJECT_MAPPER.readValue(content, clazz);
             } catch (Exception ex) {
                 throw new IllegalArgumentException("\"" + content + "\" is not valid JSON", ex);
             }
@@ -102,9 +138,9 @@ public abstract class LiteQLUtil {
         return bean;
     }
 
-    public static <T> String toJson(ObjectMapper objectMapper, T bean) {
+    public static <T> String toJson(T bean) {
         try {
-            return objectMapper.writeValueAsString(bean);
+            return OBJECT_MAPPER.writeValueAsString(bean);
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
@@ -120,51 +156,6 @@ public abstract class LiteQLUtil {
         }
 
         return null;
-    }
-
-    public static <T> void configureObjectMapper(Jackson2ObjectMapperBuilder builder) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
-
-        Map<Class<T>, JsonDeserializer<? extends T>> deserializers = new HashMap<>();
-
-        deserializers.forEach((type, deserializer) -> {
-            module.addDeserializer(type, deserializer);
-        });
-
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT);
-        builder.featuresToDisable(
-                SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        builder.serializationInclusion(JsonInclude.Include.NON_NULL);
-
-        builder.deserializerByType(DataType.class, new DataTypeDeserializer());
-        builder.deserializerByType(ConditionClause.class, new ConditionClauseDeserializer());
-        builder.deserializerByType(ConditionOperator.class, new ConditionOperatorDeserializer());
-        builder.deserializerByType(ConditionType.class, new ConditionTypeDeserializer());
-        builder.deserializerByType(TypeName.class, new TypeNameDeserializer());
-        builder.deserializerByType(FieldDefinitions.class, new FieldDefinitionsDeserializer());
-        builder.deserializerByType(Field.class, new FieldDeserializer());
-        builder.deserializerByType(MigrationOperation.class, new MigrationOperationDeserializer());
-        builder.deserializerByType(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
-        builder.deserializerByType(PublicQuery.class, new PublicQueryDeserializer());
-        builder.deserializerByType(QueryConditions.class, new QueryConditionsDeserializer());
-        builder.deserializerByType(QueryType.class, new QueryTypeDeserializer());
-        builder.deserializerByType(SaveQueryAssociations.class, new SaveQueryAssociationsDeserializer());
-
-        builder.serializerByType(DataType.class, new DataTypeSerializer());
-        builder.serializerByType(ConditionClause.class, new ConditionClauseSerializer());
-        builder.serializerByType(ConditionOperator.class, new ConditionOperatorSerializer());
-        builder.serializerByType(ConditionType.class, new ConditionTypeSerializer());
-        builder.serializerByType(TypeName.class, new TypeNameSerializer());
-        builder.serializerByType(MigrationOperationType.class, new MigrationOperationTypeSerializer());
-        builder.serializerByType(QueryType.class, new QueryTypeSerializer());
     }
 
     public static Set<String> convertDelimitedParameterToSetOfString(String ids) {

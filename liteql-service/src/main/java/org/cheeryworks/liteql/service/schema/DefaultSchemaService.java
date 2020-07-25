@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.service.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
@@ -14,11 +13,9 @@ import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -37,25 +35,23 @@ import java.util.stream.Collectors;
 
 public class DefaultSchemaService extends AbstractLiteQLService implements SchemaService {
 
-    private ObjectMapper objectMapper;
-
     private String[] locationPatterns;
 
     private List<Schema> schemas = new ArrayList<>();
 
     private Map<Class, Class> traitImplements = initTraitImplements();
 
-    public DefaultSchemaService(
-            LiteQLProperties liteQLProperties, ObjectMapper objectMapper, String... locationPatterns) {
+    public DefaultSchemaService(LiteQLProperties liteQLProperties, String... locationPatterns) {
         super(liteQLProperties);
 
-        this.objectMapper = objectMapper;
         this.locationPatterns = locationPatterns;
 
         init();
     }
 
     private void init() {
+        Map<String, Map<String, String>> schemaDefinitions = new HashMap<>();
+
         for (String locationPattern : locationPatterns) {
             try {
                 locationPattern = StringUtils.removeEnd(
@@ -66,8 +62,6 @@ public class DefaultSchemaService extends AbstractLiteQLService implements Schem
 
                 Resource[] schemaRootResources
                         = pathMatchingResourcePatternResolver.getResources(locationPattern + "/*.yml");
-
-                Map<String, Map<String, String>> schemaDefinitions = new HashMap<>();
 
                 Map<String, String> schemaPaths = new HashMap<>();
 
@@ -105,50 +99,54 @@ public class DefaultSchemaService extends AbstractLiteQLService implements Schem
                         }
                     }
                 }
-
-                for (Map.Entry<String, Map<String, String>> schemaDefinition : schemaDefinitions.entrySet()) {
-                    String schemaName = schemaDefinition.getKey();
-
-                    Map<String, String> schemaDefinitionContents = schemaDefinition.getValue();
-
-                    for (Map.Entry<String, String> schemaDefinitionContent : schemaDefinitionContents.entrySet()) {
-                        String schemaDefinitionResourceRelativePath = schemaDefinitionContent.getKey();
-
-                        if (!schemaDefinitionResourceRelativePath.contains(SchemaService.NAME_OF_TYPES_DIRECTORY)) {
-                            continue;
-                        }
-
-                        TypeName domainTypeName = new TypeName();
-
-                        domainTypeName.setSchema(schemaName);
-                        domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
-
-                        if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
-                            TypeName typeName = LiteQLUtil.toBean(
-                                    objectMapper, schemaDefinitionContent.getValue(), TypeName.class);
-
-                            typeName.setSchema(schemaName);
-                            typeName.setName(domainTypeName.getName());
-
-                            addType(typeName);
-                        }
-
-                        if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
-                            String migrationName = schemaDefinitionResourceRelativePath.substring(
-                                    schemaDefinitionResourceRelativePath.lastIndexOf("/"),
-                                    schemaDefinitionResourceRelativePath.lastIndexOf("."));
-                            Migration migration = LiteQLUtil.toBean(
-                                    objectMapper, schemaDefinitionContent.getValue(), Migration.class);
-                            migration.setName(migrationName);
-                            migration.setDomainTypeName(domainTypeName);
-
-                            addMigration(migration);
-                        }
-                    }
-                }
             } catch (IOException ex) {
                 throw new IllegalArgumentException(
                         "Location patterns [" + locationPattern + "] invalid, " + ex.getMessage(), ex);
+            }
+        }
+
+        processSchemaDefinitions(schemaDefinitions);
+    }
+
+    private void processSchemaDefinitions(Map<String, Map<String, String>> schemaDefinitions) {
+        for (Map.Entry<String, Map<String, String>> schemaDefinition : schemaDefinitions.entrySet()) {
+            String schemaName = schemaDefinition.getKey();
+
+            Map<String, String> schemaDefinitionContents = schemaDefinition.getValue();
+
+            for (Map.Entry<String, String> schemaDefinitionContent : schemaDefinitionContents.entrySet()) {
+                String schemaDefinitionResourceRelativePath = schemaDefinitionContent.getKey();
+
+                if (!schemaDefinitionResourceRelativePath.contains(SchemaService.NAME_OF_TYPES_DIRECTORY)) {
+                    continue;
+                }
+
+                TypeName domainTypeName = new TypeName();
+
+                domainTypeName.setSchema(schemaName);
+                domainTypeName.setName(schemaDefinitionResourceRelativePath.split("/")[1]);
+
+                if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
+                    TypeName typeName = LiteQLUtil.toBean(
+                            schemaDefinitionContent.getValue(), TypeName.class);
+
+                    typeName.setSchema(schemaName);
+                    typeName.setName(domainTypeName.getName());
+
+                    addType(typeName);
+                }
+
+                if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
+                    String migrationName = schemaDefinitionResourceRelativePath.substring(
+                            schemaDefinitionResourceRelativePath.lastIndexOf("/"),
+                            schemaDefinitionResourceRelativePath.lastIndexOf("."));
+                    Migration migration = LiteQLUtil.toBean(
+                            schemaDefinitionContent.getValue(), Migration.class);
+                    migration.setName(migrationName);
+                    migration.setDomainTypeName(domainTypeName);
+
+                    addMigration(migration);
+                }
             }
         }
     }
@@ -246,7 +244,7 @@ public class DefaultSchemaService extends AbstractLiteQLService implements Schem
 
     @Override
     public TraitType getTraitType(TypeName typeName) {
-        Assert.notNull(typeName, "TypeName is required");
+        Objects.requireNonNull(typeName, "TypeName is required");
 
         return getSchema(typeName.getSchema())
                 .getTraitTypes()
@@ -260,7 +258,7 @@ public class DefaultSchemaService extends AbstractLiteQLService implements Schem
 
     @Override
     public DomainType getDomainType(TypeName typeName) {
-        Assert.notNull(typeName, "TypeName is required");
+        Objects.requireNonNull(typeName, "TypeName is required");
 
         return getSchema(typeName.getSchema())
                 .getDomainTypes()
@@ -296,9 +294,9 @@ public class DefaultSchemaService extends AbstractLiteQLService implements Schem
         Map<Class, Class> traitImplements = new HashMap<>();
 
         for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
-            Class domainJavaType = LiteQLUtil.getClass(traitInstanceDefinition.getBeanClassName());
+            Class<?> domainJavaType = LiteQLUtil.getClass(traitInstanceDefinition.getBeanClassName());
 
-            TraitInstance traitInstance = AnnotationUtils.findAnnotation(domainJavaType, TraitInstance.class);
+            TraitInstance traitInstance = domainJavaType.getAnnotation(TraitInstance.class);
 
             if (!traitInstance.implement().equals(Void.class)) {
                 if (traitImplements.containsKey(traitInstance.implement())) {

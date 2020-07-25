@@ -8,7 +8,7 @@ public class LiteQLJackson2ObjectMapperBuilderCustomizer implements Jackson2Obje
 
     @Override
     public void customize(Jackson2ObjectMapperBuilder builder) {
-        LiteQLUtil.configureObjectMapper(builder);
+        builder.modules(LiteQLUtil.getLiteQLJsonModule());
     }
 
 }

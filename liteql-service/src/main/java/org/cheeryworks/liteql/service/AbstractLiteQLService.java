@@ -4,12 +4,10 @@ import org.cheeryworks.liteql.LiteQLProperties;
 
 public class AbstractLiteQLService implements LiteQLService {
 
-    private LiteQLProperties liteQLProperties = new LiteQLProperties();
+    private LiteQLProperties liteQLProperties;
 
     public AbstractLiteQLService(LiteQLProperties liteQLProperties) {
-        if (liteQLProperties != null) {
-            this.liteQLProperties = liteQLProperties;
-        }
+        this.liteQLProperties = liteQLProperties;
     }
 
     @Override

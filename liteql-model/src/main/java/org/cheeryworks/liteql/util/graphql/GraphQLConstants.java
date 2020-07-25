@@ -1,10 +1,12 @@
 package org.cheeryworks.liteql.util.graphql;
 
+import org.cheeryworks.liteql.schema.field.IdField;
+
 public abstract class GraphQLConstants {
 
     public static final String QUERY_TYPE_NAME = "Query";
 
-    public static final String QUERY_ARGUMENT_NAME_ID = "id";
+    public static final String QUERY_ARGUMENT_NAME_ID = IdField.ID_FIELD_NAME;
 
     public static final String QUERY_ARGUMENT_NAME_CONDITIONS = "conditions";
 
@@ -32,14 +34,10 @@ public abstract class GraphQLConstants {
 
     public static final String SCALAR_DECIMAL_NAME = "Decimal";
 
-    public static final String SCALAR_DATE_NAME = "Date";
+    public static final String SCALAR_TIMESTAMP_NAME = "Timestamp";
 
     public static final String SCALAR_CONDITION_VALUE_NAME = "ConditionValue";
 
-    public static final String INPUT_TYPE_CONDITION_NAME = "Condition";
-
-    public static final String INPUT_TYPE_SORT_NAME = "Sort";
-
-    public static final String MUTATION_INPUT_FIELD_ID_NAME = "Id";
+    public static final String INPUT_TYPE_NAME_SUFFIX = "Input";
 
 }

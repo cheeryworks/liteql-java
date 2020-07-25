@@ -1,15 +1,11 @@
 package org.cheeryworks.liteql.jpa;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.annotation.Position;
-import org.cheeryworks.liteql.schema.annotation.ReferenceField;
-import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
 import org.cheeryworks.liteql.schema.DomainType;
@@ -17,6 +13,9 @@ import org.cheeryworks.liteql.schema.Entity;
 import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.annotation.Position;
+import org.cheeryworks.liteql.schema.annotation.ReferenceField;
+import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.schema.field.AbstractField;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.BlobField;
@@ -31,16 +30,15 @@ import org.cheeryworks.liteql.schema.field.TimestampField;
 import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
 import org.cheeryworks.liteql.schema.migration.Migration;
-import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
@@ -67,11 +65,10 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
 
     private DefaultSchemaService repository;
 
-    public JpaSchemaService(
-            LiteQLProperties liteQLProperties, ObjectMapper objectMapper, SqlCustomizer sqlCustomizer) {
+    public JpaSchemaService(LiteQLProperties liteQLProperties, SqlCustomizer sqlCustomizer) {
         super(liteQLProperties, sqlCustomizer);
 
-        this.repository = new DefaultSchemaService(liteQLProperties, objectMapper, "classpath*:/liteql");
+        this.repository = new DefaultSchemaService(liteQLProperties, "classpath*:/liteql");
 
         Map<String, Set<TypeName>> typeNameWithinSchemas = getTypeNameWithinSchemas();
 
@@ -285,7 +282,7 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
     }
 
     private void performUniquesAndIndexesOfDomain(DomainType domainType, Class<?> javaType) {
-        Table table = AnnotationUtils.findAnnotation(javaType, Table.class);
+        Table table = javaType.getAnnotation(Table.class);
 
         Set<Unique> uniques = new LinkedHashSet<>();
         Set<Index> indexes = new LinkedHashSet<>();

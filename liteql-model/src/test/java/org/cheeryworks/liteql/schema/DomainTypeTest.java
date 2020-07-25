@@ -16,10 +16,9 @@ public class DomainTypeTest extends AbstractTest {
 
         for (Map.Entry<String, String> typeInJsonFile : typeInJsonFiles.entrySet()) {
             if (typeInJsonFile.getKey().contains("definition.json")) {
-                DomainType domainType = LiteQLUtil.toBean(
-                        getObjectMapper(), typeInJsonFile.getValue(), DomainType.class);
+                DomainType domainType = LiteQLUtil.toBean(typeInJsonFile.getValue(), DomainType.class);
 
-                getLogger().info(LiteQLUtil.toJson(getObjectMapper(), domainType));
+                getLogger().info(LiteQLUtil.toJson(domainType));
             }
         }
     }

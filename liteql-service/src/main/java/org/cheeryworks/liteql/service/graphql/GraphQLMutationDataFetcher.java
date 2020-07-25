@@ -1,22 +1,20 @@
 package org.cheeryworks.liteql.service.graphql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
+import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 
 public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
-    public GraphQLMutationDataFetcher(
-            SchemaService schemaService, ObjectMapper objectMapper, QueryService queryService) {
-        super(schemaService, objectMapper, queryService);
+    public GraphQLMutationDataFetcher(SchemaService schemaService, QueryService queryService) {
+        super(schemaService, queryService);
     }
 
     @Override

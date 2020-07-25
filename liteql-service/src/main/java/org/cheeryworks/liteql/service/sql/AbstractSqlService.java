@@ -5,14 +5,12 @@ import org.cheeryworks.liteql.service.AbstractLiteQLService;
 
 public abstract class AbstractSqlService extends AbstractLiteQLService implements SqlService {
 
-    private SqlCustomizer sqlCustomizer = new DefaultSqlCustomizer();
+    private SqlCustomizer sqlCustomizer;
 
     public AbstractSqlService(LiteQLProperties liteQLProperties, SqlCustomizer sqlCustomizer) {
         super(liteQLProperties);
 
-        if (sqlCustomizer != null) {
-            this.sqlCustomizer = sqlCustomizer;
-        }
+        this.sqlCustomizer = sqlCustomizer;
     }
 
     @Override

@@ -4,11 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.spring.LiteQLSpringProperties;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -35,7 +36,7 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
-    private LiteQLProperties liteQLProperties = new LiteQLProperties();
+    private LiteQLProperties liteQLProperties = new LiteQLSpringProperties();
 
     public JpaSqlCustomizer(LiteQLProperties liteQLProperties) {
         if (liteQLProperties != null) {

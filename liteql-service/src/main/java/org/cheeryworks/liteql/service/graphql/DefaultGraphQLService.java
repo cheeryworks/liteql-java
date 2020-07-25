@@ -1,46 +1,51 @@
 package org.cheeryworks.liteql.service.graphql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectTypeExtensionDefinition;
 import graphql.language.OperationTypeDefinition;
+import graphql.language.ScalarTypeDefinition;
+import graphql.language.SchemaDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.graphql.Scalars;
+import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionOperator;
+import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.enums.Direction;
+import org.cheeryworks.liteql.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.Field;
-import org.cheeryworks.liteql.util.LiteQLUtil;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.StreamUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,18 +54,20 @@ import java.util.Map;
 import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.INPUT_TYPE_NAME_SUFFIX;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.MUTATION_NAME_PREFIX_CREATE;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.MUTATION_TYPE_NAME;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_ID;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_FIRST;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY;
+import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_TYPE_NAME;
 
 public class DefaultGraphQLService extends AbstractLiteQLService implements GraphQLService {
 
-    private static final String EMPTY_SCHEMA;
-
     private SchemaService schemaService;
-
-    private ObjectMapper objectMapper;
-
-    private QueryService queryService;
-
-    private Scalars scalars;
 
     private GraphQLQueryDataFetcher graphQLQueryDataFetcher;
 
@@ -70,43 +77,20 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
 
     private GraphQL graphQL;
 
-    static {
-        StringBuilder emptySchemaBuilder = new StringBuilder();
-
-        emptySchemaBuilder
-                .append("schema {\n")
-                .append("    query: ").append(GraphQLConstants.QUERY_TYPE_NAME).append("\n")
-                .append("    mutation: ").append(GraphQLConstants.MUTATION_TYPE_NAME).append("\n")
-                .append("}\n")
-                .append("\n")
-                .append("type Query {\n")
-                .append("}\n")
-                .append("\n")
-                .append("type Mutation {\n")
-                .append("}\n")
-                .append("\n");
-
-        EMPTY_SCHEMA = emptySchemaBuilder.toString();
-    }
-
     public DefaultGraphQLService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            ObjectMapper objectMapper, QueryService queryService) {
+            LiteQLProperties liteQLProperties, SchemaService schemaService, QueryService queryService) {
         super(liteQLProperties);
 
         this.schemaService = schemaService;
-        this.objectMapper = objectMapper;
-        this.queryService = queryService;
-        this.scalars = new Scalars(objectMapper);
 
-        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(schemaService, objectMapper, queryService);
-        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(schemaService, objectMapper, queryService);
+        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(schemaService, queryService);
+        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(schemaService, queryService);
 
         DataLoader<String, Map<String, Object>> defaultDataLoader
                 = DataLoader.newDataLoader(new GraphQLBatchLoader(queryService));
 
         DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
-        dataLoaderRegistry.register(GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY, defaultDataLoader);
+        dataLoaderRegistry.register(QUERY_DEFAULT_DATA_LOADER_KEY, defaultDataLoader);
 
         this.dataLoaderRegistry = dataLoaderRegistry;
 
@@ -121,41 +105,11 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
 
     private GraphQLSchema buildingSchema() {
         try {
-            SchemaParser schemaParser = new SchemaParser();
-            TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(EMPTY_SCHEMA);
-
-            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
-                    = new PathMatchingResourcePatternResolver();
-
-            Resource[] graphQLSchemaResources = pathMatchingResourcePatternResolver
-                    .getResources("classpath*:graphql/*.graphqls");
-
-            for (Resource graphQLSchemaResource : graphQLSchemaResources) {
-                String graphQLSchemaDefinition = StreamUtils.copyToString(
-                        graphQLSchemaResource.getInputStream(), StandardCharsets.UTF_8);
-                typeDefinitionRegistry.merge(schemaParser.parse(graphQLSchemaDefinition));
-            }
-
-            List<OperationTypeDefinition> operationTypeDefinitions
-                    = typeDefinitionRegistry.schemaDefinition().get().getOperationTypeDefinitions();
-
-            Set<String> operationTypeNames = new HashSet<>();
-
-            for (OperationTypeDefinition operationTypeDefinition : operationTypeDefinitions) {
-                operationTypeNames.add(operationTypeDefinition.getTypeName().getName());
-            }
-
-            generateObjectTypeDefinitions(schemaService, scalars, typeDefinitionRegistry);
-
-            generateDefaultQueries(schemaParser, typeDefinitionRegistry, operationTypeNames);
-
-            generateDefaultInputTypes(schemaParser, typeDefinitionRegistry, operationTypeNames);
-
-            generateDefaultMutations(schemaParser, typeDefinitionRegistry, operationTypeNames);
-
-            RuntimeWiring runtimeWiring = buildWiring(typeDefinitionRegistry.types(), operationTypeNames);
-
             SchemaGenerator schemaGenerator = new SchemaGenerator();
+
+            TypeDefinitionRegistry typeDefinitionRegistry = buildTypeDefinitionRegistry();
+
+            RuntimeWiring runtimeWiring = buildRuntimeWiring(typeDefinitionRegistry.types());
 
             return schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
         } catch (Exception ex) {
@@ -163,8 +117,101 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
         }
     }
 
-    public void generateObjectTypeDefinitions(
-            SchemaService schemaService, Scalars scalars, TypeDefinitionRegistry typeDefinitionRegistry) {
+    private TypeDefinitionRegistry buildTypeDefinitionRegistry() {
+        TypeDefinitionRegistry typeDefinitionRegistry = new TypeDefinitionRegistry();
+
+        buildSchemaDefinition(typeDefinitionRegistry);
+
+        buildEnumDefinitions(typeDefinitionRegistry);
+
+        buildScalarDefinitions(typeDefinitionRegistry);
+
+        buildObjectTypeDefinitions(schemaService, typeDefinitionRegistry);
+
+        buildDefaultQueries(typeDefinitionRegistry);
+
+        buildDefaultInputTypes(typeDefinitionRegistry);
+
+        buildDefaultMutations(typeDefinitionRegistry);
+
+        return typeDefinitionRegistry;
+    }
+
+    public void buildSchemaDefinition(TypeDefinitionRegistry typeDefinitionRegistry) {
+        typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
+                .name(QUERY_TYPE_NAME)
+                .build());
+
+        typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
+                .name(MUTATION_TYPE_NAME)
+                .build());
+
+        typeDefinitionRegistry.add(
+                SchemaDefinition.newSchemaDefinition()
+                        .operationTypeDefinition(
+                                OperationTypeDefinition.newOperationTypeDefinition()
+                                        .name(QUERY_TYPE_NAME.toLowerCase())
+                                        .typeName(new TypeName(QUERY_TYPE_NAME))
+                                        .build())
+                        .operationTypeDefinition(OperationTypeDefinition.newOperationTypeDefinition()
+                                .name(MUTATION_TYPE_NAME.toLowerCase())
+                                .typeName(new TypeName(MUTATION_TYPE_NAME))
+                                .build())
+                        .build());
+    }
+
+    public void buildEnumDefinitions(TypeDefinitionRegistry typeDefinitionRegistry) {
+        buildEumTypeDefinition(typeDefinitionRegistry, ConditionOperator.class, ConditionOperator.values());
+
+        buildEumTypeDefinition(typeDefinitionRegistry, ConditionClause.class, ConditionClause.values());
+
+        buildEumTypeDefinition(typeDefinitionRegistry, ConditionType.class, ConditionType.values());
+
+        buildEumTypeDefinition(typeDefinitionRegistry, Direction.class, Direction.values());
+    }
+
+    private void buildEumTypeDefinition(
+            TypeDefinitionRegistry typeDefinitionRegistry, Class enumerationType, Enum[] enumerations) {
+        List<EnumValueDefinition> enumValueDefinitions = new ArrayList<>();
+
+        for (Enum enumeration : enumerations) {
+            enumValueDefinitions.add(EnumValueDefinition
+                    .newEnumValueDefinition()
+                    .name(enumeration.name())
+                    .build());
+        }
+
+        typeDefinitionRegistry.add(
+                EnumTypeDefinition.newEnumTypeDefinition()
+                        .name(enumerationType.getSimpleName())
+                        .enumValueDefinitions(enumValueDefinitions)
+                        .build());
+    }
+
+    public void buildScalarDefinitions(TypeDefinitionRegistry typeDefinitionRegistry) {
+        typeDefinitionRegistry.add(
+                ScalarTypeDefinition.newScalarTypeDefinition()
+                        .name(Scalars.LONG.getName())
+                        .build());
+
+        typeDefinitionRegistry.add(
+                ScalarTypeDefinition.newScalarTypeDefinition()
+                        .name(Scalars.DECIMAL.getName())
+                        .build());
+
+        typeDefinitionRegistry.add(
+                ScalarTypeDefinition.newScalarTypeDefinition()
+                        .name(Scalars.TIMESTAMP.getName())
+                        .build());
+
+        typeDefinitionRegistry.add(
+                ScalarTypeDefinition.newScalarTypeDefinition()
+                        .name(Scalars.CONDITION_VALUE.getName())
+                        .build());
+    }
+
+    public void buildObjectTypeDefinitions(
+            SchemaService schemaService, TypeDefinitionRegistry typeDefinitionRegistry) {
         Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
 
         for (String schema : schemaService.getSchemaNames()) {
@@ -189,7 +236,7 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
                     FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
                             .newFieldDefinition()
                             .name(field.getName())
-                            .type(getGraphQLTypeFromField(scalars, field))
+                            .type(getGraphQLTypeFromField(field))
                             .inputValueDefinitions(defaultFieldArguments());
 
                     FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
@@ -202,8 +249,8 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
         objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
     }
 
-    private Type getGraphQLTypeFromField(Scalars scalars, Field field) {
-        String typeName = getGraphQLTypeNameFromField(scalars, field);
+    private Type getGraphQLTypeFromField(Field field) {
+        String typeName = getGraphQLTypeNameFromField(field);
 
         if (field instanceof AbstractNullableField) {
             AbstractNullableField nullableField = (AbstractNullableField) field;
@@ -216,22 +263,22 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
         return new TypeName(typeName);
     }
 
-    private String getGraphQLTypeNameFromField(Scalars scalars, Field field) {
+    private String getGraphQLTypeNameFromField(Field field) {
         switch (field.getType()) {
             case Id:
             case Clob:
             case String:
                 return graphql.Scalars.GraphQLString.getName();
             case Long:
-                return scalars.getScalarLong().getName();
+                return Scalars.LONG.getName();
             case Integer:
                 return graphql.Scalars.GraphQLInt.getName();
             case Timestamp:
-                return scalars.getScalarDate().getName();
+                return Scalars.TIMESTAMP.getName();
             case Boolean:
                 return graphql.Scalars.GraphQLBoolean.getName();
             case Decimal:
-                return scalars.getScalarBigDecimal().getName();
+                return Scalars.DECIMAL.getName();
             case Blob:
                 return graphql.Scalars.GraphQLByte.getName();
             case Reference:
@@ -248,48 +295,103 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
 
         arguments.add(
                 InputValueDefinition.newInputValueDefinition()
-                        .name(GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS)
+                        .name(QUERY_ARGUMENT_NAME_CONDITIONS)
                         .type(new ListType(
                                 new NonNullType(
-                                        new TypeName(GraphQLConstants.INPUT_TYPE_CONDITION_NAME))))
+                                        new TypeName(QueryCondition.class.getSimpleName()))))
                         .build());
 
         arguments.add(
                 InputValueDefinition.newInputValueDefinition()
-                        .name(GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY)
+                        .name(QUERY_ARGUMENT_NAME_ORDER_BY)
                         .type(new ListType(
                                 new NonNullType(
-                                        new TypeName(GraphQLConstants.INPUT_TYPE_SORT_NAME))))
+                                        new TypeName(QuerySort.class.getSimpleName()))))
                         .build());
 
         return arguments;
     }
 
-    private void generateDefaultInputTypes(
-            SchemaParser schemaParser, TypeDefinitionRegistry typeDefinitionRegistry, Set<String> operationTypeNames) {
-        for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
-            if (typeEntry.getValue() instanceof ObjectTypeDefinition
-                    && !operationTypeNames.contains(typeEntry.getKey())) {
-                StringBuilder inputTypeDefinitionBuilder = new StringBuilder();
+    private void buildDefaultInputTypes(
+            TypeDefinitionRegistry typeDefinitionRegistry) {
+        List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
-                inputTypeDefinitionBuilder.append("input ").append(typeEntry.getKey()).append("Input").append(" {");
+        java.lang.reflect.Field[] fields = QueryCondition.class.getDeclaredFields();
+        for (java.lang.reflect.Field field : fields) {
+            if (field.getName().equalsIgnoreCase("field")) {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new NonNullType(new TypeName(field.getType().getSimpleName())))
+                                .build());
+            } else if (field.getName().equalsIgnoreCase("value")) {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new TypeName(Scalars.CONDITION_VALUE.getName()))
+                                .build());
+            } else if (field.getName().equalsIgnoreCase("conditions")) {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new ListType(new TypeName(QueryCondition.class.getSimpleName())))
+                                .build());
+            } else {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new TypeName(field.getType().getSimpleName()))
+                                .build());
+            }
+        }
+
+        typeDefinitionRegistry.add(InputObjectTypeDefinition.newInputObjectDefinition()
+                .name(QueryCondition.class.getSimpleName())
+                .inputValueDefinitions(inputValueDefinitions)
+                .build());
+
+        inputValueDefinitions = new ArrayList<>();
+
+        fields = QuerySort.class.getDeclaredFields();
+        for (java.lang.reflect.Field field : fields) {
+            if (field.getName().equalsIgnoreCase("field")) {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new NonNullType(new TypeName(field.getType().getSimpleName())))
+                                .build());
+            } else {
+                inputValueDefinitions.add(
+                        InputValueDefinition.newInputValueDefinition()
+                                .name(field.getName())
+                                .type(new TypeName(field.getType().getSimpleName()))
+                                .build());
+            }
+        }
+
+        typeDefinitionRegistry.add(InputObjectTypeDefinition.newInputObjectDefinition()
+                .name(QuerySort.class.getSimpleName())
+                .inputValueDefinitions(inputValueDefinitions)
+                .build());
+
+        for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
+            if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
+                InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder = InputObjectTypeDefinition
+                        .newInputObjectDefinition()
+                        .name(typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX);
 
                 processInputTypeFields(
-                        inputTypeDefinitionBuilder,
+                        inputObjectTypeDefinitionBuilder,
                         typeDefinitionRegistry.types(),
                         ((ObjectTypeDefinition) typeEntry.getValue()).getFieldDefinitions());
 
-                inputTypeDefinitionBuilder
-                        .append("}\n")
-                        .append("\n");
-
-                typeDefinitionRegistry.merge(schemaParser.parse(inputTypeDefinitionBuilder.toString()));
+                typeDefinitionRegistry.add(inputObjectTypeDefinitionBuilder.build());
             }
         }
     }
 
     private void processInputTypeFields(
-            StringBuilder inputTypeDefinitionBuilder,
+            InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
             Map<String, TypeDefinition> typeDefinitions, List<FieldDefinition> fieldDefinitions) {
         for (int i = 0; i < fieldDefinitions.size(); i++) {
             FieldDefinition fieldDefinition = fieldDefinitions.get(i);
@@ -297,53 +399,45 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
             if (fieldDefinition.getType() instanceof TypeName) {
                 TypeName typeName = (TypeName) fieldDefinition.getType();
 
-                inputTypeDefinitionBuilder
-                        .append("    ")
-                        .append(fieldDefinition.getName())
-                        .append(": ")
-                        .append(typeName.getName());
-
-                if (typeDefinitions.containsKey(typeName.getName())) {
-                    inputTypeDefinitionBuilder.append("Input");
-                }
-
-                inputTypeDefinitionBuilder.append("\n");
+                processTypeInInputType(
+                        inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
             } else if (fieldDefinition.getType() instanceof NonNullType) {
                 if (((NonNullType) fieldDefinition.getType()).getType() instanceof TypeName) {
                     TypeName typeName = (TypeName) ((NonNullType) fieldDefinition.getType()).getType();
 
                     if (!typeName.getName().equals(graphql.Scalars.GraphQLID.getName())) {
-                        inputTypeDefinitionBuilder
-                                .append("    ")
-                                .append(fieldDefinition.getName())
-                                .append(": ")
-                                .append(typeName.getName());
-
-                        if (typeDefinitions.containsKey(typeName.getName())) {
-                            inputTypeDefinitionBuilder.append("Input");
-                        }
-
-                        inputTypeDefinitionBuilder
-                                .append("!")
-                                .append("\n");
+                        processTypeInInputType(
+                                inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
                     }
                 } else if (((NonNullType) fieldDefinition.getType()).getType() instanceof ListType) {
                     ListType listType = (ListType) ((NonNullType) fieldDefinition.getType()).getType();
 
                     processListTypeInInputType(
-                            inputTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
+                            inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
                 }
             } else if (fieldDefinition.getType() instanceof ListType) {
                 ListType listType = (ListType) fieldDefinition.getType();
 
                 processListTypeInInputType(
-                        inputTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
+                        inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
             }
         }
     }
 
+    private void processTypeInInputType(
+            InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
+            Map<String, TypeDefinition> typeDefinitions, FieldDefinition fieldDefinition, TypeName typeName) {
+        inputObjectTypeDefinitionBuilder.inputValueDefinition(
+                InputValueDefinition.newInputValueDefinition()
+                        .name(fieldDefinition.getName())
+                        .type(typeDefinitions.containsKey(typeName.getName())
+                                ? new TypeName(typeName.getName() + INPUT_TYPE_NAME_SUFFIX)
+                                : typeName)
+                        .build());
+    }
+
     private void processListTypeInInputType(
-            StringBuilder inputTypeDefinitionBuilder,
+            InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
             Map<String, TypeDefinition> typeDefinitions,
             FieldDefinition fieldDefinition, ListType listType) {
         TypeName typeName;
@@ -354,177 +448,156 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
             typeName = (TypeName) listType.getType();
         }
 
-        inputTypeDefinitionBuilder
-                .append("    ")
-                .append(fieldDefinition.getName())
-                .append(": ")
-                .append("[")
-                .append(typeName.getName());
-
-        if (typeDefinitions.containsKey(typeName.getName())) {
-            inputTypeDefinitionBuilder.append("Input");
-        }
-
-        inputTypeDefinitionBuilder
-                .append("]")
-                .append("\n");
+        inputObjectTypeDefinitionBuilder.inputValueDefinition(InputValueDefinition.newInputValueDefinition()
+                .name(fieldDefinition.getName())
+                .type(typeDefinitions.containsKey(typeName.getName())
+                        ? new ListType(new TypeName(typeName.getName() + INPUT_TYPE_NAME_SUFFIX))
+                        : new ListType(typeName))
+                .build());
     }
 
-    private void generateDefaultQueries(
-            SchemaParser schemaParser, TypeDefinitionRegistry typeDefinitionRegistry, Set<String> operationTypeNames) {
+    private void buildDefaultQueries(
+            TypeDefinitionRegistry typeDefinitionRegistry) {
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
-            if (typeEntry.getValue() instanceof ObjectTypeDefinition
-                    && !operationTypeNames.contains(typeEntry.getKey())) {
-                String queryName = StringUtils.uncapitalize(typeEntry.getKey());
+            if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
+                ObjectTypeExtensionDefinition objectTypeExtensionDefinition = ObjectTypeExtensionDefinition
+                        .newObjectTypeExtensionDefinition()
+                        .name(QUERY_TYPE_NAME)
+                        .fieldDefinition(
+                                FieldDefinition
+                                        .newFieldDefinition()
+                                        .name(StringUtils.uncapitalize(typeEntry.getKey()))
+                                        .inputValueDefinition(
+                                                InputValueDefinition
+                                                        .newInputValueDefinition()
+                                                        .name(QUERY_ARGUMENT_NAME_ID)
+                                                        .type(
+                                                                new NonNullType(
+                                                                        new TypeName(
+                                                                                graphql.Scalars.GraphQLID.getName())))
+                                                        .build())
+                                        .type(new NonNullType(new TypeName(typeEntry.getKey())))
+                                        .build())
+                        .fieldDefinition(FieldDefinition
+                                .newFieldDefinition()
+                                .name(StringUtils.uncapitalize(LiteQLUtil.plural(typeEntry.getKey())))
+                                .inputValueDefinition(
+                                        InputValueDefinition
+                                                .newInputValueDefinition()
+                                                .name(QUERY_ARGUMENT_NAME_CONDITIONS)
+                                                .type(
+                                                        new ListType(
+                                                                new NonNullType(
+                                                                        new TypeName(
+                                                                                QueryCondition.class.getSimpleName()))))
+                                                .build())
+                                .inputValueDefinition(
+                                        InputValueDefinition
+                                                .newInputValueDefinition()
+                                                .name(QUERY_ARGUMENT_NAME_ORDER_BY)
+                                                .type(
+                                                        new ListType(
+                                                                new NonNullType(
+                                                                        new TypeName(
+                                                                                QuerySort.class.getSimpleName()))))
+                                                .build())
+                                .inputValueDefinition(
+                                        InputValueDefinition
+                                                .newInputValueDefinition()
+                                                .name(QUERY_ARGUMENT_NAME_PAGINATION_OFFSET)
+                                                .type(new TypeName(graphql.Scalars.GraphQLInt.getName()))
+                                                .build())
+                                .inputValueDefinition(
+                                        InputValueDefinition
+                                                .newInputValueDefinition()
+                                                .name(QUERY_ARGUMENT_NAME_PAGINATION_FIRST)
+                                                .type(new TypeName(graphql.Scalars.GraphQLInt.getName()))
+                                                .build())
+                                .type(new ListType(new TypeName(typeEntry.getKey())))
+                                .build())
+                        .build();
 
-                StringBuilder queryDefinitionBuilder = new StringBuilder();
-
-                queryDefinitionBuilder
-                        .append("extend type ").append(GraphQLConstants.QUERY_TYPE_NAME).append(" {\n");
-
-                queryDefinitionBuilder
-                        .append("  ")
-                        .append(queryName)
-                        .append("(id: " + graphql.Scalars.GraphQLID.getName() + "!): ")
-                        .append(typeEntry.getKey()).append("!");
-
-                queryName = StringUtils.uncapitalize(LiteQLUtil.plural(typeEntry.getKey()));
-
-                queryDefinitionBuilder
-                        .append("  ").append(queryName).append("(");
-
-                queryDefinitionBuilder
-                        .append(GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS)
-                        .append(": ").append("[" + GraphQLConstants.INPUT_TYPE_CONDITION_NAME + "!]");
-
-                queryDefinitionBuilder.append(", ");
-
-                queryDefinitionBuilder
-                        .append(GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY)
-                        .append(": ").append("[" + GraphQLConstants.INPUT_TYPE_SORT_NAME + "!]");
-
-                queryDefinitionBuilder.append(", ");
-
-                queryDefinitionBuilder
-                        .append(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET)
-                        .append(": ").append("Int");
-
-                queryDefinitionBuilder.append(", ");
-
-                queryDefinitionBuilder
-                        .append(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_FIRST)
-                        .append(": ").append("Int");
-
-                queryDefinitionBuilder.append(")");
-
-                queryDefinitionBuilder.append(": [").append(typeEntry.getKey()).append("]\n");
-
-                queryDefinitionBuilder
-                        .append("}\n")
-                        .append("\n");
-
-                typeDefinitionRegistry.merge(schemaParser.parse(queryDefinitionBuilder.toString()));
+                typeDefinitionRegistry.add(objectTypeExtensionDefinition);
             }
         }
     }
 
-    private void generateDefaultMutations(
-            SchemaParser schemaParser, TypeDefinitionRegistry typeDefinitionRegistry, Set<String> operationTypeNames) {
+    private void buildDefaultMutations(
+            TypeDefinitionRegistry typeDefinitionRegistry) {
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
-            if (typeEntry.getValue() instanceof ObjectTypeDefinition
-                    && !operationTypeNames.contains(typeEntry.getKey())) {
-                StringBuilder mutationDefinitionBuilder = new StringBuilder();
+            if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
+                ObjectTypeExtensionDefinition.Builder objectTypeExtensionDefinitionBuilder
+                        = ObjectTypeExtensionDefinition
+                        .newObjectTypeExtensionDefinition()
+                        .name(MUTATION_TYPE_NAME);
 
-                mutationDefinitionBuilder
-                        .append("extend type ").append(GraphQLConstants.MUTATION_TYPE_NAME).append(" {\n");
-
-                mutationDefinitionBuilder
-                        .append("  ")
-                        .append(GraphQLConstants.MUTATION_NAME_PREFIX_CREATE)
-                        .append(typeEntry.getKey())
-                        .append("(");
+                FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                        .newFieldDefinition()
+                        .name(MUTATION_NAME_PREFIX_CREATE + typeEntry.getKey())
+                        .type(new TypeName(typeEntry.getKey()));
 
                 processMutationInput(
-                        mutationDefinitionBuilder,
+                        fieldDefinitionBuilder,
                         typeDefinitionRegistry.types(),
                         ((ObjectTypeDefinition) typeEntry.getValue()).getFieldDefinitions());
 
-                mutationDefinitionBuilder
-                        .append(")");
+                objectTypeExtensionDefinitionBuilder.fieldDefinition(fieldDefinitionBuilder.build());
 
-                mutationDefinitionBuilder
-                        .append(": ").append(typeEntry.getKey()).append("\n");
-
-                mutationDefinitionBuilder
-                        .append("}\n")
-                        .append("\n");
-
-                typeDefinitionRegistry.merge(schemaParser.parse(mutationDefinitionBuilder.toString()));
+                typeDefinitionRegistry.add(objectTypeExtensionDefinitionBuilder.build());
             }
         }
     }
 
     private void processMutationInput(
-            StringBuilder mutationDefinitionBuilder, Map<String, TypeDefinition> typeDefinitions,
-            List<FieldDefinition> fieldDefinitions) {
+            FieldDefinition.Builder fieldDefinitionBuilder,
+            Map<String, TypeDefinition> typeDefinitions, List<FieldDefinition> fieldDefinitions) {
         for (int i = 0; i < fieldDefinitions.size(); i++) {
             FieldDefinition fieldDefinition = fieldDefinitions.get(i);
 
             if (fieldDefinition.getType() instanceof TypeName) {
                 TypeName typeName = (TypeName) fieldDefinition.getType();
 
-                mutationDefinitionBuilder
-                        .append(fieldDefinition.getName());
-
-                if (typeDefinitions.containsKey(typeName.getName())) {
-                    mutationDefinitionBuilder
-                            .append(GraphQLConstants.MUTATION_INPUT_FIELD_ID_NAME)
-                            .append(": ")
-                            .append(graphql.Scalars.GraphQLID.getName());
-                } else {
-                    mutationDefinitionBuilder.append(": ")
-                            .append(typeName.getName());
-                }
+                processMutationInput(fieldDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
             } else if (fieldDefinition.getType() instanceof NonNullType) {
                 if (((NonNullType) fieldDefinition.getType()).getType() instanceof TypeName) {
                     TypeName typeName = (TypeName) ((NonNullType) fieldDefinition.getType()).getType();
 
                     if (!typeName.getName().equals(graphql.Scalars.GraphQLID.getName())) {
-                        mutationDefinitionBuilder
-                                .append(fieldDefinition.getName());
-
-                        if (typeDefinitions.containsKey(typeName.getName())) {
-                            mutationDefinitionBuilder
-                                    .append(GraphQLConstants.MUTATION_INPUT_FIELD_ID_NAME)
-                                    .append(": ")
-                                    .append(graphql.Scalars.GraphQLID.getName());
-                        } else {
-                            mutationDefinitionBuilder.append(": ")
-                                    .append(typeName.getName());
-                        }
-
-                        mutationDefinitionBuilder.append("!");
+                        processMutationInput(fieldDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
                     }
                 }
-            }
-
-            if (i < fieldDefinitions.size() - 1) {
-                mutationDefinitionBuilder.append(", ");
             }
         }
     }
 
-    private RuntimeWiring buildWiring(Map<String, TypeDefinition> typeDefinitions, Set<String> operationTypeNames) {
+    private void processMutationInput(
+            FieldDefinition.Builder fieldDefinitionBuilder, Map<String, TypeDefinition> typeDefinitions,
+            FieldDefinition fieldDefinition, TypeName typeName) {
+        if (typeDefinitions.containsKey(typeName.getName())) {
+            fieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
+                    .newInputValueDefinition()
+                    .name(fieldDefinition.getName() + StringUtils.capitalize(QUERY_ARGUMENT_NAME_ID))
+                    .type(new TypeName(graphql.Scalars.GraphQLID.getName()))
+                    .build());
+        } else {
+            fieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
+                    .newInputValueDefinition()
+                    .name(fieldDefinition.getName())
+                    .type(new TypeName(typeName.getName()))
+                    .build());
+        }
+    }
+
+    private RuntimeWiring buildRuntimeWiring(Map<String, TypeDefinition> typeDefinitions) {
         RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
 
-        builder.scalar(this.scalars.getScalarLong());
-        builder.scalar(this.scalars.getScalarBigDecimal());
-        builder.scalar(this.scalars.getScalarValue());
-        builder.scalar(this.scalars.getScalarDate());
+        builder.scalar(Scalars.LONG);
+        builder.scalar(Scalars.DECIMAL);
+        builder.scalar(Scalars.CONDITION_VALUE);
+        builder.scalar(Scalars.TIMESTAMP);
 
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitions.entrySet()) {
-            if (typeEntry.getValue() instanceof ObjectTypeDefinition
-                    && !operationTypeNames.contains(typeEntry.getKey())) {
+            if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
 
                 List<FieldDefinition> fieldDefinitions
                         = ((ObjectTypeDefinition) typeEntry.getValue()).getFieldDefinitions();
@@ -593,11 +666,11 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
             }
         }
 
-        builder.type(newTypeWiring(GraphQLConstants.QUERY_TYPE_NAME)
+        builder.type(newTypeWiring(QUERY_TYPE_NAME)
                 .defaultDataFetcher(this.graphQLQueryDataFetcher)
                 .build());
 
-        builder.type(newTypeWiring(GraphQLConstants.MUTATION_TYPE_NAME)
+        builder.type(newTypeWiring(MUTATION_TYPE_NAME)
                 .defaultDataFetcher(this.graphQLMutationDataFetcher)
                 .build());
 

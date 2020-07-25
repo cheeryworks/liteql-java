@@ -16,9 +16,9 @@ public class ReadQueryTest extends AbstractTest {
                 getClass().getResource("/liteql/liteql_test/queries/read").getPath());
 
         for (String readQueryInJson : readQueryInJsonFiles.values()) {
-            ReadQuery readQuery = LiteQLUtil.toBean(getObjectMapper(), readQueryInJson, ReadQuery.class);
+            ReadQuery readQuery = LiteQLUtil.toBean(readQueryInJson, ReadQuery.class);
 
-            getLogger().info(LiteQLUtil.toJson(getObjectMapper(), readQuery));
+            getLogger().info(LiteQLUtil.toJson(readQuery));
         }
     }
 

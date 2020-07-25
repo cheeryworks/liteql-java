@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class JooqMigrationParserTest extends AbstractJooqSqlTest {
+public class JooqMigrationParserTest extends AbstractJooqTest {
 
     private Logger logger = LoggerFactory.getLogger(JooqMigrationParserTest.class);
 
@@ -17,7 +17,7 @@ public class JooqMigrationParserTest extends AbstractJooqSqlTest {
         super();
 
         jooqMigrationParser = new JooqMigrationParser(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), null);
+                getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
     }
 
     @Test

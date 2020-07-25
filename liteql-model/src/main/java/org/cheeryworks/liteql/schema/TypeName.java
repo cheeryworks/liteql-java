@@ -67,4 +67,9 @@ public class TypeName implements Serializable {
         return Objects.hash(schema, name);
     }
 
+    @Override
+    public String toString() {
+        return this.getFullname();
+    }
+
 }
