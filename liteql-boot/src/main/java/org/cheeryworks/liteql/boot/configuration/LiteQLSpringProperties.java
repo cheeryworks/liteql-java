@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.spring;
+package org.cheeryworks.liteql.boot.configuration;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;

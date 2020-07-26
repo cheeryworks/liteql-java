@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service.query.json.spring;
+package org.cheeryworks.liteql.service.query.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
@@ -14,7 +14,7 @@ import org.cheeryworks.liteql.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.service.json.spring.AbstractServiceController;
+import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.LiteQLUtil;

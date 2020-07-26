@@ -8,7 +8,7 @@ import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
-import org.cheeryworks.liteql.spring.LiteQLSpringProperties;
+import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
