@@ -35,12 +35,11 @@ import org.cheeryworks.liteql.query.save.SaveQueries;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.IdField;
-import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
+import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryEventPublisher;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
@@ -81,11 +80,10 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             SchemaService schemaService,
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
-            SqlCustomizer sqlCustomizer,
             QueryAuditingService queryAuditingService,
             QueryAccessDecisionService queryAccessDecisionService,
             QueryEventPublisher queryEventPublisher) {
-        super(liteQLProperties, sqlCustomizer);
+        super(liteQLProperties);
         this.schemaService = schemaService;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
@@ -167,7 +165,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     private ReadResults internalRead(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
-        ReadResults results = getResults(readQuery.getDomainTypeName(), sqlReadQuery);
+        ReadResults results = getResults(sqlReadQuery);
 
         queryEventPublisher.publish(
                 new AfterReadQueryEvent(
@@ -183,13 +181,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     private long getTotal(SqlReadQuery sqlReadQuery) {
         return sqlQueryExecutor.count(
-                sqlReadQuery.getTotalSql(), ((List) sqlReadQuery.getTotalSqlParameters()).toArray());
+                sqlReadQuery.getTotalSql(), sqlReadQuery.getTotalSqlParameters());
     }
 
-    private ReadResults getResults(TypeName domainTypeName, SqlReadQuery sqlReadQuery) {
-        return sqlQueryExecutor.read(
-                domainTypeName, sqlReadQuery.getSql(), sqlReadQuery.getFields(),
-                ((List) sqlReadQuery.getSqlParameters()).toArray());
+    private ReadResults getResults(SqlReadQuery sqlReadQuery) {
+        return sqlQueryExecutor.read(sqlReadQuery);
     }
 
     @Override
@@ -463,7 +459,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
                     sql = sqlSaveQuery.getSql();
                 }
 
-                parametersList.add(((List) sqlSaveQuery.getSqlParameters()).toArray());
+                parametersList.add(sqlSaveQuery.getSqlParameters());
             }
 
             sqlQueryExecutor.executeBatch(sql, parametersList);
@@ -592,7 +588,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         SqlDeleteQuery sqlDeleteQuery = sqlQueryParser.getSqlDeleteQuery(deleteQuery);
 
         int rows = sqlQueryExecutor.execute(
-                sqlDeleteQuery.getSql(), ((List) sqlDeleteQuery.getSqlParameters()).toArray());
+                sqlDeleteQuery.getSql(), sqlDeleteQuery.getSqlParameters());
 
         if (!deleteQuery.isTruncated()) {
             if (CollectionUtils.isNotEmpty(results)) {

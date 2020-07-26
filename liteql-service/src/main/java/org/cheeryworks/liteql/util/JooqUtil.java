@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.enums.Database;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryConditions;
@@ -239,8 +240,13 @@ public class JooqUtil {
     }
 
     public static Condition getCondition(
-            TypeName domainTypeName, QueryConditions queryConditions,
-            String parentTableAlias, String tableAlias, SqlCustomizer sqlCustomizer) {
+            TypeName domainTypeName, String tableAlias, QueryConditions queryConditions, SqlCustomizer sqlCustomizer) {
+        return getCondition(null, null, domainTypeName, tableAlias, queryConditions, sqlCustomizer);
+    }
+
+    public static Condition getCondition(
+            TypeName parentDomainTypeName, String parentTableAlias, TypeName domainTypeName, String tableAlias,
+            QueryConditions queryConditions, SqlCustomizer sqlCustomizer) {
         Condition condition = null;
 
         if (queryConditions != null && queryConditions.size() > 0) {
@@ -255,7 +261,7 @@ public class JooqUtil {
                                 "Value of condition can not be null, " + queryCondition.toString());
                     }
 
-                    String leftClause = ((tableAlias != null) ? tableAlias + "." : "")
+                    String leftClause = ((StringUtils.isNotBlank(tableAlias)) ? tableAlias + "." : "")
                             + sqlCustomizer.getColumnName(domainTypeName, queryCondition.getField());
 
                     org.jooq.Field field = (ConditionType.Field.equals(queryCondition.getType()))
@@ -266,56 +272,56 @@ public class JooqUtil {
                         case LESS_THAN:
                             currentCondition = field
                                     .lessThan(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case LESS_OR_EQUALS:
                             currentCondition = field
                                     .lessOrEqual(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case GREATER_THAN:
                             currentCondition = field
                                     .greaterThan(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case GREATER_OR_EQUALS:
                             currentCondition = field
                                     .greaterOrEqual(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case STARTS_WITH:
                             currentCondition = field
                                     .startsWith(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case CONTAINS:
                             currentCondition = field
                                     .contains(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case BETWEEN:
                             List<Object> values = (List) getConditionRightClause(
-                                    domainTypeName,
-                                    queryCondition,
+                                    parentDomainTypeName,
                                     parentTableAlias,
+                                    queryCondition,
                                     sqlCustomizer);
 
                             currentCondition = field
@@ -324,17 +330,17 @@ public class JooqUtil {
                         case IN:
                             currentCondition = field
                                     .in(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case NOT_EQUALS:
                             currentCondition = field
                                     .notEqual(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                         case NULL:
@@ -346,9 +352,9 @@ public class JooqUtil {
                         default:
                             currentCondition = field
                                     .eq(getConditionRightClause(
-                                            domainTypeName,
-                                            queryCondition,
+                                            parentDomainTypeName,
                                             parentTableAlias,
+                                            queryCondition,
                                             sqlCustomizer));
                             break;
                     }
@@ -377,26 +383,26 @@ public class JooqUtil {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = condition.or(getCondition(
-                                        domainTypeName, queryCondition.getConditions(),
-                                        parentTableAlias, tableAlias, sqlCustomizer));
+                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        queryCondition.getConditions(), sqlCustomizer));
                                 break;
                             default:
                                 condition = condition.and(getCondition(
-                                        domainTypeName, queryCondition.getConditions(),
-                                        parentTableAlias, tableAlias, sqlCustomizer));
+                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        queryCondition.getConditions(), sqlCustomizer));
                                 break;
                         }
                     } else {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = DSL.or(getCondition(
-                                        domainTypeName, queryCondition.getConditions(),
-                                        parentTableAlias, tableAlias, sqlCustomizer));
+                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        queryCondition.getConditions(), sqlCustomizer));
                                 break;
                             default:
                                 condition = DSL.and(getCondition(
-                                        domainTypeName, queryCondition.getConditions(),
-                                        parentTableAlias, tableAlias, sqlCustomizer));
+                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        queryCondition.getConditions(), sqlCustomizer));
                                 break;
                         }
                     }
@@ -408,12 +414,12 @@ public class JooqUtil {
     }
 
     private static Object getConditionRightClause(
-            TypeName domainTypeName, QueryCondition queryCondition,
-            String parentTableAlias, SqlCustomizer sqlCustomizer) {
+            TypeName parentDomainTypeName, String parentTableAlias,
+            QueryCondition queryCondition, SqlCustomizer sqlCustomizer) {
         if (ConditionType.Field.equals(queryCondition.getType())) {
             return DSL.field(
                     ((parentTableAlias != null) ? parentTableAlias + "." : "")
-                            + sqlCustomizer.getColumnName(domainTypeName, queryCondition.getValue().toString()));
+                            + sqlCustomizer.getColumnName(parentDomainTypeName, queryCondition.getValue().toString()));
         }
 
         return transformValue(queryCondition);

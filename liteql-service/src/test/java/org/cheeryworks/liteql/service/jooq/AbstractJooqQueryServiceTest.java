@@ -9,7 +9,6 @@ import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
 import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaParser;
-import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
@@ -24,9 +23,9 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
         super();
 
         queryService = new JooqQueryService(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), new DefaultSqlCustomizer(),
-                new DefaultQueryAuditingService(), new DefaultQueryAccessDecisionService(),
-                new LoggingQueryEventPublisher());
+                getLiteQLProperties(), getSchemaService(), getDslContext(),
+                getSqlCustomizer(), new DefaultQueryAuditingService(),
+                new DefaultQueryAccessDecisionService(), new LoggingQueryEventPublisher());
     }
 
     protected QueryService getQueryService() {

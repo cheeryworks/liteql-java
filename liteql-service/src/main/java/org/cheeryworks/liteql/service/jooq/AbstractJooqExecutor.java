@@ -2,9 +2,8 @@ package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationExecutor;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlExecutor;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationExecutor;
 import org.cheeryworks.liteql.util.DatabaseUtil;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.BatchBindStep;
@@ -32,9 +31,8 @@ public abstract class AbstractJooqExecutor extends AbstractSqlExecutor {
         return database;
     }
 
-    public AbstractJooqExecutor(
-            LiteQLProperties liteQLProperties, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, sqlCustomizer);
+    public AbstractJooqExecutor(LiteQLProperties liteQLProperties, DSLContext dslContext) {
+        super(liteQLProperties);
 
         this.dslContext = dslContext;
         this.database = JooqUtil.getDatabase(dslContext.dialect());

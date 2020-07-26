@@ -8,7 +8,6 @@ import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Script;
-import org.mockito.Mockito;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -64,13 +63,13 @@ public abstract class AbstractSqlTest extends AbstractTest {
 
         dataSource = h2DataSource;
 
-        liteQLProperties = Mockito.mock(LiteQLProperties.class);
+        liteQLProperties = new LiteQLProperties();
 
         liteQLProperties.setDiagnosticEnabled(true);
 
-        schemaService = new DefaultSchemaService(getLiteQLProperties(), "classpath*:/liteql");
+        schemaService = new DefaultSchemaService(liteQLProperties, "classpath*:/liteql");
 
-        sqlCustomizer = new DefaultSqlCustomizer();
+        sqlCustomizer = new DefaultSqlCustomizer(schemaService);
     }
 
     protected void exportAndPrintDdl() {

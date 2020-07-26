@@ -15,8 +15,8 @@ import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperat
 import org.cheeryworks.liteql.schema.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqParser;
-import org.cheeryworks.liteql.service.schema.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.schema.migration.SqlMigrationParser;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableColumnStep;

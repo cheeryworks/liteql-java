@@ -14,11 +14,10 @@ import org.cheeryworks.liteql.query.read.result.TreeReadResults;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
-import org.cheeryworks.liteql.service.LiteQLService;
 
 import java.util.List;
 
-public interface QueryService extends LiteQLService {
+public interface QueryService {
 
     QueryAccessDecisionService getQueryAccessDecisionService();
 

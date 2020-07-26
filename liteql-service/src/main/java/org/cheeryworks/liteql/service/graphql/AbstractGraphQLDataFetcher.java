@@ -6,7 +6,6 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.graphql.exception.UnsupportedGraphQLOutputTypeException;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryContext;
@@ -83,9 +82,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
             keyContext.put(GraphQLConstants.QUERY_DOMAIN_TYPE_NAME_KEY, outputType.getName());
             keyContext.put(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY, environment);
 
-            String parentFieldName = getParentFieldName(
-                    environment.getField().getName(),
-                    ((GraphQLObjectType) environment.getParentType()).getName());
+            String parentFieldName = environment.getField().getName();
 
             if (isListOutputType(environment.getFieldType())) {
                 Map<String, Object> childrenContext = getChildrenContext(
@@ -190,7 +187,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(childTypeName);
 
-        String parentFieldName = getParentFieldName(fieldName, parentTypeName);
+        String parentFieldName = fieldName;
 
         ReadQuery readQuery = QueryBuilder
                 .read(domainTypeName)
@@ -233,7 +230,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         ReferenceField referenceField = parentDomainType.getReferenceField(parentGraphQLFieldName);
 
         if (referenceField != null) {
-            return referenceField.getName() + StringUtils.capitalize(GraphQLConstants.QUERY_ARGUMENT_NAME_ID);
+            return referenceField.getName();
         }
 
         return null;

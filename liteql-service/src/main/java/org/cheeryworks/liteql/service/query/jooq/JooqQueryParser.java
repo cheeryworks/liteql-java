@@ -4,7 +4,6 @@ import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryConditions;
@@ -54,8 +53,6 @@ import org.jooq.UpdateFinalStep;
 import org.jooq.UpdateSetMoreStep;
 import org.jooq.UpdateSetStep;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,8 +72,6 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
     private static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
-    private static Logger logger = LoggerFactory.getLogger(JooqQueryParser.class);
-
     public JooqQueryParser(
             LiteQLProperties liteQLProperties, SchemaService schemaService,
             DSLContext dslContext, SqlCustomizer sqlCustomizer) {
@@ -89,33 +84,32 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
         List<Condition> conditions = new LinkedList<>();
 
-        Set<String> accessDecisionFields = new LinkedHashSet<>();
-
         if (readQuery.getConditions() != null) {
             conditions.add(
                     JooqUtil.getCondition(
-                            readQuery.getDomainTypeName(), readQuery.getConditions(),
-                            null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
+                            readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
+                            readQuery.getConditions(), getSqlCustomizer()));
         }
 
-        accessDecisionFields = getAccessDecisionFields(readQuery);
+        Set<String> accessDecisionFields = getAccessDecisionFields(readQuery);
 
         if (!accessDecisionFields.isEmpty()) {
             conditions.add(
                     JooqUtil.getCondition(
-                            readQuery.getDomainTypeName(), readQuery.getAccessDecisionConditions(),
-                            null, TABLE_ALIAS_PREFIX, getSqlCustomizer()));
+                            readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
+                            readQuery.getAccessDecisionConditions(), getSqlCustomizer()));
         }
 
         Condition condition = JooqUtil.getCondition(
-                readQuery.getDomainTypeName(), readQuery.getConditions(),
-                null, TABLE_ALIAS_PREFIX, getSqlCustomizer());
+                readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
+                readQuery.getConditions(), getSqlCustomizer());
 
         List<org.jooq.Field<Object>> fields = getSelectFields(
                 getSchemaService().getDomainType(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
-        List<JooqJoinedTable> joinedTables = parseJoins(readQuery.getJoins(), TABLE_ALIAS_PREFIX, sqlReadQuery);
+        List<JooqJoinedTable> joinedTables = parseJoins(
+                readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX, readQuery.getJoins(), sqlReadQuery);
 
         if (CollectionUtils.isNotEmpty(joinedTables)) {
             for (JooqJoinedTable joinedTable : joinedTables) {
@@ -146,7 +140,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         SelectConditionStep selectConditionStep = selectJoinStep.where(condition);
 
         sqlReadQuery.setTotalSql(getDslContext().select(count()).from(selectConditionStep).getSQL());
-        sqlReadQuery.setTotalSqlParameters(selectConditionStep.getBindValues());
+        sqlReadQuery.setTotalSqlParameters(selectConditionStep.getBindValues().toArray());
 
         if (CollectionUtils.isNotEmpty(readQuery.getSorts())) {
             List<QuerySort> querySorts = readQuery.getSorts();
@@ -168,11 +162,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             sqlReadQuery.setSql(selectConditionStep.getSQL());
         }
 
-        sqlReadQuery.setSqlParameters(selectConditionStep.getBindValues());
-
-        if (getLiteQLProperties().isDiagnosticEnabled()) {
-            logger.info("SqlReadQuery:\n" + sqlReadQuery.toString());
-        }
+        sqlReadQuery.setSqlParameters(selectConditionStep.getBindValues().toArray());
 
         return sqlReadQuery;
     }
@@ -208,14 +198,15 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
     }
 
     private List<JooqJoinedTable> parseJoins(
-            List<JoinedReadQuery> joinedReadQueries, String joinedTableAliasPrefix, SqlReadQuery sqlReadQuery) {
+            TypeName parentDomainTypeName, String parentTableAliasPrefix,
+            List<JoinedReadQuery> joinedReadQueries, SqlReadQuery sqlReadQuery) {
         List<JooqJoinedTable> joinedTables = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(joinedReadQueries)) {
             for (JoinedReadQuery joinedReadQuery : joinedReadQueries) {
                 JooqJoinedTable joinedTable = new JooqJoinedTable();
                 joinedTable.setTableName(getSqlCustomizer().getTableName(joinedReadQuery.getDomainTypeName()));
-                joinedTable.setTableAlias(joinedTableAliasPrefix + joinedTables.size());
+                joinedTable.setTableAlias(parentTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
                         getSelectFields(
                                 getSchemaService().getDomainType(joinedReadQuery.getDomainTypeName()),
@@ -226,26 +217,26 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 joinConditions.add(new QueryCondition(
                         IdField.ID_FIELD_NAME,
                         ConditionClause.EQUALS, ConditionType.Field,
-                        joinedReadQuery.getDomainTypeName().getName()
-                                + StringUtils.capitalize(IdField.ID_FIELD_NAME)));
+                        joinedReadQuery.getDomainTypeName().getName()));
 
                 joinedTable.setJoinCondition(
                         JooqUtil.getCondition(
-                                joinedReadQuery.getDomainTypeName(),
-                                joinConditions,
-                                joinedTableAliasPrefix, joinedTable.getTableAlias(), getSqlCustomizer()));
+                                parentDomainTypeName, parentTableAliasPrefix,
+                                joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
+                                joinConditions, getSqlCustomizer()));
 
                 joinedTable.setCondition(
                         JooqUtil.getCondition(
-                                joinedReadQuery.getDomainTypeName(),
-                                joinedReadQuery.getConditions(),
-                                null, joinedTable.getTableAlias(), getSqlCustomizer()));
+                                joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
+                                joinedReadQuery.getConditions(), getSqlCustomizer()));
 
                 joinedTables.add(joinedTable);
 
                 if (CollectionUtils.isNotEmpty(joinedReadQuery.getJoins())) {
                     joinedTables.addAll(
-                            parseJoins(joinedReadQuery.getJoins(), joinedTable.getTableAlias(), sqlReadQuery));
+                            parseJoins(
+                                    joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
+                                    joinedReadQuery.getJoins(), sqlReadQuery));
                 }
             }
         }
@@ -262,33 +253,28 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             sqlReadQuery.setFields(new HashMap<>());
         }
 
-        if (TABLE_ALIAS_PREFIX.equals(tableAlias) && fieldDefinitions == null) {
+        if (TABLE_ALIAS_PREFIX.equals(tableAlias) && CollectionUtils.isEmpty(fieldDefinitions)) {
             for (Field field : domainType.getFields()) {
-                if (field instanceof ReferenceField || field instanceof IdField) {
-                    continue;
-                } else {
-                    fields.add(
-                            field(tableAlias + "." + getSqlCustomizer().getColumnName(
-                                    domainType.getTypeName(), field.getName())));
-                    sqlReadQuery.getFields().put(
-                            getSqlCustomizer().getColumnName(domainType.getTypeName(), field.getName()), field);
-                }
-            }
-        } else if (fieldDefinitions != null) {
-            for (FieldDefinition fieldDefinition : fieldDefinitions) {
-                fields.add(
-                        field(
-                                tableAlias + "." + getSqlCustomizer().getColumnName(
-                                        domainType.getTypeName(), fieldDefinition.getName())
-                        ).as(getSqlCustomizer().getColumnName(domainType.getTypeName(), fieldDefinition.getAlias())));
-
-                for (Field field : domainType.getFields()) {
-                    if (field.getName().equals(fieldDefinition.getName())) {
-                        sqlReadQuery.getFields().put(
-                                getSqlCustomizer().getColumnName(
-                                        domainType.getTypeName(), fieldDefinition.getAlias()), field);
+                if (field instanceof ReferenceField) {
+                    if (((ReferenceField) field).isCollection()) {
+                        continue;
                     }
                 }
+
+                String columnName = getSqlCustomizer().getColumnName(domainType.getTypeName(), field.getName());
+
+                fields.add(field(tableAlias + "." + columnName));
+
+                sqlReadQuery.getFields().put(columnName.toLowerCase(), field.getName());
+            }
+        } else if (CollectionUtils.isNotEmpty(fieldDefinitions)) {
+            for (FieldDefinition fieldDefinition : fieldDefinitions) {
+                String columnName = getSqlCustomizer().getColumnName(
+                        domainType.getTypeName(), fieldDefinition.getName());
+
+                fields.add(field(tableAlias + "." + columnName).as(fieldDefinition.getAlias()));
+
+                sqlReadQuery.getFields().put(fieldDefinition.getAlias().toLowerCase(), fieldDefinition.getAlias());
             }
         }
 
@@ -317,9 +303,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
-                    String fieldName = getSqlCustomizer().getColumnName(
-                            domainType.getTypeName(),
-                            dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                    String fieldName = getSqlCustomizer().getColumnName(domainType.getTypeName(), dataEntry.getKey());
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
@@ -339,7 +323,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             InsertFinalStep insertFinalStep = (InsertFinalStep) insertSetStep;
 
             sqlSaveQuery.setSql(insertFinalStep.getSQL());
-            sqlSaveQuery.setSqlParameters(insertFinalStep.getBindValues());
+            sqlSaveQuery.setSqlParameters(insertFinalStep.getBindValues().toArray());
         } else if (saveQuery instanceof UpdateQuery) {
             UpdateSetStep updateSetStep = getDslContext()
                     .update(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
@@ -351,9 +335,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             if (saveQuery.getAccessDecisionConditions() != null) {
                 condition = condition.and(
                         JooqUtil.getCondition(
-                                saveQuery.getDomainTypeName(),
-                                saveQuery.getAccessDecisionConditions(), null, null,
-                                getSqlCustomizer()));
+                                saveQuery.getDomainTypeName(), null,
+                                saveQuery.getAccessDecisionConditions(), getSqlCustomizer()));
             }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
@@ -368,8 +351,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 } else {
                     if (domainType.isReferenceField(dataEntry.getKey())) {
                         String fieldName = getSqlCustomizer().getColumnName(
-                                domainType.getTypeName(), dataEntry.getKey()
-                                        + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                                domainType.getTypeName(), dataEntry.getKey());
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(
@@ -390,13 +372,9 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             UpdateFinalStep updateFinalStep = ((UpdateSetMoreStep) updateSetStep).where(condition);
 
             sqlSaveQuery.setSql(updateFinalStep.getSQL());
-            sqlSaveQuery.setSqlParameters(updateFinalStep.getBindValues());
+            sqlSaveQuery.setSqlParameters(updateFinalStep.getBindValues().toArray());
         } else {
             throw new IllegalArgumentException("Unsupported query domainType " + saveQuery.getClass().getSimpleName());
-        }
-
-        if (getLiteQLProperties().isDiagnosticEnabled()) {
-            logger.info(sqlSaveQuery.toString());
         }
 
         return sqlSaveQuery;
@@ -442,16 +420,14 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
         conditions.add(
                 JooqUtil.getCondition(
-                        deleteQuery.getDomainTypeName(),
-                        deleteQuery.getConditions(), null, null,
-                        getSqlCustomizer()));
+                        deleteQuery.getDomainTypeName(), null,
+                        deleteQuery.getConditions(), getSqlCustomizer()));
 
         if (deleteQuery.getAccessDecisionConditions() != null) {
             conditions.add(
                     JooqUtil.getCondition(
-                            deleteQuery.getDomainTypeName(),
-                            deleteQuery.getAccessDecisionConditions(), null, null,
-                            getSqlCustomizer()));
+                            deleteQuery.getDomainTypeName(), null,
+                            deleteQuery.getAccessDecisionConditions(), getSqlCustomizer()));
         }
 
         DeleteFinalStep deleteFinalStep = getDslContext()
@@ -460,11 +436,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
         InlineSqlDeleteQuery sqlDeleteQuery = new InlineSqlDeleteQuery();
         sqlDeleteQuery.setSql(deleteFinalStep.getSQL());
-        sqlDeleteQuery.setSqlParameters(deleteFinalStep.getBindValues());
-
-        if (getLiteQLProperties().isDiagnosticEnabled()) {
-            logger.info("SqlDeleteQuery:\n" + sqlDeleteQuery.toString());
-        }
+        sqlDeleteQuery.setSqlParameters(deleteFinalStep.getBindValues().toArray());
 
         return sqlDeleteQuery;
     }

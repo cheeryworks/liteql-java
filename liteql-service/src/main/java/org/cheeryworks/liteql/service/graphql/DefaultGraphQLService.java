@@ -25,7 +25,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.graphql.Scalars;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryContext;
@@ -38,7 +37,6 @@ import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
-import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
@@ -65,7 +63,7 @@ import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMEN
 import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY;
 import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_TYPE_NAME;
 
-public class DefaultGraphQLService extends AbstractLiteQLService implements GraphQLService {
+public class DefaultGraphQLService implements GraphQLService {
 
     private SchemaService schemaService;
 
@@ -77,10 +75,7 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
 
     private GraphQL graphQL;
 
-    public DefaultGraphQLService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService, QueryService queryService) {
-        super(liteQLProperties);
-
+    public DefaultGraphQLService(SchemaService schemaService, QueryService queryService) {
         this.schemaService = schemaService;
 
         this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(schemaService, queryService);

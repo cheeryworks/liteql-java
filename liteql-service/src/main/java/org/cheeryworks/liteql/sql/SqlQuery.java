@@ -1,13 +1,13 @@
 package org.cheeryworks.liteql.sql;
 
-public interface SqlQuery<T> {
+public interface SqlQuery {
 
     String getSql();
 
     void setSql(String sql);
 
-    T getSqlParameters();
+    Object[] getSqlParameters();
 
-    void setSqlParameters(T sqlParameters);
+    void setSqlParameters(Object[] sqlParameters);
 
 }

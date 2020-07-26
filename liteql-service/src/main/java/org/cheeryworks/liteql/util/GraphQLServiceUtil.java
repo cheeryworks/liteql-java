@@ -3,12 +3,10 @@ package org.cheeryworks.liteql.util;
 import graphql.language.Field;
 import graphql.language.Selection;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLSchemaElement;
 import graphql.schema.GraphQLType;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.read.AbstractTypedReadQuery;
@@ -76,28 +74,13 @@ public abstract class GraphQLServiceUtil {
 
         for (Selection selection : selections) {
             String fieldName = ((Field) selection).getName();
-            if (selection.getChildren() == null || selection.getChildren().size() == 0) {
-                fields.add(new FieldDefinition(fieldName));
-            } else if (!isListField(outputType.getChildren(), fieldName)) {
-                fields.add(new FieldDefinition(fieldName + "Id"));
-            }
+
+            fields.add(new FieldDefinition(fieldName));
         }
 
         fields.add(new FieldDefinition(GraphQLConstants.QUERY_ARGUMENT_NAME_ID));
 
         return fields;
-    }
-
-    private static boolean isListField(List<GraphQLSchemaElement> fieldTypes, String fieldName) {
-        for (GraphQLSchemaElement fieldType : fieldTypes) {
-            if (((GraphQLFieldDefinition) fieldType).getName().equals(fieldName)) {
-                return fieldType.getChildren() != null
-                        && fieldType.getChildren().size() > 0
-                        && fieldType.getChildren().get(0) instanceof GraphQLList;
-            }
-        }
-
-        return false;
     }
 
     public static GraphQLObjectType getWrappedOutputType(GraphQLOutputType outputType) {

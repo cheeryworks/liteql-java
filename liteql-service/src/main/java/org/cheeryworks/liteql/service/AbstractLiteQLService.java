@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.service;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 
-public class AbstractLiteQLService implements LiteQLService {
+public class AbstractLiteQLService {
 
     private LiteQLProperties liteQLProperties;
 
@@ -10,7 +10,6 @@ public class AbstractLiteQLService implements LiteQLService {
         this.liteQLProperties = liteQLProperties;
     }
 
-    @Override
     public LiteQLProperties getLiteQLProperties() {
         return this.liteQLProperties;
     }

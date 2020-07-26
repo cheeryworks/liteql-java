@@ -1,21 +1,19 @@
 package org.cheeryworks.liteql.sql;
 
-import org.cheeryworks.liteql.schema.field.Field;
-
 import java.util.Map;
 
-public interface SqlReadQuery<T> extends SqlQuery<T> {
+public interface SqlReadQuery extends SqlQuery {
 
     String getTotalSql();
 
     void setTotalSql(String totalSql);
 
-    T getTotalSqlParameters();
+    Object[] getTotalSqlParameters();
 
-    void setTotalSqlParameters(T totalSqlParameters);
+    void setTotalSqlParameters(Object[] totalSqlParameters);
 
-    Map<String, Field> getFields();
+    Map<String, String> getFields();
 
-    void setFields(Map<String, Field> fields);
+    void setFields(Map<String, String> fields);
 
 }

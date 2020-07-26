@@ -2,11 +2,11 @@ package org.cheeryworks.liteql.service.query.sql;
 
 import org.cheeryworks.liteql.sql.SqlQuery;
 
-public abstract class AbstractSqlQuery<T> implements SqlQuery<T> {
+public abstract class AbstractSqlQuery implements SqlQuery {
 
     private String sql;
 
-    private T sqlParameters;
+    private Object[] sqlParameters;
 
     @Override
     public String getSql() {
@@ -19,12 +19,12 @@ public abstract class AbstractSqlQuery<T> implements SqlQuery<T> {
     }
 
     @Override
-    public T getSqlParameters() {
+    public Object[] getSqlParameters() {
         return sqlParameters;
     }
 
     @Override
-    public void setSqlParameters(T sqlParameters) {
+    public void setSqlParameters(Object[] sqlParameters) {
         this.sqlParameters = sqlParameters;
     }
 

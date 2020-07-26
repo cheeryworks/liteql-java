@@ -14,7 +14,7 @@ public class JooqMigrationService extends AbstractSqlMigrationService {
         super(
                 schemaService,
                 new JooqMigrationParser(liteQLProperties, schemaService, dslContext, sqlCustomizer),
-                new JooqMigrationExecutor(liteQLProperties, dslContext, sqlCustomizer));
+                new JooqMigrationExecutor(liteQLProperties, dslContext));
     }
 
 }

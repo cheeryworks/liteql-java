@@ -3,11 +3,9 @@ package org.cheeryworks.liteql.service.query.jooq;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
-import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqExecutor;
 import org.cheeryworks.liteql.service.query.sql.SqlQueryExecutor;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
@@ -22,14 +20,13 @@ import java.util.Map;
 
 public class JooqQueryExecutor extends AbstractJooqExecutor implements SqlQueryExecutor {
 
-    public JooqQueryExecutor(
-            LiteQLProperties liteQLProperties, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, dslContext, sqlCustomizer);
+    public JooqQueryExecutor(LiteQLProperties liteQLProperties, DSLContext dslContext) {
+        super(liteQLProperties, dslContext);
     }
 
     @Override
-    public ReadResults read(TypeName domainTypeName, String sql, Map<String, Field> fields, Object[] parameters) {
-        ResultQuery resultQuery = getDslContext().resultQuery(sql, parameters);
+    public ReadResults read(SqlReadQuery sqlReadQuery) {
+        ResultQuery resultQuery = getDslContext().resultQuery(sqlReadQuery.getSql(), sqlReadQuery.getSqlParameters());
 
         Results results = getDslContext().fetchMany(resultQuery);
 
@@ -41,7 +38,7 @@ public class JooqQueryExecutor extends AbstractJooqExecutor implements SqlQueryE
 
                 for (org.jooq.Field jooqField : record.fields()) {
                     subResultInMap.put(
-                            getSqlCustomizer().getFieldName(domainTypeName, jooqField.getName()),
+                            sqlReadQuery.getFields().get(jooqField.getName().toLowerCase()),
                             record.getValue(jooqField.getName()));
                 }
 

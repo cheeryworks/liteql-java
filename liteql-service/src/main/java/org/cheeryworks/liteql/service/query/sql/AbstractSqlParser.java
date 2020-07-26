@@ -7,8 +7,17 @@ import org.cheeryworks.liteql.service.sql.SqlParser;
 
 public abstract class AbstractSqlParser extends AbstractSqlService implements SqlParser {
 
+    private SqlCustomizer sqlCustomizer;
+
     public AbstractSqlParser(LiteQLProperties liteQLProperties, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, sqlCustomizer);
+        super(liteQLProperties);
+
+        this.sqlCustomizer = sqlCustomizer;
+    }
+
+    @Override
+    public SqlCustomizer getSqlCustomizer() {
+        return this.sqlCustomizer;
     }
 
 }

@@ -4,12 +4,11 @@ import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
-import org.cheeryworks.liteql.service.LiteQLService;
 
 import java.util.Map;
 import java.util.Set;
 
-public interface SchemaService extends LiteQLService {
+public interface SchemaService {
 
     String SUFFIX_OF_SCHEMA_ROOT_FILE = ".yml";
 

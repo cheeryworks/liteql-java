@@ -1,27 +1,25 @@
 package org.cheeryworks.liteql.service.query.sql;
 
-import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class InlineSqlReadQuery extends InlineSqlQuery implements SqlReadQuery<List<Object>> {
+public class InlineSqlReadQuery extends AbstractInlineSqlQuery implements SqlReadQuery {
 
-    private Map<String, Field> fields = new HashMap<>();
+    private Map<String, String> fields = new HashMap<>();
 
     private String totalSql;
 
-    private List<Object> totalSqlParameters;
+    private Object[] totalSqlParameters;
 
     @Override
-    public Map<String, Field> getFields() {
+    public Map<String, String> getFields() {
         return fields;
     }
 
     @Override
-    public void setFields(Map<String, Field> fields) {
+    public void setFields(Map<String, String> fields) {
         this.fields = fields;
     }
 
@@ -36,12 +34,12 @@ public class InlineSqlReadQuery extends InlineSqlQuery implements SqlReadQuery<L
     }
 
     @Override
-    public List<Object> getTotalSqlParameters() {
+    public Object[] getTotalSqlParameters() {
         return totalSqlParameters;
     }
 
     @Override
-    public void setTotalSqlParameters(List<Object> totalSqlParameters) {
+    public void setTotalSqlParameters(Object[] totalSqlParameters) {
         this.totalSqlParameters = totalSqlParameters;
     }
 

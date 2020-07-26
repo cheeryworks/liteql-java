@@ -4,7 +4,6 @@ import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqExecutor;
 import org.cheeryworks.liteql.service.schema.migration.SqlMigrationExecutor;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableFinalStep;
@@ -27,9 +26,8 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
 
     private static Logger logger = LoggerFactory.getLogger(JooqMigrationExecutor.class);
 
-    public JooqMigrationExecutor(
-            LiteQLProperties liteQLProperties, DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, dslContext, sqlCustomizer);
+    public JooqMigrationExecutor(LiteQLProperties liteQLProperties, DSLContext dslContext) {
+        super(liteQLProperties, dslContext);
     }
 
     @Override

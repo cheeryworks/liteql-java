@@ -20,7 +20,7 @@ public class DefaultGraphQLServiceTest extends AbstractJooqQueryServiceTest {
     private GraphQLService graphQLService;
 
     public DefaultGraphQLServiceTest() {
-        this.graphQLService = new DefaultGraphQLService(getLiteQLProperties(), getSchemaService(), getQueryService());
+        this.graphQLService = new DefaultGraphQLService(getSchemaService(), getQueryService());
     }
 
     @Test

@@ -78,8 +78,8 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SqlCustomizer.class)
-    public SqlCustomizer sqlCustomizer() {
-        return new DefaultSqlCustomizer();
+    public SqlCustomizer sqlCustomizer(SchemaService schemaService) {
+        return new DefaultSqlCustomizer(schemaService);
     }
 
     @Bean
@@ -118,9 +118,8 @@ public class LiteQLAutoConfiguration {
     }
 
     @Bean
-    public GraphQLService graphQLService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService, QueryService queryService) {
-        GraphQLService graphQLService = new DefaultGraphQLService(liteQLProperties, schemaService, queryService);
+    public GraphQLService graphQLService(SchemaService schemaService, QueryService queryService) {
+        GraphQLService graphQLService = new DefaultGraphQLService(schemaService, queryService);
 
         logger.info("GraphQLService is ready.");
 
