@@ -105,7 +105,7 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
         ReferenceField referenceField = javaField.getAnnotation(ReferenceField.class);
 
-        if (referenceField != null) {
+        if (referenceField != null && StringUtils.isNotBlank(referenceField.name())) {
             fieldName = referenceField.name();
         }
 

@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.schema.annotation;
 
+import org.cheeryworks.liteql.VoidEntity;
 import org.cheeryworks.liteql.schema.Entity;
 
 import java.lang.annotation.ElementType;
@@ -11,8 +12,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReferenceField {
 
-    String name();
+    String name() default "";
 
     Class<? extends Entity> targetDomainType();
+
+    Class<? extends Entity> mappedDomainType() default VoidEntity.class;
 
 }

@@ -1,6 +1,5 @@
-package org.cheeryworks.liteql.boot;
+package org.cheeryworks.liteql.boot.application;
 
-import org.cheeryworks.liteql.boot.application.AbstractApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication

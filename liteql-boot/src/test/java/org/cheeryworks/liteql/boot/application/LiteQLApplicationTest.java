@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.boot.configuration;
+package org.cheeryworks.liteql.boot.application;
 
 import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.junit.jupiter.api.Test;

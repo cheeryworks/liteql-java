@@ -5,6 +5,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.cheeryworks.liteql.VoidEntity;
 import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
@@ -52,6 +53,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -382,7 +384,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 = MethodUtils.getMethodsWithAnnotation(traitInterface, Lob.class, true, true);
 
         Method[] graphQLFieldMethods
-                = MethodUtils.getMethodsWithAnnotation(traitInterface, GraphQLEntity.class, true, true);
+                = MethodUtils.getMethodsWithAnnotation(traitInterface, GraphQLField.class, true, true);
 
         Method[] referenceFieldMethods
                 = MethodUtils.getMethodsWithAnnotation(traitInterface, ReferenceField.class, true, true);
@@ -478,11 +480,13 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             BlobField blobField = new BlobField(isGraphQLField);
 
             field = blobField;
-        } else if (fieldType.equals(String.class) && referenceFieldAnnotation != null) {
+        } else if (referenceFieldAnnotation != null) {
             org.cheeryworks.liteql.schema.field.ReferenceField referenceField
                     = new org.cheeryworks.liteql.schema.field.ReferenceField(isGraphQLField);
 
-            referenceField.setName(referenceFieldAnnotation.name());
+            if (StringUtils.isNotBlank(referenceFieldAnnotation.name())) {
+                referenceField.setName(referenceFieldAnnotation.name());
+            }
 
             if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                 referenceField.setDomainTypeName(
@@ -490,6 +494,23 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                                 this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
             } else {
                 referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+            }
+
+            if (Collection.class.isAssignableFrom(fieldType)) {
+                referenceField.setCollection(true);
+
+                if (!referenceFieldAnnotation.mappedDomainType().equals(VoidEntity.class)
+                        && !referenceFieldAnnotation.targetDomainType().equals(
+                        referenceFieldAnnotation.mappedDomainType())) {
+                    if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
+                        referenceField.setMappedDomainTypeName(
+                                Trait.getTypeName(
+                                        this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
+                    } else {
+                        referenceField.setMappedDomainTypeName(
+                                Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+                    }
+                }
             }
 
             field = referenceField;

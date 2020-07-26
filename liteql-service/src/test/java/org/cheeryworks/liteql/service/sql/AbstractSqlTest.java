@@ -55,8 +55,7 @@ public abstract class AbstractSqlTest extends AbstractTest {
 
         databaseName = UUID.randomUUID().toString().substring(0, 6);
 
-        databaseUrl = "jdbc:h2:mem:" + databaseName
-                + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
+        databaseUrl = "jdbc:h2:mem:" + databaseName + ";DB_CLOSE_DELAY=-1;";
 
         JdbcDataSource h2DataSource = new JdbcDataSource();
         h2DataSource.setURL(databaseUrl);
