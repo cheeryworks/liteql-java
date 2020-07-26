@@ -25,7 +25,7 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
     }
 
     @Override
-    public String repositoryToSql() {
+    public String schemaToSql() {
         StringBuilder repositorySqlBuilder = new StringBuilder();
 
         for (String schemaName : getSchemaService().getSchemaNames()) {
@@ -56,7 +56,7 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
     private String domainTypeToSql(DomainType domainType) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getSqlCustomizer().getTableName(domainType);
+        String tableName = getSqlCustomizer().getTableName(domainType.getTypeName());
 
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 
@@ -73,14 +73,14 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
         schemaSqlBuilder.append(parsingAddPrimaryKey(tableName)).append(";").append("\n\n");
 
         List<String> uniqueSqls = parsingIndexMigrationOperation(
-                domainType, new CreateUniqueMigrationOperation(domainType.getUniques()));
+                domainType.getTypeName(), new CreateUniqueMigrationOperation(domainType.getUniques()));
 
         for (String uniqueSql : uniqueSqls) {
             schemaSqlBuilder.append(uniqueSql).append(";").append("\n\n");
         }
 
         List<String> indexSqls = parsingIndexMigrationOperation(
-                domainType, new CreateIndexMigrationOperation(domainType.getIndexes()));
+                domainType.getTypeName(), new CreateIndexMigrationOperation(domainType.getIndexes()));
 
         for (String indexSql : indexSqls) {
             schemaSqlBuilder.append(indexSql).append(";").append("\n\n");

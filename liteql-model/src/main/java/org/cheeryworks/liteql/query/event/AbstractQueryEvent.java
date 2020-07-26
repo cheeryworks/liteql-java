@@ -10,21 +10,21 @@ public abstract class AbstractQueryEvent<T> implements Serializable {
 
     private T source;
 
-    private TypeName typeName;
+    private TypeName domainTypeName;
 
     private QueryType queryType;
 
-    public TypeName getTypeName() {
-        return typeName;
+    public TypeName getDomainTypeName() {
+        return domainTypeName;
     }
 
     public QueryType getQueryType() {
         return queryType;
     }
 
-    public AbstractQueryEvent(T source, TypeName typeName, QueryType queryType) {
+    public AbstractQueryEvent(T source, TypeName domainTypeName, QueryType queryType) {
         this.source = source;
-        this.typeName = typeName;
+        this.domainTypeName = domainTypeName;
         this.queryType = queryType;
     }
 

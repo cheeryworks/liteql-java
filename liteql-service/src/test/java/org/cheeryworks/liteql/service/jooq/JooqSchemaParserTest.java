@@ -21,7 +21,7 @@ public class JooqSchemaParserTest extends AbstractJooqTest {
 
     @Test
     public void testingRepositoryToSql() {
-        logger.info("\n" + jooqSchemaParser.repositoryToSql());
+        logger.info("\n" + jooqSchemaParser.schemaToSql());
     }
 
     @Test

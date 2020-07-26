@@ -220,7 +220,7 @@ public class DefaultGraphQLService extends AbstractLiteQLService implements Grap
                     continue;
                 }
 
-                String objectTypeName = GraphQLServiceUtil.toObjectTypeName(domainType);
+                String objectTypeName = GraphQLServiceUtil.toObjectTypeName(domainType.getTypeName());
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()

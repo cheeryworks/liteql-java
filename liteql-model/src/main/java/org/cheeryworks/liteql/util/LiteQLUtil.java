@@ -19,6 +19,7 @@ import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.TreeReadResult;
 import org.cheeryworks.liteql.query.read.result.TreeReadResults;
 import org.cheeryworks.liteql.query.save.SaveQueryAssociations;
+import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.enums.DataType;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
@@ -36,6 +37,7 @@ import org.cheeryworks.liteql.util.jackson.deserializer.PublicQueryDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryConditionsDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryTypeDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.SaveQueryAssociationsDeserializer;
+import org.cheeryworks.liteql.util.jackson.deserializer.TypeDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.TypeNameDeserializer;
 import org.cheeryworks.liteql.util.jackson.serializer.ConditionClauseSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.ConditionOperatorSerializer;
@@ -44,6 +46,7 @@ import org.cheeryworks.liteql.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.MigrationOperationTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.QueryTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
+import org.cheeryworks.liteql.util.jackson.serializer.TypeSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,27 +84,29 @@ public abstract class LiteQLUtil {
     public static SimpleModule getLiteQLJsonModule() {
         SimpleModule module = new SimpleModule();
 
-        module.addDeserializer(DataType.class, new DataTypeDeserializer());
-        module.addDeserializer(ConditionClause.class, new ConditionClauseDeserializer());
-        module.addDeserializer(ConditionOperator.class, new ConditionOperatorDeserializer());
-        module.addDeserializer(ConditionType.class, new ConditionTypeDeserializer());
         module.addDeserializer(TypeName.class, new TypeNameDeserializer());
-        module.addDeserializer(FieldDefinitions.class, new FieldDefinitionsDeserializer());
+        module.addDeserializer(Type.class, new TypeDeserializer());
         module.addDeserializer(Field.class, new FieldDeserializer());
         module.addDeserializer(MigrationOperation.class, new MigrationOperationDeserializer());
         module.addDeserializer(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
-        module.addDeserializer(PublicQuery.class, new PublicQueryDeserializer());
-        module.addDeserializer(QueryConditions.class, new QueryConditionsDeserializer());
         module.addDeserializer(QueryType.class, new QueryTypeDeserializer());
+        module.addDeserializer(DataType.class, new DataTypeDeserializer());
+        module.addDeserializer(FieldDefinitions.class, new FieldDefinitionsDeserializer());
+        module.addDeserializer(QueryConditions.class, new QueryConditionsDeserializer());
+        module.addDeserializer(ConditionClause.class, new ConditionClauseDeserializer());
+        module.addDeserializer(ConditionOperator.class, new ConditionOperatorDeserializer());
+        module.addDeserializer(ConditionType.class, new ConditionTypeDeserializer());
         module.addDeserializer(SaveQueryAssociations.class, new SaveQueryAssociationsDeserializer());
+        module.addDeserializer(PublicQuery.class, new PublicQueryDeserializer());
 
+        module.addSerializer(TypeName.class, new TypeNameSerializer());
+        module.addSerializer(Type.class, new TypeSerializer());
+        module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
+        module.addSerializer(QueryType.class, new QueryTypeSerializer());
         module.addSerializer(DataType.class, new DataTypeSerializer());
         module.addSerializer(ConditionClause.class, new ConditionClauseSerializer());
         module.addSerializer(ConditionOperator.class, new ConditionOperatorSerializer());
         module.addSerializer(ConditionType.class, new ConditionTypeSerializer());
-        module.addSerializer(TypeName.class, new TypeNameSerializer());
-        module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
-        module.addSerializer(QueryType.class, new QueryTypeSerializer());
 
         return module;
     }

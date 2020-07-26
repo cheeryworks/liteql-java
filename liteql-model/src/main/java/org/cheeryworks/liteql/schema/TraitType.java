@@ -4,11 +4,23 @@ import org.cheeryworks.liteql.schema.field.Field;
 
 import java.util.Set;
 
-public class TraitType extends TypeName {
+public class TraitType implements Type {
+
+    private TypeName typeName;
 
     private Set<Field> fields;
 
     private Set<TypeName> traits;
+
+    @Override
+    public TypeName getTypeName() {
+        return typeName;
+    }
+
+    @Override
+    public void setTypeName(TypeName typeName) {
+        this.typeName = typeName;
+    }
 
     public Set<Field> getFields() {
         return fields;
@@ -34,8 +46,8 @@ public class TraitType extends TypeName {
         this(typeName.getSchema(), typeName.getName());
     }
 
-    public TraitType(String schema, String name) {
-        super(schema, name);
+    public TraitType(String schema, String typeName) {
+        this.typeName = new TypeName(schema, typeName);
     }
 
     public boolean isTrait() {

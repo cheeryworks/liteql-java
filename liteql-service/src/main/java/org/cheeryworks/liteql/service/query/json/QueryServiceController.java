@@ -13,6 +13,7 @@ import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.cheeryworks.liteql.service.query.QueryService;
@@ -63,15 +64,15 @@ public class QueryServiceController extends AbstractServiceController {
     @GetMapping(value = "/liteql/schema/{schema}/type")
     public Object getTypes(@PathVariable(name = "schema") String schema) {
         try {
-            List<TraitType> types = new ArrayList<>();
+            List<Type> types = new ArrayList<>();
 
             types.addAll(schemaService.getTraitTypes(schema));
             types.addAll(schemaService.getDomainTypes(schema));
 
-            Map<String, TraitType> typesInMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, Type> typesInMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-            for (TraitType type : types) {
-                typesInMap.put(type.getFullname(), type);
+            for (Type type : types) {
+                typesInMap.put(type.getTypeName().getFullname(), type);
             }
 
             return getOkResponseEntity(typesInMap);

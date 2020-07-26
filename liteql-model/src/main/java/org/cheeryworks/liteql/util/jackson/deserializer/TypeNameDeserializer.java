@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 
@@ -22,17 +20,7 @@ public class TypeNameDeserializer extends StdDeserializer<TypeName> {
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode typeNode = jsonParser.readValueAsTree();
 
-        if (typeNode.isTextual()) {
-            return LiteQLUtil.getTypeName(typeNode.asText());
-        } else if (typeNode.isObject()) {
-            if (typeNode.get("trait") != null && typeNode.get("trait").asBoolean()) {
-                return jsonParser.getCodec().treeToValue(typeNode, TraitType.class);
-            }
-
-            return jsonParser.getCodec().treeToValue(typeNode, DomainType.class);
-        } else {
-            throw new IllegalArgumentException("TypeName Name [" + jsonParser.getValueAsString() + "] invalid");
-        }
+        return LiteQLUtil.getTypeName(typeNode.asText());
     }
 
 }

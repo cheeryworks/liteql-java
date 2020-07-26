@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
@@ -36,12 +35,10 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
-    private LiteQLProperties liteQLProperties = new LiteQLSpringProperties();
+    private LiteQLSpringProperties liteQLSpringProperties;
 
-    public JpaSqlCustomizer(LiteQLProperties liteQLProperties) {
-        if (liteQLProperties != null) {
-            this.liteQLProperties = liteQLProperties;
-        }
+    public JpaSqlCustomizer(LiteQLSpringProperties liteQLSpringProperties) {
+        this.liteQLSpringProperties = liteQLSpringProperties;
 
         ClassPathScanningCandidateComponentProvider jpaEntityScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
@@ -50,7 +47,7 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
-        for (String packageToScan : this.liteQLProperties.getPackagesToScan()) {
+        for (String packageToScan : this.liteQLSpringProperties.getPackagesToScan()) {
             jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
         }
 

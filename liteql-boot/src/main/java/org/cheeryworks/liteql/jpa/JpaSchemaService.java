@@ -5,17 +5,19 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
 import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.Entity;
 import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.Position;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
+import org.cheeryworks.liteql.schema.annotation.TraitInstance;
 import org.cheeryworks.liteql.schema.field.AbstractField;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.BlobField;
@@ -29,10 +31,8 @@ import org.cheeryworks.liteql.schema.field.StringField;
 import org.cheeryworks.liteql.schema.field.TimestampField;
 import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
-import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +52,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,26 +62,62 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class JpaSchemaService extends AbstractSqlService implements SchemaService {
+public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
 
-    private DefaultSchemaService repository;
+    private SqlCustomizer sqlCustomizer;
 
-    public JpaSchemaService(LiteQLProperties liteQLProperties, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, sqlCustomizer);
+    private Map<Class, Class> traitImplements = initTraitImplements();
 
-        this.repository = new DefaultSchemaService(liteQLProperties, "classpath*:/liteql");
+    public JpaSchemaService(LiteQLSpringProperties liteQLSpringProperties, SqlCustomizer sqlCustomizer) {
+        super(liteQLSpringProperties, "classpath*:/liteql");
 
-        Map<String, Set<TypeName>> typeNameWithinSchemas = getTypeNameWithinSchemas();
+        this.sqlCustomizer = sqlCustomizer;
 
-        for (Map.Entry<String, Set<TypeName>> typeNameWithinSchema : typeNameWithinSchemas.entrySet()) {
-            for (TypeName typeName : typeNameWithinSchema.getValue()) {
-                repository.addType(typeName);
+        Map<String, Set<Type>> typeNameWithinSchemas = getTypeWithinSchemas();
+
+        for (Map.Entry<String, Set<Type>> typeNameWithinSchema : typeNameWithinSchemas.entrySet()) {
+            for (Type type : typeNameWithinSchema.getValue()) {
+                addType(type);
             }
         }
     }
 
-    private Map<String, Set<TypeName>> getTypeNameWithinSchemas() {
-        Map<String, Set<TypeName>> typeNameWithinSchemas = new HashMap<>();
+    private Map<Class, Class> initTraitImplements() {
+        ClassPathScanningCandidateComponentProvider traitInstanceScanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        traitInstanceScanner.addIncludeFilter(new AnnotationTypeFilter(TraitInstance.class));
+
+        Set<BeanDefinition> traitInstanceDefinitions = new HashSet<>();
+
+        for (String packageToScan : getLiteQLProperties().getPackagesToScan()) {
+            traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
+        }
+
+        Map<Class, Class> traitImplements = new HashMap<>();
+
+        for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
+            Class<?> domainJavaType = LiteQLUtil.getClass(traitInstanceDefinition.getBeanClassName());
+
+            TraitInstance traitInstance = domainJavaType.getAnnotation(TraitInstance.class);
+
+            if (!traitInstance.implement().equals(Void.class)) {
+                if (traitImplements.containsKey(traitInstance.implement())) {
+                    throw new IllegalStateException(
+                            "Duplicated implements of"
+                                    + " [" + traitInstance.implement().getName() + "]"
+                                    + " in different package");
+                } else {
+                    traitImplements.put(traitInstance.implement(), domainJavaType);
+                }
+            }
+        }
+
+        return Collections.unmodifiableMap(traitImplements);
+    }
+
+    private Map<String, Set<Type>> getTypeWithinSchemas() {
+        Map<String, Set<Type>> typeWithinSchemas = new HashMap<>();
 
         ClassPathScanningCandidateComponentProvider resourceDefinitionScanner =
                 new ClassPathScanningCandidateComponentProvider(false) {
@@ -110,16 +147,16 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
                 TypeName typeName = Trait.getTypeName(traitInterface);
 
                 if (typeName != null) {
-                    Set<TypeName> typeNameWithinSchema = typeNameWithinSchemas.get(typeName.getSchema());
+                    Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
 
-                    if (typeNameWithinSchema == null) {
-                        typeNameWithinSchema = new LinkedHashSet<>();
-                        typeNameWithinSchemas.put(typeName.getSchema(), typeNameWithinSchema);
+                    if (typeWithinSchema == null) {
+                        typeWithinSchema = new LinkedHashSet<>();
+                        typeWithinSchemas.put(typeName.getSchema(), typeWithinSchema);
                     }
 
                     TraitType traitType = traitInterfaceToTraitType(traitInterface, typeName);
 
-                    typeNameWithinSchema.add(traitType);
+                    typeWithinSchema.add(traitType);
                 }
             }
         }
@@ -141,16 +178,16 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
             TypeName typeName = Trait.getTypeName(jpaEntityJavaType);
 
             if (typeName != null) {
-                Set<TypeName> typeNameWithinSchema = typeNameWithinSchemas.get(typeName.getSchema());
+                Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
 
-                if (typeNameWithinSchema == null) {
-                    typeNameWithinSchema = new LinkedHashSet<>();
-                    typeNameWithinSchemas.put(typeName.getSchema(), typeNameWithinSchema);
+                if (typeWithinSchema == null) {
+                    typeWithinSchema = new LinkedHashSet<>();
+                    typeWithinSchemas.put(typeName.getSchema(), typeWithinSchema);
                 }
 
                 DomainType domainType = entityTypeToDomainType(jpaEntityJavaType, typeName);
 
-                typeNameWithinSchema.add(domainType);
+                typeWithinSchema.add(domainType);
             }
         }
 
@@ -173,10 +210,10 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
             if (graphQLEntity != null && !graphQLEntity.extension().equals(Void.class) && !graphQLEntity.ignored()) {
                 TypeName domainTypeName = Trait.getTypeName(graphQLEntity.extension());
 
-                Set<TypeName> domainTypes = typeNameWithinSchemas.get(domainTypeName.getSchema());
+                Set<Type> domainTypes = typeWithinSchemas.get(domainTypeName.getSchema());
 
-                for (TypeName domainType : domainTypes) {
-                    if (domainType.getName().equals(domainTypeName.getSchema())) {
+                for (Type domainType : domainTypes) {
+                    if (domainType.getTypeName().equals(domainTypeName)) {
                         performFieldsOfDomain((DomainType) domainType, graphQLEntityJavaType);
                         break;
                     }
@@ -184,7 +221,7 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
             }
         }
 
-        return typeNameWithinSchemas;
+        return typeWithinSchemas;
     }
 
     private DomainType entityTypeToDomainType(Class<?> javaType, TypeName typeName) {
@@ -294,7 +331,7 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
                 Set<String> fieldNames = new LinkedHashSet<>();
 
                 for (String columnName : columnNames) {
-                    fieldNames.add(getSqlCustomizer().getFieldName(domainType, columnName));
+                    fieldNames.add(sqlCustomizer.getFieldName(domainType.getTypeName(), columnName));
                 }
 
                 if (jpaIndex.unique()) {
@@ -447,11 +484,10 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
 
             referenceField.setName(referenceFieldAnnotation.name());
 
-            if (this.repository.getTraitImplements().containsKey(referenceFieldAnnotation.targetDomainType())) {
+            if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                 referenceField.setDomainTypeName(
                         Trait.getTypeName(
-                                this.repository.getTraitImplements()
-                                        .get(referenceFieldAnnotation.targetDomainType())));
+                                this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
             } else {
                 referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
             }
@@ -506,36 +542,6 @@ public class JpaSchemaService extends AbstractSqlService implements SchemaServic
         if (CollectionUtils.isNotEmpty(typeNames)) {
             traitType.setTraits(typeNames);
         }
-    }
-
-    @Override
-    public Set<String> getSchemaNames() {
-        return this.repository.getSchemaNames();
-    }
-
-    @Override
-    public Set<DomainType> getDomainTypes(String schemaName) {
-        return this.repository.getDomainTypes(schemaName);
-    }
-
-    @Override
-    public Set<TraitType> getTraitTypes(String schemaName) {
-        return this.repository.getTraitTypes(schemaName);
-    }
-
-    @Override
-    public DomainType getDomainType(TypeName typeName) {
-        return this.repository.getDomainType(typeName);
-    }
-
-    @Override
-    public TraitType getTraitType(TypeName typeName) {
-        return this.repository.getTraitType(typeName);
-    }
-
-    @Override
-    public Map<TypeName, Map<String, Migration>> getMigrations(String schemaName) {
-        return this.repository.getMigrations(schemaName);
     }
 
 }

@@ -22,10 +22,6 @@ public class LiteQLSpringProperties extends LiteQLProperties {
         return this.packagesToScan;
     }
 
-    public void setPackagesToScan(Set<String> packagesToScan) {
-        this.packagesToScan.addAll(packagesToScan);
-    }
-
     private Set<String> loadDefaultPackageToScan() {
         try {
             PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver

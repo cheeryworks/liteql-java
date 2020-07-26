@@ -5,13 +5,7 @@ import org.cheeryworks.liteql.service.sql.SqlParser;
 
 public interface SqlSchemaParser extends SqlParser {
 
-    String PRIMARY_KEY_PREFIX = "pk_";
-
-    String UNIQUE_KEY_PREFIX = "uk_";
-
-    String INDEX_KEY_PREFIX = "idx_";
-
-    String repositoryToSql();
+    String schemaToSql();
 
     String schemaToSql(String schemaName);
 

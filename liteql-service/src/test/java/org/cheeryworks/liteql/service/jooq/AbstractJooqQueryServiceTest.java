@@ -43,7 +43,7 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
             JooqSchemaParser jooqSchemaParser = new JooqSchemaParser(
                     getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
 
-            String schemaSqls = jooqSchemaParser.repositoryToSql().replaceAll("\n", "");
+            String schemaSqls = jooqSchemaParser.schemaToSql().replaceAll("\n", "");
 
             String[] initSqls = schemaSqls.split(";");
 

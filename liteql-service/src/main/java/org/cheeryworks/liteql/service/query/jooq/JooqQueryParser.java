@@ -6,11 +6,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.query.enums.ConditionClause;
-import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.QueryConditions;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.enums.ConditionClause;
+import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.query.read.PageReadQuery;
 import org.cheeryworks.liteql.query.read.field.FieldDefinition;
@@ -268,9 +268,10 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     continue;
                 } else {
                     fields.add(
-                            field(tableAlias + "." + getSqlCustomizer().getColumnName(domainType, field.getName())));
+                            field(tableAlias + "." + getSqlCustomizer().getColumnName(
+                                    domainType.getTypeName(), field.getName())));
                     sqlReadQuery.getFields().put(
-                            getSqlCustomizer().getColumnName(domainType, field.getName()), field);
+                            getSqlCustomizer().getColumnName(domainType.getTypeName(), field.getName()), field);
                 }
             }
         } else if (fieldDefinitions != null) {
@@ -278,13 +279,14 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 fields.add(
                         field(
                                 tableAlias + "." + getSqlCustomizer().getColumnName(
-                                        domainType, fieldDefinition.getName())
-                        ).as(getSqlCustomizer().getColumnName(domainType, fieldDefinition.getAlias())));
+                                        domainType.getTypeName(), fieldDefinition.getName())
+                        ).as(getSqlCustomizer().getColumnName(domainType.getTypeName(), fieldDefinition.getAlias())));
 
                 for (Field field : domainType.getFields()) {
                     if (field.getName().equals(fieldDefinition.getName())) {
                         sqlReadQuery.getFields().put(
-                                getSqlCustomizer().getColumnName(domainType, fieldDefinition.getAlias()), field);
+                                getSqlCustomizer().getColumnName(
+                                        domainType.getTypeName(), fieldDefinition.getAlias()), field);
                     }
                 }
             }
@@ -316,7 +318,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                 if (domainType.isReferenceField(dataEntry.getKey())) {
                     String fieldName = getSqlCustomizer().getColumnName(
-                            domainType, dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                            domainType.getTypeName(),
+                            dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
@@ -327,7 +330,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     }
                 } else {
                     insertSetMoreStep.set(
-                            field(getSqlCustomizer().getColumnName(domainType, dataEntry.getKey()), dataType),
+                            field(getSqlCustomizer().getColumnName(
+                                    domainType.getTypeName(), dataEntry.getKey()), dataType),
                             dataEntry.getValue());
                 }
             }
@@ -359,12 +363,13 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     condition = condition.and(field(dataEntry.getKey()).eq(dataEntry.getValue()));
 
                     condition = condition.and(
-                            field(getSqlCustomizer().getColumnName(domainType, dataEntry.getKey()), dataType)
-                                    .eq(dataEntry.getValue()));
+                            field(getSqlCustomizer().getColumnName(
+                                    domainType.getTypeName(), dataEntry.getKey()), dataType).eq(dataEntry.getValue()));
                 } else {
                     if (domainType.isReferenceField(dataEntry.getKey())) {
                         String fieldName = getSqlCustomizer().getColumnName(
-                                domainType, dataEntry.getKey() + StringUtils.capitalize(IdField.ID_FIELD_NAME));
+                                domainType.getTypeName(), dataEntry.getKey()
+                                        + StringUtils.capitalize(IdField.ID_FIELD_NAME));
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(
@@ -375,7 +380,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                         }
                     } else {
                         updateSetStep.set(
-                                field(getSqlCustomizer().getColumnName(domainType, dataEntry.getKey()), dataType),
+                                field(getSqlCustomizer().getColumnName(
+                                        domainType.getTypeName(), dataEntry.getKey()), dataType),
                                 dataEntry.getValue());
                     }
                 }
@@ -406,7 +412,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         return getDslContext()
                 .select(
                         field("id"))
-                .from(table(getSqlCustomizer().getTableName(new TypeName(domainType.getSchema(), fieldName))))
+                .from(table(getSqlCustomizer().getTableName(
+                        new TypeName(domainType.getTypeName().getSchema(), fieldName))))
                 .where(condition).asField();
     }
 
@@ -426,7 +433,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         }
 
         throw new IllegalArgumentException(
-                "No unique key matched in data " + data + " for domainType " + domainType.getName());
+                "No unique key matched in data " + data + " for domainType " + domainType.getTypeName().getFullname());
     }
 
     @Override
