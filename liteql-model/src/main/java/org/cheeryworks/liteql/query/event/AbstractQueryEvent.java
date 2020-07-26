@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.query.event;
 
 import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.LiteQLUtil;
 
 import java.io.Serializable;
 
@@ -33,11 +34,7 @@ public abstract class AbstractQueryEvent<T> implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{"
-                + "typeName=" + typeName
-                + "queryType=" + queryType
-                + ", source=" + source
-                + '}';
+        return LiteQLUtil.toJson(this);
     }
 
 }
