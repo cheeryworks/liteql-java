@@ -3,9 +3,7 @@ package org.cheeryworks.liteql;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -50,13 +48,6 @@ public class LiteQLProperties {
 
     private Set<String> loadDefaultPackageToScan() {
         try {
-            Enumeration<URL> urlEnumeration
-                    = getClass().getClassLoader().getResources("META-INF/packages-to-scan-module.properties");
-
-            while (urlEnumeration.hasMoreElements()) {
-                System.out.println(urlEnumeration.nextElement().getPath());
-            }
-
             PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
                     = new PathMatchingResourcePatternResolver();
 
