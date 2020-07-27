@@ -42,3 +42,6 @@ Thumbs.db
 
 # Maven generated files
 target
+
+# Gauge generated files
+.gauge
