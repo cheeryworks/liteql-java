@@ -84,7 +84,8 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
     }
 
     protected List<String> parsingIndexMigrationOperation(
-            TypeName domainTypeName, AbstractIndexMigrationOperation indexMigrationOperation) {
+            TypeName domainTypeName,
+            AbstractIndexMigrationOperation<? extends AbstractIndex> indexMigrationOperation) {
         String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
         DomainType domainType = getSchemaService().getDomainType(domainTypeName);

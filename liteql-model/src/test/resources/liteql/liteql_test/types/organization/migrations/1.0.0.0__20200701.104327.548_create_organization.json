@@ -20,6 +20,13 @@
           "length": 255
         },
         {
+          "name": "users",
+          "type": "reference",
+          "domainTypeName": "liteql_test.user",
+          "mappedDomainTypeName": "liteql_test.user_organization",
+          "collection": true
+        },
+        {
           "name": "parentId",
           "type": "string",
           "nullable": false,
@@ -94,6 +101,13 @@
         {
           "fields": [
             "code"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "fields": [
+            "name"
           ]
         }
       ]

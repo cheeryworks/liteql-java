@@ -5,7 +5,11 @@ import org.cheeryworks.liteql.schema.index.Index;
 
 import java.util.Set;
 
-public class CreateIndexMigrationOperation extends AbstractIndexMigrationOperation {
+public class CreateIndexMigrationOperation extends AbstractIndexMigrationOperation<Index> {
+
+    public CreateIndexMigrationOperation() {
+        this(null);
+    }
 
     public CreateIndexMigrationOperation(Set<Index> indexes) {
         super(MigrationOperationType.CREATE_INDEX);

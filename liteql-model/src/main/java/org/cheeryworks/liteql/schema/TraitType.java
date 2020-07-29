@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.schema;
 
 import org.cheeryworks.liteql.schema.field.Field;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class TraitType implements Type {
@@ -64,6 +65,28 @@ public class TraitType implements Type {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof TraitType)) {
+            return false;
+        }
+
+        TraitType traitType = (TraitType) o;
+
+        return Objects.equals(typeName, traitType.typeName) &&
+                Objects.equals(fields, traitType.fields) &&
+                Objects.equals(traits, traitType.traits);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(typeName, fields, traits);
     }
 
 }

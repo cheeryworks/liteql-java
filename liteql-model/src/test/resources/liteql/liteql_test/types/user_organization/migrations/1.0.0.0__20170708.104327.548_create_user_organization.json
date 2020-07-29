@@ -21,6 +21,22 @@
           "name": "master",
           "type": "boolean"
         }
+      ],
+      "uniques": [
+        {
+          "fields": [
+            "user",
+            "organization"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "fields": [
+            "user",
+            "organization"
+          ]
+        }
       ]
     }
   ]

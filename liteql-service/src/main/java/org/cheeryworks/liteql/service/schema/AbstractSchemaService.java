@@ -7,6 +7,7 @@ import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
+import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 
@@ -76,6 +77,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 addMigration(migration);
             }
         }
+
+        verifyMigrationsOfSchema(schemaDefinition.getName());
     }
 
     public void addType(Type type) {
@@ -116,6 +119,45 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         migrations.put(migration.getName(), migration);
+    }
+
+    private void verifyMigrationsOfSchema(String schemaName) {
+        Schema schema = getSchema(schemaName);
+
+        for (DomainType domainType : schema.getDomainTypes()) {
+            Map<String, Migration> migrations = schema.getMigrations().get(domainType.getTypeName());
+
+            DomainType migratedDomainType = new DomainType(domainType.getTypeName());
+
+            migratedDomainType.setTraits(domainType.getTraits());
+
+            if (!domainType.isGraphQLType()) {
+                migratedDomainType.setGraphQLType(false);
+            }
+
+            for (Migration migration : migrations.values()) {
+                for (MigrationOperation migrationOperation : migration.getOperations()) {
+                    migrationOperation.merge(migratedDomainType);
+                }
+            }
+
+            if (!domainType.equals(migratedDomainType)) {
+                throw new IllegalStateException(
+                        "Migrations of domain type [" + domainType.getTypeName().getFullname() + "] is not matched"
+                                + ", definition is " + LiteQLUtil.toJson(domainType)
+                                + ", but migrated is " + LiteQLUtil.toJson(migratedDomainType));
+            }
+        }
+
+        for (TypeName domainTypeName : schema.getMigrations().keySet()) {
+            try {
+                getDomainType(domainTypeName);
+            } catch (Exception ex) {
+                throw new IllegalStateException(
+                        "Migrations of domain type [" + domainTypeName.getFullname() + "] is not matched"
+                                + ", definition is missed");
+            }
+        }
     }
 
     @Override

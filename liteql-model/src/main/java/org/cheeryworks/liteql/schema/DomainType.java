@@ -8,6 +8,7 @@ import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class DomainType extends TraitType {
@@ -19,6 +20,8 @@ public class DomainType extends TraitType {
     private Set<Index> indexes;
 
     private Boolean graphQLType;
+
+    private Boolean dropped;
 
     public Set<Unique> getUniques() {
         return this.uniques;
@@ -41,6 +44,11 @@ public class DomainType extends TraitType {
         return graphQLType;
     }
 
+    @JsonGetter
+    private Boolean dropped() {
+        return dropped;
+    }
+
     public boolean isGraphQLType() {
         if (graphQLType == null) {
             return true;
@@ -51,6 +59,18 @@ public class DomainType extends TraitType {
 
     public void setGraphQLType(Boolean graphQLType) {
         this.graphQLType = graphQLType;
+    }
+
+    public boolean isDropped() {
+        if (dropped == null) {
+            return false;
+        }
+
+        return dropped.booleanValue();
+    }
+
+    public void setDropped(Boolean dropped) {
+        this.dropped = dropped;
     }
 
     public DomainType() {
@@ -127,6 +147,32 @@ public class DomainType extends TraitType {
         boolean onlyHaveGraphQLField = !isPersistentDomainType();
 
         return haveGraphQLField && onlyHaveGraphQLField;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof DomainType)) {
+            return false;
+        }
+
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        DomainType that = (DomainType) o;
+
+        return Objects.equals(uniques, that.uniques) &&
+                Objects.equals(indexes, that.indexes) &&
+                Objects.equals(graphQLType, that.graphQLType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), uniques, indexes, graphQLType);
     }
 
 }

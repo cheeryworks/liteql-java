@@ -5,7 +5,11 @@ import org.cheeryworks.liteql.schema.index.Unique;
 
 import java.util.Set;
 
-public class CreateUniqueMigrationOperation extends AbstractIndexMigrationOperation {
+public class CreateUniqueMigrationOperation extends AbstractIndexMigrationOperation<Unique> {
+
+    public CreateUniqueMigrationOperation() {
+        this(null);
+    }
 
     public CreateUniqueMigrationOperation(Set<Unique> uniques) {
         super(MigrationOperationType.CREATE_UNIQUE);

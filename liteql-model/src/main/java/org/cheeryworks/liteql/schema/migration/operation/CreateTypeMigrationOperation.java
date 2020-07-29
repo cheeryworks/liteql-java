@@ -1,5 +1,7 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.index.Index;
@@ -41,6 +43,25 @@ public class CreateTypeMigrationOperation extends AbstractMigrationOperation {
 
     public CreateTypeMigrationOperation() {
         super(MigrationOperationType.CREATE_TYPE);
+    }
+
+    @Override
+    public void merge(DomainType domainType) {
+        CreateFieldMigrationOperation createFieldMigrationOperation
+                = new CreateFieldMigrationOperation(fields);
+        createFieldMigrationOperation.merge(domainType);
+
+        if (CollectionUtils.isNotEmpty(uniques)) {
+            CreateUniqueMigrationOperation createUniqueMigrationOperation
+                    = new CreateUniqueMigrationOperation(uniques);
+            createUniqueMigrationOperation.merge(domainType);
+        }
+
+        if (CollectionUtils.isNotEmpty(indexes)) {
+            CreateIndexMigrationOperation createIndexMigrationOperation
+                    = new CreateIndexMigrationOperation(indexes);
+            createIndexMigrationOperation.merge(domainType);
+        }
     }
 
 }
