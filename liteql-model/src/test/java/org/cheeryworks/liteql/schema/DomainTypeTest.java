@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static org.cheeryworks.liteql.schema.Schema.SUFFIX_OF_TYPE_DEFINITION;
+
 public class DomainTypeTest extends AbstractTest {
 
     @Test
@@ -15,7 +17,7 @@ public class DomainTypeTest extends AbstractTest {
                 getClass().getResource("/liteql/liteql_test").getPath());
 
         for (Map.Entry<String, String> typeInJsonFile : typeInJsonFiles.entrySet()) {
-            if (typeInJsonFile.getKey().contains("definition.json")) {
+            if (typeInJsonFile.getKey().contains(SUFFIX_OF_TYPE_DEFINITION)) {
                 DomainType domainType = LiteQLUtil.toBean(typeInJsonFile.getValue(), DomainType.class);
 
                 getLogger().info(LiteQLUtil.toJson(domainType));

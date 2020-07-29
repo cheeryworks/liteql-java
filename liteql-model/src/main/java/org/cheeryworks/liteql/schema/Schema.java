@@ -10,6 +10,16 @@ import java.util.TreeSet;
 
 public class Schema implements Serializable {
 
+    public static final String SUFFIX_OF_SCHEMA_ROOT_FILE = ".yml";
+
+    public static final String NAME_OF_TYPES_DIRECTORY = "types";
+
+    public static final String NAME_OF_MIGRATIONS_DIRECTORY = "migrations";
+
+    public static final String SUFFIX_OF_CONFIGURATION_FILE = ".json";
+
+    public static final String SUFFIX_OF_TYPE_DEFINITION = "definition" + SUFFIX_OF_CONFIGURATION_FILE;
+
     private String name;
 
     private Set<DomainType> domainTypes = new TreeSet<>(

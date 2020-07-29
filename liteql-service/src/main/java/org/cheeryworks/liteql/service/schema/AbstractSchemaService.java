@@ -23,6 +23,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_BASELINE_SUFFIX;
+import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_CONCAT;
+
 public abstract class AbstractSchemaService extends AbstractLiteQLService implements SchemaService {
 
     private Set<SchemaDefinition> schemaDefinitions = new TreeSet<>(Comparator.comparing(SchemaDefinition::getName));
@@ -43,16 +46,31 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         for (TypeDefinition typeDefinition : schemaDefinition.getTypeDefinitions().values()) {
             TypeName typeName = new TypeName(schemaDefinition.getName(), typeDefinition.getName());
 
-            Type type = LiteQLUtil.toBean(typeDefinition.getContent(), Type.class);
+            String key = typeDefinition
+                    .getContents()
+                    .keySet()
+                    .stream()
+                    .max(String::compareToIgnoreCase)
+                    .get();
+
+            Type type = LiteQLUtil.toBean(typeDefinition.getContents().get(key), Type.class);
 
             type.setTypeName(typeName);
 
             addType(type);
 
-            for (MigrationDefinition migrationDefinition : typeDefinition.getMigrationDefinitions().values()) {
-                Migration migration = LiteQLUtil.toBean(migrationDefinition.getContent(), Migration.class);
+            for (Map.Entry<String, String> migrationContent : typeDefinition.getMigrationContents().entrySet()) {
+                if (!migrationContent.getKey().startsWith(key.substring(0, key.indexOf(VERSION_CONCAT)))) {
+                    continue;
+                }
 
-                migration.setName(migrationDefinition.getName());
+                Migration migration = LiteQLUtil.toBean(migrationContent.getValue(), Migration.class);
+
+                migration.setName(migrationContent.getKey());
+                migration.setVersion(migrationContent.getKey().split(VERSION_CONCAT)[0]);
+                migration.setBaseline(migration.getVersion().endsWith(VERSION_BASELINE_SUFFIX));
+                migration.setDescription(migrationContent.getKey().split(VERSION_CONCAT)[1]);
+
                 migration.setDomainTypeName(typeName);
 
                 addMigration(migration);

@@ -1,25 +1,12 @@
 create table liteql_test_schema_version(
+  domain_type_name varchar(255) not null,
   version varchar(32) not null,
   description varchar(1000) null,
   state varchar(30) null
 );
 
 alter table liteql_test_schema_version
-  add primary key (version);
-
-create table liteql_test_country(
-  id varchar(128) not null,
-  name varchar(255) not null,
-  code varchar(255) not null
-);
-
-alter table liteql_test_country
-  add constraint pk_liteql_test_country
-    primary key (id);
-
- alter table liteql_test_country
-  add constraint uk_2d239fcb4476b3df595c
-    unique (code);
+  add primary key (domain_type_name, version);
 
 create table liteql_test_organization(
   id varchar(128) not null,

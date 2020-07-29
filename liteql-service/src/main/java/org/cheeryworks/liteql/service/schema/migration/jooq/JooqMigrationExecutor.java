@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.schema.migration.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqExecutor;
 import org.cheeryworks.liteql.service.schema.migration.SqlMigrationExecutor;
@@ -31,11 +32,12 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
     }
 
     @Override
-    public String getLatestMigrationVersion(String schemaVersionTableName) {
+    public String getLatestMigrationVersion(String schemaVersionTableName, TypeName domainTypeName) {
         try {
             String version = (String) getDslContext()
                     .select(max(field("version")))
                     .from(schemaVersionTableName)
+                    .where(field("domain_type_name").eq(domainTypeName.getFullname()))
                     .fetchOne(0);
 
             return version;
@@ -43,6 +45,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             logger.info("Initializing schema version table " + schemaVersionTableName);
 
             CreateTableFinalStep createTableFinalStep = getDslContext().createTable(schemaVersionTableName)
+                    .column("domain_type_name", JooqUtil.getStringDataType(false, 255))
                     .column("version", JooqUtil.getStringDataType(false, 32))
                     .column("description", JooqUtil.getStringDataType(true, 1000))
                     .column("state", JooqUtil.getStringDataType(false, 30));
@@ -56,7 +59,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             AlterTableFinalStep alterTableFinalStep = getDslContext()
                     .alterTable(schemaVersionTableName).add(
                             constraint(PRIMARY_KEY_PREFIX + schemaVersionTableName)
-                                    .primaryKey("version"));
+                                    .primaryKey("domain_type_name", "version"));
 
             if (getLiteQLProperties().isDiagnosticEnabled()) {
                 logger.info(alterTableFinalStep.getSQL());
@@ -71,13 +74,13 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
     }
 
     @Override
-    public void migrate(String schema, String version, String description, List<String> sqls) {
+    public void migrate(String schema, TypeName domainTypeName, String version, String description, List<String> sqls) {
         String schemaVersionTableName = getSchemaVersionTableName(schema);
 
         try {
             InsertFinalStep insertFinalStep = getDslContext().insertInto(table(schemaVersionTableName))
-                    .columns(field("version"), field("description"), field("state"))
-                    .values(version, description, Migration.STATE_PENDING);
+                    .columns(field("domain_type_name"), field("version"), field("description"), field("state"))
+                    .values(domainTypeName.getFullname(), version, description, Migration.STATE_PENDING);
 
             if (getLiteQLProperties().isDiagnosticEnabled()) {
                 logger.info(insertFinalStep.getSQL());
@@ -95,7 +98,10 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             }
 
             UpdateFinalStep updateFinalStep = getDslContext().update(table(schemaVersionTableName))
-                    .set(field("state"), Migration.STATE_SUCCESS);
+                    .set(field("state"), Migration.STATE_SUCCESS)
+                    .where(
+                            field("domain_type_name").eq(domainTypeName.getFullname())
+                                    .and(field("version").eq(version)));
 
             if (getLiteQLProperties().isDiagnosticEnabled()) {
                 logger.info(updateFinalStep.getSQL());
@@ -105,7 +111,10 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             updateFinalStep.execute();
         } catch (Exception ex) {
             UpdateFinalStep updateFinalStep = getDslContext().update(table(schemaVersionTableName))
-                    .set(field("state"), Migration.STATE_FAILED);
+                    .set(field("state"), Migration.STATE_FAILED)
+                    .where(
+                            field("domain_type_name").eq(domainTypeName.getFullname())
+                                    .and(field("version").eq(version)));
 
             if (getLiteQLProperties().isDiagnosticEnabled()) {
                 logger.info(updateFinalStep.getSQL());

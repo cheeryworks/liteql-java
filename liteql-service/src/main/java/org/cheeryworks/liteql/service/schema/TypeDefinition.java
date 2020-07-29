@@ -7,24 +7,24 @@ public class TypeDefinition {
 
     private String name;
 
-    private String content;
+    private Map<String, String> contents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    private Map<String, MigrationDefinition> migrationDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private Map<String, String> migrationContents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public String getName() {
         return name;
     }
 
-    public String getContent() {
-        return content;
+    public Map<String, String> getContents() {
+        return contents;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setContents(Map<String, String> contents) {
+        this.contents = contents;
     }
 
-    public Map<String, MigrationDefinition> getMigrationDefinitions() {
-        return migrationDefinitions;
+    public Map<String, String> getMigrationContents() {
+        return migrationContents;
     }
 
     public TypeDefinition(String name) {

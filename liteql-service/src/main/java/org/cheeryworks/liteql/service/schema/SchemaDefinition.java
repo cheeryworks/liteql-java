@@ -6,6 +6,10 @@ import java.util.TreeMap;
 
 public class SchemaDefinition {
 
+    public static final String VERSION_CONCAT = "__";
+
+    public static final String VERSION_BASELINE_SUFFIX = ".0";
+
     private String name;
 
     private Map<String, TypeDefinition> typeDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);

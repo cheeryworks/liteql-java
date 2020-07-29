@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.cheeryworks.liteql.schema.Schema.NAME_OF_MIGRATIONS_DIRECTORY;
+import static org.cheeryworks.liteql.schema.Schema.NAME_OF_TYPES_DIRECTORY;
+import static org.cheeryworks.liteql.schema.Schema.SUFFIX_OF_SCHEMA_ROOT_FILE;
+import static org.cheeryworks.liteql.schema.Schema.SUFFIX_OF_TYPE_DEFINITION;
+
 public class DefaultSchemaService extends AbstractSchemaService {
 
     private String[] locationPatterns;
@@ -35,8 +40,8 @@ public class DefaultSchemaService extends AbstractSchemaService {
                 PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
                         = new PathMatchingResourcePatternResolver(getClass().getClassLoader());
 
-                Resource[] schemaRootResources
-                        = pathMatchingResourcePatternResolver.getResources(locationPattern + "/*.yml");
+                Resource[] schemaRootResources = pathMatchingResourcePatternResolver.getResources(
+                        locationPattern + "/*" + SUFFIX_OF_SCHEMA_ROOT_FILE);
 
                 Map<String, String> schemaPaths = new HashMap<>();
 
@@ -67,8 +72,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
                             String schemaDefinitionResourceRelativePath
                                     = schemaDefinitionResourcePath.substring(schemaPathEntry.getValue().length() + 1);
 
-                            if (!schemaDefinitionResourceRelativePath.contains(
-                                    SchemaService.NAME_OF_TYPES_DIRECTORY)) {
+                            if (!schemaDefinitionResourceRelativePath.contains(NAME_OF_TYPES_DIRECTORY)) {
                                 continue;
                             }
 
@@ -84,24 +88,20 @@ public class DefaultSchemaService extends AbstractSchemaService {
                                 schemaDefinition.getTypeDefinitions().put(typeName, typeDefinition);
                             }
 
-                            if (schemaDefinitionResourceRelativePath.endsWith(NAME_OF_TYPE_DEFINITION)) {
-                                typeDefinition.setContent(
-                                        IOUtils.toString(
-                                                schemaDefinitionResource.getInputStream(), StandardCharsets.UTF_8));
+                            String contentName = schemaDefinitionResourceRelativePath.substring(
+                                    schemaDefinitionResourceRelativePath.lastIndexOf("/") + 1,
+                                    schemaDefinitionResourceRelativePath.lastIndexOf("."));
+
+                            String content = IOUtils.toString(
+                                    schemaDefinitionResource.getInputStream(), StandardCharsets.UTF_8);
+
+                            if (schemaDefinitionResourceRelativePath.endsWith(SUFFIX_OF_TYPE_DEFINITION)) {
+                                typeDefinition.getContents().put(contentName, content);
                             }
 
                             if (schemaDefinitionResourceRelativePath
                                     .contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
-                                String migrationName = schemaDefinitionResourceRelativePath.substring(
-                                        schemaDefinitionResourceRelativePath.lastIndexOf("/"),
-                                        schemaDefinitionResourceRelativePath.lastIndexOf("."));
-
-                                MigrationDefinition migrationDefinition = new MigrationDefinition(
-                                        migrationName,
-                                        IOUtils.toString(
-                                                schemaDefinitionResource.getInputStream(), StandardCharsets.UTF_8));
-
-                                typeDefinition.getMigrationDefinitions().put(migrationName, migrationDefinition);
+                                typeDefinition.getMigrationContents().put(contentName, content);
                             }
 
                             break;
