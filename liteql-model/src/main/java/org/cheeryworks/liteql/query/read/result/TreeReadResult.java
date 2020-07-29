@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.query.read.result;
 
-import org.cheeryworks.liteql.schema.HierarchicalEntity;
+import org.cheeryworks.liteql.model.HierarchicalEntity;
 
 import java.util.LinkedList;
 import java.util.Map;

@@ -19,8 +19,8 @@ import javax.persistence.EntityManager;
 public class LiteQLJpaAutoConfiguration {
 
     @Bean
-    public SqlCustomizer sqlCustomizer(LiteQLSpringProperties liteQLSpringProperties) {
-        return new JpaSqlCustomizer(liteQLSpringProperties);
+    public SqlCustomizer sqlCustomizer() {
+        return new JpaSqlCustomizer();
     }
 
     @Bean

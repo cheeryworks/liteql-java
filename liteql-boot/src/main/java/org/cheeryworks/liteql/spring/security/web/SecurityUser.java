@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.spring.security.web;
 
-import org.cheeryworks.liteql.schema.UserEntity;
+import org.cheeryworks.liteql.model.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;

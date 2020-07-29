@@ -19,6 +19,7 @@ import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.TreeReadResult;
 import org.cheeryworks.liteql.query.read.result.TreeReadResults;
 import org.cheeryworks.liteql.query.save.SaveQueryAssociations;
+import org.cheeryworks.liteql.schema.SchemaDefinitionProvider;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.enums.DataType;
@@ -51,22 +52,29 @@ import org.cheeryworks.liteql.util.jackson.serializer.TypeSerializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 
-import static org.cheeryworks.liteql.schema.HierarchicalEntity.CHILDREN_FIELD_NAME;
-import static org.cheeryworks.liteql.schema.HierarchicalEntity.LEAF_FIELD_NAME;
-import static org.cheeryworks.liteql.schema.HierarchicalEntity.PARENT_ID_FIELD_NAME;
-import static org.cheeryworks.liteql.schema.SortableEntity.PRIORITY_FIELD_NAME;
-import static org.cheeryworks.liteql.schema.SortableEntity.SORT_CODE_FIELD_NAME;
+import static org.cheeryworks.liteql.model.HierarchicalEntity.CHILDREN_FIELD_NAME;
+import static org.cheeryworks.liteql.model.HierarchicalEntity.LEAF_FIELD_NAME;
+import static org.cheeryworks.liteql.model.HierarchicalEntity.PARENT_ID_FIELD_NAME;
+import static org.cheeryworks.liteql.model.SortableEntity.PRIORITY_FIELD_NAME;
+import static org.cheeryworks.liteql.model.SortableEntity.SORT_CODE_FIELD_NAME;
 import static org.cheeryworks.liteql.schema.field.IdField.ID_FIELD_NAME;
 
 public abstract class LiteQLUtil {
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static Set<SchemaDefinitionProvider> schemaDefinitionProviders = new HashSet<>();
+
+    private static Set<String> schemaDefinitionPackages = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     static {
         OBJECT_MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
@@ -75,6 +83,17 @@ public abstract class LiteQLUtil {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         OBJECT_MAPPER.registerModule(getLiteQLJsonModule());
+
+        Iterator<SchemaDefinitionProvider> schemaDefinitionProviderIterator
+                = ServiceLoader.load(SchemaDefinitionProvider.class).iterator();
+
+        while (schemaDefinitionProviderIterator.hasNext()) {
+            SchemaDefinitionProvider schemaDefinitionProvider = schemaDefinitionProviderIterator.next();
+
+            schemaDefinitionProviders.add(schemaDefinitionProvider);
+
+            schemaDefinitionPackages.add(schemaDefinitionProvider.getClass().getPackage().getName());
+        }
     }
 
     private LiteQLUtil() {
@@ -404,6 +423,10 @@ public abstract class LiteQLUtil {
                     hierarchicalEntities,
                     hierarchicalEntityInTree.getChildren());
         }
+    }
+
+    public static Set<String> getSchemaDefinitionPackages() {
+        return schemaDefinitionPackages;
     }
 
 }

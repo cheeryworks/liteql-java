@@ -5,13 +5,13 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.VoidEntity;
+import org.cheeryworks.liteql.model.VoidEntity;
 import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
 import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.schema.Entity;
-import org.cheeryworks.liteql.schema.Trait;
+import org.cheeryworks.liteql.model.Entity;
+import org.cheeryworks.liteql.model.Trait;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
@@ -92,7 +92,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> traitInstanceDefinitions = new HashSet<>();
 
-        for (String packageToScan : getLiteQLProperties().getPackagesToScan()) {
+        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
             traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
         }
 
@@ -138,7 +138,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> resourceDefinitionBeans = new HashSet<>();
 
-        for (String packageToScan : getLiteQLProperties().getPackagesToScan()) {
+        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
             resourceDefinitionBeans.addAll(resourceDefinitionScanner.findCandidateComponents(packageToScan));
         }
 
@@ -170,7 +170,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
-        for (String packageToScan : getLiteQLProperties().getPackagesToScan()) {
+        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
             jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
         }
 
@@ -200,7 +200,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> graphQLEntityBeans = new HashSet<>();
 
-        for (String packageToScan : getLiteQLProperties().getPackagesToScan()) {
+        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
             graphQLEntityBeans.addAll(graphQLEntityScanner.findCandidateComponents(packageToScan));
         }
 

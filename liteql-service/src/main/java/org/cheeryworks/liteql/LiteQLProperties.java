@@ -1,13 +1,5 @@
 package org.cheeryworks.liteql;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
 public class LiteQLProperties {
 
     private boolean enabled = true;
@@ -15,8 +7,6 @@ public class LiteQLProperties {
     private boolean migrationEnabled = false;
 
     private boolean diagnosticEnabled = false;
-
-    private Set<String> packagesToScan = loadDefaultPackageToScan();
 
     public boolean isEnabled() {
         return enabled;
@@ -40,32 +30,6 @@ public class LiteQLProperties {
 
     public void setDiagnosticEnabled(boolean diagnosticEnabled) {
         this.diagnosticEnabled = diagnosticEnabled;
-    }
-
-    public Set<String> getPackagesToScan() {
-        return this.packagesToScan;
-    }
-
-    private Set<String> loadDefaultPackageToScan() {
-        try {
-            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
-                    = new PathMatchingResourcePatternResolver();
-
-            Resource[] resources = pathMatchingResourcePatternResolver
-                    .getResources("classpath*:META-INF/packages-to-scan-module.properties");
-            Set<String> packagesToScan = new HashSet<>();
-            if (resources != null) {
-                for (Resource resource : resources) {
-                    Properties properties = new Properties();
-                    properties.load(resource.getInputStream());
-                    packagesToScan.addAll(Arrays.asList(properties.get("packagesToScan").toString().split(",")));
-                }
-            }
-
-            return packagesToScan;
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex.getMessage(), ex);
-        }
     }
 
 }

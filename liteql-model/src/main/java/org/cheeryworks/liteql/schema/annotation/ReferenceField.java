@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.schema.annotation;
 
-import org.cheeryworks.liteql.VoidEntity;
-import org.cheeryworks.liteql.schema.Entity;
+import org.cheeryworks.liteql.model.VoidEntity;
+import org.cheeryworks.liteql.model.Entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

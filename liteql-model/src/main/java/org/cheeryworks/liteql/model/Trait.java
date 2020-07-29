@@ -1,5 +1,6 @@
-package org.cheeryworks.liteql.schema;
+package org.cheeryworks.liteql.model;
 
+import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 

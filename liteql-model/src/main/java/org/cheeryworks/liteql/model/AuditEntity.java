@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.schema;
+package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.annotation.Position;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;

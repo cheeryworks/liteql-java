@@ -1,6 +1,4 @@
-package org.cheeryworks.liteql;
-
-import org.cheeryworks.liteql.schema.Entity;
+package org.cheeryworks.liteql.model;
 
 public class VoidEntity implements Entity {
 
