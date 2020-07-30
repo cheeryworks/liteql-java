@@ -6,6 +6,8 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.model.Trait;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
+import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
@@ -26,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class JpaSqlCustomizer implements SqlCustomizer {
+public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
     private Map<TypeName, String> tableNames = new HashMap<>();
 
@@ -34,7 +36,9 @@ public class JpaSqlCustomizer implements SqlCustomizer {
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
-    public JpaSqlCustomizer() {
+    public JpaSqlCustomizer(SchemaService schemaService) {
+        super(schemaService);
+
         ClassPathScanningCandidateComponentProvider jpaEntityScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
@@ -115,7 +119,7 @@ public class JpaSqlCustomizer implements SqlCustomizer {
         String tableName = tableNames.get(domainTypeName);
 
         if (StringUtils.isBlank(tableName)) {
-            return SqlCustomizer.super.getTableName(domainTypeName);
+            return super.getTableName(domainTypeName);
         }
 
         return tableName;
@@ -130,25 +134,10 @@ public class JpaSqlCustomizer implements SqlCustomizer {
         }
 
         if (StringUtils.isBlank(columnName)) {
-            return SqlCustomizer.super.getColumnName(domainTypeName, fieldName);
+            return super.getColumnName(domainTypeName, fieldName);
         }
 
         return columnName;
-    }
-
-    @Override
-    public String getFieldName(TypeName domainTypeName, String columnName) {
-        String fieldName = null;
-
-        if (fieldNames.get(domainTypeName) != null) {
-            fieldName = fieldNames.get(domainTypeName).get(columnName);
-        }
-
-        if (StringUtils.isBlank(fieldName)) {
-            return SqlCustomizer.super.getFieldName(domainTypeName, columnName);
-        }
-
-        return fieldName;
     }
 
 }

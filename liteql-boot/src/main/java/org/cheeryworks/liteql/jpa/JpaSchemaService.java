@@ -66,14 +66,12 @@ import java.util.TreeSet;
 
 public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
 
-    private SqlCustomizer sqlCustomizer;
+    private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
     private Map<Class, Class> traitImplements = initTraitImplements();
 
-    public JpaSchemaService(LiteQLSpringProperties liteQLSpringProperties, SqlCustomizer sqlCustomizer) {
+    public JpaSchemaService(LiteQLSpringProperties liteQLSpringProperties) {
         super(liteQLSpringProperties, "classpath*:/liteql");
-
-        this.sqlCustomizer = sqlCustomizer;
 
         Map<String, Set<Type>> typeNameWithinSchemas = getTypeWithinSchemas();
 
@@ -271,6 +269,10 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         Method[] referenceFieldMethods
                 = MethodUtils.getMethodsWithAnnotation(javaType, ReferenceField.class, true, true);
 
+        Map<String, String> fieldsOfType = new HashMap<>();
+
+        fieldNames.put(domainType.getTypeName(), fieldsOfType);
+
         for (java.lang.reflect.Field javaField : javaFields) {
             if (Modifier.isFinal(javaField.getModifiers()) || Modifier.isStatic(javaField.getModifiers())) {
                 continue;
@@ -282,21 +284,25 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 continue;
             }
 
-            String fieldName = javaField.getName();
+            String javaFieldName = javaField.getName();
 
-            Column columnAnnotation = getAnnotation(columnMethods, fieldName, javaField, Column.class);
+            Column columnAnnotation = getAnnotation(columnMethods, javaFieldName, javaField, Column.class);
 
-            Lob lobAnnotation = getAnnotation(lobMethods, fieldName, javaField, Lob.class);
+            Lob lobAnnotation = getAnnotation(lobMethods, javaFieldName, javaField, Lob.class);
 
             GraphQLField graphQLFieldAnnotation
-                    = getAnnotation(graphQLFieldMethods, fieldName, javaField, GraphQLField.class);
+                    = getAnnotation(graphQLFieldMethods, javaFieldName, javaField, GraphQLField.class);
 
             ReferenceField referenceFieldAnnotation
-                    = getAnnotation(referenceFieldMethods, fieldName, javaField, ReferenceField.class);
+                    = getAnnotation(referenceFieldMethods, javaFieldName, javaField, ReferenceField.class);
 
             Field field = getField(
-                    javaType, fieldName, javaField.getType(),
+                    javaType, javaFieldName, javaField.getType(),
                     columnAnnotation, lobAnnotation, graphQLFieldAnnotation, referenceFieldAnnotation);
+
+            if (columnAnnotation != null && StringUtils.isNotBlank(columnAnnotation.name())) {
+                fieldsOfType.put(columnAnnotation.name(), field.getName());
+            }
 
             fields.add(field);
         }
@@ -333,7 +339,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 Set<String> fieldNames = new LinkedHashSet<>();
 
                 for (String columnName : columnNames) {
-                    fieldNames.add(sqlCustomizer.getFieldName(domainType.getTypeName(), columnName));
+                    fieldNames.add(getFieldName(domainType.getTypeName(), columnName));
                 }
 
                 if (jpaIndex.unique()) {
@@ -357,6 +363,30 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         if (CollectionUtils.isNotEmpty(indexes)) {
             domainType.setIndexes(indexes);
         }
+    }
+
+    public String getFieldName(TypeName domainTypeName, String columnName) {
+        String fieldName = null;
+
+        if (fieldNames.get(domainTypeName) != null) {
+            fieldName = fieldNames.get(domainTypeName).get(columnName);
+        }
+
+        if (StringUtils.isBlank(fieldName)) {
+            fieldName = columnName.toLowerCase();
+
+            String[] wordsOfColumnName = fieldName.split("_");
+
+            StringBuffer fieldNameBuffer = new StringBuffer();
+
+            for (int i = 0; i < wordsOfColumnName.length; i++) {
+                fieldNameBuffer.append((i == 0) ? wordsOfColumnName[i] : StringUtils.capitalize(wordsOfColumnName[i]));
+            }
+
+            return fieldNameBuffer.toString();
+        }
+
+        return fieldName;
     }
 
     private void performFieldsOfTrait(TraitType traitType, Class traitInterface) {

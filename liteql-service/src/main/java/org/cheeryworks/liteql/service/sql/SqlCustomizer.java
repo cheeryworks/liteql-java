@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.service.sql;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.schema.TypeName;
 
 public interface SqlCustomizer {
@@ -18,20 +17,6 @@ public interface SqlCustomizer {
                 ),
                 "_"
         ).toLowerCase();
-    }
-
-    default String getFieldName(TypeName domainTypeName, String columnName) {
-        String fieldName = columnName.toLowerCase();
-
-        String[] wordsOfColumnName = fieldName.split("_");
-
-        StringBuffer fieldNameBuffer = new StringBuffer();
-
-        for (int i = 0; i < wordsOfColumnName.length; i++) {
-            fieldNameBuffer.append((i == 0) ? wordsOfColumnName[i] : StringUtils.capitalize(wordsOfColumnName[i]));
-        }
-
-        return fieldNameBuffer.toString();
     }
 
 }
