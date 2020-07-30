@@ -19,12 +19,12 @@ import static org.cheeryworks.liteql.schema.Schema.SUFFIX_OF_TYPE_DEFINITION;
 
 public class DefaultSchemaService extends AbstractSchemaService {
 
-    private String[] locationPatterns;
+    private String[] locations;
 
-    public DefaultSchemaService(LiteQLProperties liteQLProperties, String... locationPatterns) {
+    public DefaultSchemaService(LiteQLProperties liteQLProperties, String... locations) {
         super(liteQLProperties);
 
-        this.locationPatterns = locationPatterns;
+        this.locations = locations;
 
         init();
     }
@@ -32,16 +32,16 @@ public class DefaultSchemaService extends AbstractSchemaService {
     private void init() {
         Map<String, SchemaDefinition> schemaDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-        for (String locationPattern : locationPatterns) {
+        for (String location : locations) {
             try {
-                locationPattern = StringUtils.removeEnd(
-                        org.springframework.util.StringUtils.cleanPath(locationPattern), "/");
+                location = StringUtils.removeEnd(
+                        org.springframework.util.StringUtils.cleanPath(location), "/");
 
                 PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver
                         = new PathMatchingResourcePatternResolver(getClass().getClassLoader());
 
                 Resource[] schemaRootResources = pathMatchingResourcePatternResolver.getResources(
-                        locationPattern + "/*" + SUFFIX_OF_SCHEMA_ROOT_FILE);
+                        location + "/*" + SUFFIX_OF_SCHEMA_ROOT_FILE);
 
                 Map<String, String> schemaPaths = new HashMap<>();
 
@@ -62,7 +62,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
                 }
 
                 Resource[] schemaDefinitionResources
-                        = pathMatchingResourcePatternResolver.getResources(locationPattern + "/**/*.json");
+                        = pathMatchingResourcePatternResolver.getResources(location + "/**/*.json");
 
                 for (Resource schemaDefinitionResource : schemaDefinitionResources) {
                     String schemaDefinitionResourcePath = schemaDefinitionResource.getURL().getPath();
@@ -110,7 +110,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
                 }
             } catch (IOException ex) {
                 throw new IllegalArgumentException(
-                        "Location patterns [" + locationPattern + "] invalid, " + ex.getMessage(), ex);
+                        "Location [" + location + "] invalid, " + ex.getMessage(), ex);
             }
         }
 
