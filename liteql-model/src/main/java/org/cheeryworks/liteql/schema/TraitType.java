@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.schema.field.Field;
 
 import java.util.Objects;
@@ -7,7 +8,11 @@ import java.util.Set;
 
 public class TraitType implements Type {
 
+    @JsonIgnore
     private TypeName typeName;
+
+    @JsonIgnore
+    private String version;
 
     private Set<Field> fields;
 
@@ -18,9 +23,17 @@ public class TraitType implements Type {
         return typeName;
     }
 
-    @Override
     public void setTypeName(TypeName typeName) {
         this.typeName = typeName;
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public Set<Field> getFields() {

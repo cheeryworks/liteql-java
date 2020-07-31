@@ -8,6 +8,8 @@ public class LiteQLProperties {
 
     private boolean diagnosticEnabled = false;
 
+    private String dataPath = "/tmp/liteql";
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -30,6 +32,14 @@ public class LiteQLProperties {
 
     public void setDiagnosticEnabled(boolean diagnosticEnabled) {
         this.diagnosticEnabled = diagnosticEnabled;
+    }
+
+    public String getDataPath() {
+        return dataPath;
+    }
+
+    public void setDataPath(String dataPath) {
+        this.dataPath = dataPath;
     }
 
 }

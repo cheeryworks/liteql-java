@@ -8,7 +8,6 @@ import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,11 +50,12 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
-            Class<?> jpaEntityJavaType = LiteQLUtil.getClass(japEntityBean.getBeanClassName());
+            Class<? extends Trait> jpaEntityJavaType
+                    = (Class<? extends Trait>) LiteQLUtil.getClass(japEntityBean.getBeanClassName());
 
             Table table = jpaEntityJavaType.getAnnotation(Table.class);
 
-            TypeName typeName = Trait.getTypeName(jpaEntityJavaType);
+            TypeName typeName = LiteQLUtil.getTypeName(jpaEntityJavaType);
 
             if (typeName != null) {
                 if (table != null) {

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.model.Trait;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryConditions;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
@@ -51,6 +52,7 @@ import org.cheeryworks.liteql.util.jackson.serializer.TypeSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -60,6 +62,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import static org.cheeryworks.liteql.model.HierarchicalEntity.CHILDREN_FIELD_NAME;
 import static org.cheeryworks.liteql.model.HierarchicalEntity.LEAF_FIELD_NAME;
@@ -92,7 +95,7 @@ public abstract class LiteQLUtil {
 
             schemaDefinitionProviders.add(schemaDefinitionProvider);
 
-            schemaDefinitionPackages.add(schemaDefinitionProvider.getClass().getPackage().getName());
+            schemaDefinitionPackages.addAll(Arrays.asList(schemaDefinitionProvider.getPackages()));
         }
     }
 
@@ -427,6 +430,43 @@ public abstract class LiteQLUtil {
 
     public static Set<String> getSchemaDefinitionPackages() {
         return schemaDefinitionPackages;
+    }
+
+    public static String getSchemaOfTrait(Class<? extends Trait> traitJavaType) {
+        return getProperty(traitJavaType, SchemaDefinitionProvider::getSchema);
+    }
+
+    private String getVersionOfTrait(Class<? extends Trait> traitJavaType) {
+        return getProperty(traitJavaType, SchemaDefinitionProvider::getVersion);
+    }
+
+    private static <T> T getProperty(
+            Class<? extends Trait> entityJavaType, Function<SchemaDefinitionProvider, T> consumer) {
+        for (SchemaDefinitionProvider schemaDefinitionProvider : schemaDefinitionProviders) {
+            boolean matched = Arrays.stream(schemaDefinitionProvider.getPackages())
+                    .anyMatch(schemaDefinitionPackage -> schemaDefinitionPackage.equals(
+                            entityJavaType.getPackage().getName()));
+
+            if (matched) {
+                return consumer.apply(schemaDefinitionProvider);
+            }
+        }
+
+        return null;
+    }
+
+    public static TypeName getTypeName(Class<? extends Trait> traitJavaType) {
+        String schema = LiteQLUtil.getSchemaOfTrait(traitJavaType);
+
+        if (StringUtils.isNotBlank(schema)) {
+            TypeName typeName = new TypeName();
+            typeName.setSchema(LiteQLUtil.getSchemaOfTrait(traitJavaType));
+            typeName.setName(LiteQLUtil.camelNameToLowerDashConnectedLowercaseName(traitJavaType.getSimpleName()));
+
+            return typeName;
+        }
+
+        return null;
     }
 
 }

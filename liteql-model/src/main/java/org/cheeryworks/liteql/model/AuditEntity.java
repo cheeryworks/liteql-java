@@ -2,12 +2,9 @@ package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.annotation.Position;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
-import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
-import org.cheeryworks.liteql.util.LiteQLConstants;
 
 import java.util.Date;
 
-@ResourceDefinition(schema = LiteQLConstants.SCHEMA)
 public interface AuditEntity extends Entity {
 
     String ENABLED_FIELD_NAME = "enabled";

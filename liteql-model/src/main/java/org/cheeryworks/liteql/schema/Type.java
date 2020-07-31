@@ -6,7 +6,7 @@ public interface Type extends Serializable {
 
     TypeName getTypeName();
 
-    void setTypeName(TypeName typeName);
+    String getVersion();
 
     boolean isTrait();
 

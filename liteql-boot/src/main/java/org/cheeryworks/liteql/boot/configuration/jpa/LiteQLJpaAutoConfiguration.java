@@ -19,14 +19,13 @@ import javax.persistence.EntityManager;
 public class LiteQLJpaAutoConfiguration {
 
     @Bean
-    public SqlCustomizer sqlCustomizer() {
-        return new JpaSqlCustomizer();
+    public SqlCustomizer sqlCustomizer(SchemaService schemaService) {
+        return new JpaSqlCustomizer(schemaService);
     }
 
     @Bean
-    public SchemaService jpaRepository(
-            LiteQLSpringProperties liteQLSpringProperties, SqlCustomizer sqlCustomizer) {
-        return new JpaSchemaService(liteQLSpringProperties, sqlCustomizer);
+    public SchemaService jpaRepository(LiteQLSpringProperties liteQLSpringProperties) {
+        return new JpaSchemaService(liteQLSpringProperties);
     }
 
 }

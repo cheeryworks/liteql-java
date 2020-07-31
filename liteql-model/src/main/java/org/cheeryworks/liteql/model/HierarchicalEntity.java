@@ -1,10 +1,7 @@
 package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.annotation.Position;
-import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
-import org.cheeryworks.liteql.util.LiteQLConstants;
 
-@ResourceDefinition(schema = LiteQLConstants.SCHEMA)
 public interface HierarchicalEntity<T> extends SortableEntity {
 
     String PARENT_ID_FIELD_NAME = "parentId";

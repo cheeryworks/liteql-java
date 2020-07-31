@@ -22,4 +22,6 @@ public interface SchemaService {
 
     Map<TypeName, Map<String, Migration>> getMigrations(String schemaName);
 
+    String export();
+
 }

@@ -5,19 +5,17 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.model.VoidEntity;
 import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
-import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.model.Entity;
 import org.cheeryworks.liteql.model.Trait;
+import org.cheeryworks.liteql.model.VoidEntity;
+import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.Position;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
-import org.cheeryworks.liteql.schema.annotation.ResourceDefinition;
 import org.cheeryworks.liteql.schema.annotation.TraitInstance;
 import org.cheeryworks.liteql.schema.field.AbstractField;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
@@ -34,7 +32,6 @@ import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -42,6 +39,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import javax.persistence.Column;
 import javax.persistence.Lob;
@@ -119,45 +117,42 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     private Map<String, Set<Type>> getTypeWithinSchemas() {
         Map<String, Set<Type>> typeWithinSchemas = new HashMap<>();
 
-        ClassPathScanningCandidateComponentProvider resourceDefinitionScanner =
+        ClassPathScanningCandidateComponentProvider traitTypeScanner =
                 new ClassPathScanningCandidateComponentProvider(false) {
                     protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
                         AnnotationMetadata metadata = beanDefinition.getMetadata();
-
-                        if (metadata.isInterface()) {
-                            return true;
-                        }
-
-                        return false;
+                        return metadata.isInterface();
                     }
                 };
 
-        resourceDefinitionScanner.addIncludeFilter(new AnnotationTypeFilter(ResourceDefinition.class));
+        traitTypeScanner.addIncludeFilter(new AssignableTypeFilter(Trait.class));
 
-        Set<BeanDefinition> resourceDefinitionBeans = new HashSet<>();
+        Set<BeanDefinition> traitTypeBeanDefinitions = new HashSet<>();
 
         for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
-            resourceDefinitionBeans.addAll(resourceDefinitionScanner.findCandidateComponents(packageToScan));
+            traitTypeBeanDefinitions.addAll(traitTypeScanner.findCandidateComponents(packageToScan));
         }
 
-        for (BeanDefinition resourceDefinitionBean : resourceDefinitionBeans) {
-            Class traitInterface = LiteQLUtil.getClass(resourceDefinitionBean.getBeanClassName());
+        for (BeanDefinition traitTypeBeanDefinition : traitTypeBeanDefinitions) {
+            Class traitInterface = LiteQLUtil.getClass(traitTypeBeanDefinition.getBeanClassName());
 
-            if (Entity.class.isAssignableFrom(traitInterface) && traitInterface.isInterface()) {
-                TypeName typeName = Trait.getTypeName(traitInterface);
+            if (traitInterface.equals(Trait.class)) {
+                continue;
+            }
 
-                if (typeName != null) {
-                    Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
+            TypeName typeName = LiteQLUtil.getTypeName(traitInterface);
 
-                    if (typeWithinSchema == null) {
-                        typeWithinSchema = new LinkedHashSet<>();
-                        typeWithinSchemas.put(typeName.getSchema(), typeWithinSchema);
-                    }
+            if (typeName != null) {
+                Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
 
-                    TraitType traitType = traitInterfaceToTraitType(traitInterface, typeName);
-
-                    typeWithinSchema.add(traitType);
+                if (typeWithinSchema == null) {
+                    typeWithinSchema = new LinkedHashSet<>();
+                    typeWithinSchemas.put(typeName.getSchema(), typeWithinSchema);
                 }
+
+                TraitType traitType = traitInterfaceToTraitType(traitInterface, typeName);
+
+                typeWithinSchema.add(traitType);
             }
         }
 
@@ -173,9 +168,10 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
-            Class<?> jpaEntityJavaType = LiteQLUtil.getClass(japEntityBean.getBeanClassName());
+            Class<? extends Trait> jpaEntityJavaType
+                    = (Class<? extends Trait>) LiteQLUtil.getClass(japEntityBean.getBeanClassName());
 
-            TypeName typeName = Trait.getTypeName(jpaEntityJavaType);
+            TypeName typeName = LiteQLUtil.getTypeName(jpaEntityJavaType);
 
             if (typeName != null) {
                 Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
@@ -208,7 +204,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             GraphQLEntity graphQLEntity = graphQLEntityJavaType.getAnnotation(GraphQLEntity.class);
 
             if (graphQLEntity != null && !graphQLEntity.extension().equals(Void.class) && !graphQLEntity.ignored()) {
-                TypeName domainTypeName = Trait.getTypeName(graphQLEntity.extension());
+                TypeName domainTypeName = LiteQLUtil.getTypeName(graphQLEntity.extension());
 
                 Set<Type> domainTypes = typeWithinSchemas.get(domainTypeName.getSchema());
 
@@ -520,10 +516,10 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
             if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                 referenceField.setDomainTypeName(
-                        Trait.getTypeName(
+                        LiteQLUtil.getTypeName(
                                 this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
             } else {
-                referenceField.setDomainTypeName(Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+                referenceField.setDomainTypeName(LiteQLUtil.getTypeName(referenceFieldAnnotation.targetDomainType()));
             }
 
             if (Collection.class.isAssignableFrom(fieldType)) {
@@ -534,11 +530,11 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                         referenceFieldAnnotation.mappedDomainType())) {
                     if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                         referenceField.setMappedDomainTypeName(
-                                Trait.getTypeName(
+                                LiteQLUtil.getTypeName(
                                         this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
                     } else {
                         referenceField.setMappedDomainTypeName(
-                                Trait.getTypeName(referenceFieldAnnotation.targetDomainType()));
+                                LiteQLUtil.getTypeName(referenceFieldAnnotation.targetDomainType()));
                     }
                 }
             }
@@ -568,7 +564,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         List<Class<?>> javaTypeInterfaces = ClassUtils.getAllInterfaces(javaType);
 
-        Set<Class<?>> traitInterfaces = new TreeSet<>((o1, o2) -> {
+        Set<Class<? extends Trait>> traitInterfaces = new TreeSet<>((o1, o2) -> {
             if (o1.isAssignableFrom(o2)) {
                 return 0;
             } else {
@@ -577,13 +573,13 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         });
 
         for (Class<?> javaTypeInterface : javaTypeInterfaces) {
-            if (Entity.class.isAssignableFrom(javaTypeInterface)) {
-                traitInterfaces.add(javaTypeInterface);
+            if (Trait.class.isAssignableFrom(javaTypeInterface)) {
+                traitInterfaces.add((Class<? extends Trait>) javaTypeInterface);
             }
         }
 
-        for (Class<?> traitInterface : traitInterfaces) {
-            TypeName typeName = Trait.getTypeName(traitInterface);
+        for (Class<? extends Trait> traitInterface : traitInterfaces) {
+            TypeName typeName = LiteQLUtil.getTypeName(traitInterface);
 
             if (typeName != null) {
                 typeNames.add(typeName);

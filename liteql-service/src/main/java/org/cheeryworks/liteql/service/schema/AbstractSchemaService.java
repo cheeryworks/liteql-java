@@ -1,5 +1,7 @@
 package org.cheeryworks.liteql.service.schema;
 
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.Schema;
@@ -11,9 +13,14 @@ import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +39,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     private Set<SchemaDefinition> schemaDefinitions = new TreeSet<>(Comparator.comparing(SchemaDefinition::getName));
 
     private List<Schema> schemas = new ArrayList<>();
+
+    private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
 
     public AbstractSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties);
@@ -56,7 +65,9 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
             Type type = LiteQLUtil.toBean(typeDefinition.getContents().get(key), Type.class);
 
-            type.setTypeName(typeName);
+            TraitType traitType = (TraitType) type;
+            traitType.setTypeName(typeName);
+            traitType.setVersion(key.split(VERSION_CONCAT)[0]);
 
             addType(type);
 
@@ -81,7 +92,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         verifyMigrationsOfSchema(schemaDefinition.getName());
     }
 
-    public void addType(Type type) {
+    protected void addType(Type type) {
         Schema schema = null;
 
         try {
@@ -95,13 +106,9 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         if (type instanceof DomainType) {
-            Set<DomainType> domainTypes = schema.getDomainTypes();
-
-            domainTypes.add((DomainType) type);
+            schema.getDomainTypes().add((DomainType) type);
         } else if (type instanceof TraitType) {
-            Set<TraitType> traitTypes = schema.getTraitTypes();
-
-            traitTypes.add((TraitType) type);
+            schema.getTraitTypes().add((TraitType) type);
         }
     }
 
@@ -222,6 +229,75 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     @Override
     public Map<TypeName, Map<String, Migration>> getMigrations(String schemaName) {
         return getSchema(schemaName).getMigrations();
+    }
+
+    @Override
+    public String export() {
+        String schemasRootPath
+                = getLiteQLProperties().getDataPath() + "/schemas-" + FILE_NAME_FORMAT.format(new Date());
+
+        try {
+            File schemasRoot = new File(schemasRootPath);
+
+            if (schemasRoot.exists()) {
+                FileUtils.deleteDirectory(schemasRoot);
+            } else {
+                schemasRoot.mkdir();
+            }
+
+            for (Schema schema : schemas) {
+                File liteQLSchema = new File(
+                        schemasRoot.getPath() + "/" + schema.getName() + Schema.SUFFIX_OF_SCHEMA_ROOT_FILE);
+
+                FileUtils.write(liteQLSchema, "", StandardCharsets.UTF_8);
+
+                File typesDirectory = new File(
+                        schemasRoot.getPath() + "/" + schema.getName() + "/" + Schema.NAME_OF_TYPES_DIRECTORY);
+
+                typesDirectory.mkdirs();
+
+                exportTypes(typesDirectory.getPath(), schema.getDomainTypes());
+
+                exportTypes(typesDirectory.getPath(), schema.getTraitTypes());
+            }
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
+
+        return schemasRootPath;
+    }
+
+    private void exportTypes(String typesDirectoryPath, Set<? extends Type> types) throws IOException {
+        for (Type type : types) {
+            File typeDirectory = new File(typesDirectoryPath + "/" + type.getTypeName().getName());
+
+            typeDirectory.mkdir();
+
+            File typeDefinition = new File(
+                    typeDirectory + "/" + Optional.ofNullable(type.getVersion()).orElse("1.0.0")
+                            + VERSION_CONCAT + Schema.SUFFIX_OF_TYPE_DEFINITION);
+
+            FileUtils.write(typeDefinition, LiteQLUtil.toJson(type) + "\n", StandardCharsets.UTF_8);
+
+            if (!type.isTrait()) {
+                DomainType domainType = (DomainType) type;
+
+                Map<String, Migration> migrations
+                        = getMigrations(domainType.getTypeName().getSchema()).get(domainType.getTypeName());
+
+                if (MapUtils.isNotEmpty(migrations)) {
+                    for (Map.Entry<String, Migration> migrationEntry : migrations.entrySet()) {
+                        File migrationDefinition = new File(
+                                typeDirectory + "/" + Schema.NAME_OF_MIGRATIONS_DIRECTORY + "/"
+                                        + migrationEntry.getKey() + Schema.SUFFIX_OF_CONFIGURATION_FILE);
+
+                        FileUtils.write(
+                                migrationDefinition, LiteQLUtil.toJson(migrationEntry.getValue()) + "\n",
+                                StandardCharsets.UTF_8);
+                    }
+                }
+            }
+        }
     }
 
 }
