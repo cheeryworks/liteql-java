@@ -9,10 +9,6 @@ import java.util.List;
 
 public abstract class AbstractReadQuery<T extends AbstractReadQuery> extends JoinedReadQuery {
 
-    public static final String MAIN_TABLE_ALIAS = "a";
-
-    public static final String JOINED_TABLE_ALIAS_PREFIX = "j";
-
     private LinkedList<QuerySort> sorts;
 
     private LinkedHashMap<String, String> references;
