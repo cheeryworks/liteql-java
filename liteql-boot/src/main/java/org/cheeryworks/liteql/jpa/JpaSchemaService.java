@@ -220,7 +220,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return typeWithinSchemas;
     }
 
-    private DomainType entityTypeToDomainType(Class<?> javaType, TypeName typeName) {
+    private DomainType entityTypeToDomainType(Class<? extends Trait> javaType, TypeName typeName) {
         DomainType domainType = new DomainType(typeName);
 
         GraphQLEntity graphQLEntity = javaType.getAnnotation(GraphQLEntity.class);
@@ -228,6 +228,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         if (graphQLEntity != null && graphQLEntity.ignored()) {
             domainType.setGraphQLType(false);
         }
+
+        domainType.setVersion(LiteQLUtil.getVersionOfTrait(javaType));
 
         performFieldsOfDomain(domainType, javaType);
 
@@ -238,8 +240,10 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return domainType;
     }
 
-    private TraitType traitInterfaceToTraitType(Class traitInterface, TypeName typeName) {
+    private TraitType traitInterfaceToTraitType(Class<? extends Trait> traitInterface, TypeName typeName) {
         TraitType traitType = new TraitType(typeName);
+
+        traitType.setVersion(LiteQLUtil.getVersionOfTrait(traitInterface));
 
         performFieldsOfTrait(traitType, traitInterface);
 
@@ -303,7 +307,11 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             fields.add(field);
         }
 
-        domainType.setFields(fields);
+        if (CollectionUtils.isEmpty(domainType.getFields())) {
+            domainType.setFields(fields);
+        } else {
+            domainType.getFields().addAll(fields);
+        }
     }
 
     private <T extends Annotation> T getAnnotation(

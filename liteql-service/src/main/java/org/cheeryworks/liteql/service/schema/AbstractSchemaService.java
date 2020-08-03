@@ -9,8 +9,10 @@ import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
+import org.cheeryworks.liteql.schema.migration.operation.CreateTypeMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
+import org.cheeryworks.liteql.util.LiteQLConstants;
 import org.cheeryworks.liteql.util.LiteQLUtil;
 
 import java.io.File;
@@ -41,6 +43,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     private List<Schema> schemas = new ArrayList<>();
 
     private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
+
+    private static final SimpleDateFormat MIGRATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS");
 
     public AbstractSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties);
@@ -93,12 +97,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     protected void addType(Type type) {
-        Schema schema = null;
-
-        try {
-            schema = getSchema(type.getTypeName().getSchema());
-        } catch (Exception ex) {
-        }
+        Schema schema = getSchema(type.getTypeName().getSchema());;
 
         if (schema == null) {
             schema = new Schema(type.getTypeName().getSchema());
@@ -142,9 +141,11 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 migratedDomainType.setGraphQLType(false);
             }
 
-            for (Migration migration : migrations.values()) {
-                for (MigrationOperation migrationOperation : migration.getOperations()) {
-                    migrationOperation.merge(migratedDomainType);
+            if (MapUtils.isNotEmpty(migrations)) {
+                for (Migration migration : migrations.values()) {
+                    for (MigrationOperation migrationOperation : migration.getOperations()) {
+                        migrationOperation.merge(migratedDomainType);
+                    }
                 }
             }
 
@@ -157,9 +158,9 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         for (TypeName domainTypeName : schema.getMigrations().keySet()) {
-            try {
-                getDomainType(domainTypeName);
-            } catch (Exception ex) {
+            DomainType domainType = getDomainType(domainTypeName);
+
+            if (domainType == null) {
                 throw new IllegalStateException(
                         "Migrations of domain type [" + domainTypeName.getFullname() + "] is not matched"
                                 + ", definition is missed");
@@ -193,9 +194,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 .stream()
                 .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
                 .findFirst()
-                .<IllegalStateException>orElseThrow(() -> {
-                    throw new IllegalStateException("Can not get schema [" + schemaName + "]");
-                });
+                .orElse(null);
     }
 
     @Override
@@ -207,9 +206,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 .stream()
                 .filter(traitType -> traitType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
-                .<IllegalStateException>orElseThrow(() -> {
-                    throw new IllegalStateException("Can not get trait typeName [" + typeName.getFullname() + "]");
-                });
+                .orElse(null);
     }
 
     @Override
@@ -221,9 +218,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 .stream()
                 .filter(domainType -> domainType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
                 .findFirst()
-                .<IllegalStateException>orElseThrow(() -> {
-                    throw new IllegalStateException("Can not get domain typeName [" + typeName.getFullname() + "]");
-                });
+                .orElse(null);
     }
 
     @Override
@@ -295,6 +290,35 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                                 migrationDefinition, LiteQLUtil.toJson(migrationEntry.getValue()) + "\n",
                                 StandardCharsets.UTF_8);
                     }
+                } else {
+                    File migrationDefinition = new File(
+                            typeDirectory + "/" + Schema.NAME_OF_MIGRATIONS_DIRECTORY + "/" +
+                                    domainType.getVersion() + VERSION_BASELINE_SUFFIX + VERSION_CONCAT +
+                                    MIGRATION_TIME_FORMAT.format(new Date()) +
+                                    LiteQLConstants.WORD_CONCAT +
+                                    LiteQLUtil.camelNameToLowerDashConnectedLowercaseName(
+                                            domainType.getTypeName().getName()) +
+                                    Schema.SUFFIX_OF_CONFIGURATION_FILE);
+
+                    Migration migration = new Migration();
+                    migration.setName(domainType.getVersion() + VERSION_BASELINE_SUFFIX + VERSION_CONCAT +
+                            MIGRATION_TIME_FORMAT.format(new Date()) +
+                            LiteQLConstants.WORD_CONCAT +
+                            LiteQLUtil.camelNameToLowerDashConnectedLowercaseName(
+                                    domainType.getTypeName().getName()));
+                    migration.setDomainTypeName(domainType.getTypeName());
+                    migration.setVersion(domainType.getVersion() + VERSION_BASELINE_SUFFIX);
+                    migration.setBaseline(true);
+
+                    CreateTypeMigrationOperation createTypeMigrationOperation = new CreateTypeMigrationOperation();
+                    createTypeMigrationOperation.setFields(domainType.getFields());
+                    createTypeMigrationOperation.setIndexes(domainType.getIndexes());
+                    createTypeMigrationOperation.setUniques(domainType.getUniques());
+
+                    migration.setOperations(Collections.singletonList(createTypeMigrationOperation));
+
+                    FileUtils.write(
+                            migrationDefinition, LiteQLUtil.toJson(migration) + "\n", StandardCharsets.UTF_8);
                 }
             }
         }
