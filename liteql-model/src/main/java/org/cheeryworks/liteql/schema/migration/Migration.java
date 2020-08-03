@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.schema.migration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 
@@ -14,14 +15,18 @@ public class Migration implements Serializable {
 
     public static final String STATE_FAILED = "Failed";
 
+    @JsonIgnore
     private String name;
 
+    @JsonIgnore
     private TypeName domainTypeName;
 
+    @JsonIgnore
     private String version;
 
     private String description;
 
+    @JsonIgnore
     private boolean baseline;
 
     private List<MigrationOperation> operations;
