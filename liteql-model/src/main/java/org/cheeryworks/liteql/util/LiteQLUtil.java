@@ -93,6 +93,25 @@ public abstract class LiteQLUtil {
         while (schemaDefinitionProviderIterator.hasNext()) {
             SchemaDefinitionProvider schemaDefinitionProvider = schemaDefinitionProviderIterator.next();
 
+            for (SchemaDefinitionProvider existSchemaDefinitionProvider : schemaDefinitionProviders) {
+                if (existSchemaDefinitionProvider.getSchema().equalsIgnoreCase(schemaDefinitionProvider.getSchema())) {
+                    throw new IllegalStateException("Same schema [" + schemaDefinitionProvider.getSchema() + "]" +
+                            " defined both in SchemaDefinitionProvider [" +
+                            existSchemaDefinitionProvider.getClass().getName() + "] and [" +
+                            schemaDefinitionProvider.getClass().getName() + "]");
+                }
+
+                for (String existPackageName : existSchemaDefinitionProvider.getPackages()) {
+                    if (Arrays.stream(schemaDefinitionProvider.getPackages())
+                            .anyMatch(packageName -> packageName.equals(existPackageName))) {
+                        throw new IllegalStateException("Same package [" + existPackageName + "]" +
+                                " defined both in SchemaDefinitionProvider [" +
+                                existSchemaDefinitionProvider.getClass().getName() + "] and [" +
+                                schemaDefinitionProvider.getClass().getName() + "]");
+                    }
+                }
+            }
+
             schemaDefinitionProviders.add(schemaDefinitionProvider);
 
             schemaDefinitionPackages.addAll(Arrays.asList(schemaDefinitionProvider.getPackages()));
@@ -436,7 +455,7 @@ public abstract class LiteQLUtil {
         return getProperty(traitJavaType, SchemaDefinitionProvider::getSchema);
     }
 
-    private String getVersionOfTrait(Class<? extends Trait> traitJavaType) {
+    public static String getVersionOfTrait(Class<? extends Trait> traitJavaType) {
         return getProperty(traitJavaType, SchemaDefinitionProvider::getVersion);
     }
 
