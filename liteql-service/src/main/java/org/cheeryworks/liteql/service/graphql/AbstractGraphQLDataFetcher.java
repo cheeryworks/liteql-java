@@ -18,9 +18,7 @@ import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
 import org.cheeryworks.liteql.query.read.result.ReadResultsData;
-import org.cheeryworks.liteql.schema.DomainType;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
@@ -89,7 +87,6 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                         queryContext,
                         source.get(GraphQLConstants.QUERY_ARGUMENT_NAME_ID).toString(),
                         environment.getField().getName(),
-                        ((GraphQLObjectType) environment.getParentType()).getName(),
                         outputType.getName(), keyContext);
                 data = defaultDataLoader.loadMany(
                         Arrays.asList(childrenContext.keySet().toArray()),
@@ -180,9 +177,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         return ((ReadResultsData<ReadResult>) queryService.execute(queryContext, query)).getData();
     }
 
-    private Map<String, Object> getChildrenContext(QueryContext queryContext,
-                                                   String parentId, String fieldName, String parentTypeName,
-                                                   String childTypeName, Map<String, Object> keyContext) {
+    private Map<String, Object> getChildrenContext(
+            QueryContext queryContext, String parentId, String fieldName,
+            String childTypeName, Map<String, Object> keyContext) {
         Map<String, Object> childrenContext = new LinkedHashMap<>();
 
         TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(childTypeName);
@@ -220,20 +217,6 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         }
 
         return childrenContext;
-    }
-
-    private String getParentFieldName(String parentGraphQLFieldName, String parentTypeName) {
-        TypeName parentDomainTypeName = GraphQLServiceUtil.toDomainTypeName(parentTypeName);
-
-        DomainType parentDomainType = getSchemaService().getDomainType(parentDomainTypeName);
-
-        ReferenceField referenceField = parentDomainType.getReferenceField(parentGraphQLFieldName);
-
-        if (referenceField != null) {
-            return referenceField.getName();
-        }
-
-        return null;
     }
 
 }
