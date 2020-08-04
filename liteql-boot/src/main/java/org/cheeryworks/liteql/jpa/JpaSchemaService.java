@@ -1,19 +1,22 @@
 package org.cheeryworks.liteql.jpa;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.boot.configuration.LiteQLSpringProperties;
+import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLEntity;
 import org.cheeryworks.liteql.graphql.annotation.GraphQLField;
-import org.cheeryworks.liteql.model.Trait;
-import org.cheeryworks.liteql.model.VoidEntity;
 import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.Schema;
+import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.VoidTrait;
 import org.cheeryworks.liteql.schema.annotation.Position;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.schema.annotation.TraitInstance;
@@ -30,9 +33,11 @@ import org.cheeryworks.liteql.schema.field.StringField;
 import org.cheeryworks.liteql.schema.field.TimestampField;
 import org.cheeryworks.liteql.schema.index.Index;
 import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.migration.Migration;
+import org.cheeryworks.liteql.schema.migration.operation.CreateTypeMigrationOperation;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -45,11 +50,15 @@ import javax.persistence.Column;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,19 +71,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_BASELINE_SUFFIX;
+import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_CONCAT;
+
 public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
+
+    private static final SimpleDateFormat MIGRATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS");
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
     private Map<Class, Class> traitImplements = initTraitImplements();
 
-    public JpaSchemaService(LiteQLSpringProperties liteQLSpringProperties) {
-        super(liteQLSpringProperties, "classpath*:/liteql");
+    public JpaSchemaService(LiteQLProperties liteQLProperties) {
+        super(liteQLProperties, "classpath*:/liteql");
 
         Map<String, Set<Type>> typeNameWithinSchemas = getTypeWithinSchemas();
 
         for (Map.Entry<String, Set<Type>> typeNameWithinSchema : typeNameWithinSchemas.entrySet()) {
             for (Type type : typeNameWithinSchema.getValue()) {
+
+                Type existType = getType(type.getTypeName());
+
+                if (existType != null && !type.equals(existType)) {
+                    throw new IllegalStateException(
+                            "Definition of type [" + type.getTypeName() + "] not matched with it's JPA entity");
+                }
+
                 addType(type);
             }
         }
@@ -88,14 +110,14 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> traitInstanceDefinitions = new HashSet<>();
 
-        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
             traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
         }
 
         Map<Class, Class> traitImplements = new HashMap<>();
 
         for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
-            Class<?> domainJavaType = LiteQLUtil.getClass(traitInstanceDefinition.getBeanClassName());
+            Class<?> domainJavaType = LiteQL.ClassUtils.getClass(traitInstanceDefinition.getBeanClassName());
 
             TraitInstance traitInstance = domainJavaType.getAnnotation(TraitInstance.class);
 
@@ -129,18 +151,18 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> traitTypeBeanDefinitions = new HashSet<>();
 
-        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
             traitTypeBeanDefinitions.addAll(traitTypeScanner.findCandidateComponents(packageToScan));
         }
 
         for (BeanDefinition traitTypeBeanDefinition : traitTypeBeanDefinitions) {
-            Class traitInterface = LiteQLUtil.getClass(traitTypeBeanDefinition.getBeanClassName());
+            Class traitInterface = LiteQL.ClassUtils.getClass(traitTypeBeanDefinition.getBeanClassName());
 
             if (traitInterface.equals(Trait.class)) {
                 continue;
             }
 
-            TypeName typeName = LiteQLUtil.getTypeName(traitInterface);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitInterface);
 
             if (typeName != null) {
                 Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
@@ -163,15 +185,15 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
-        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
             jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
             Class<? extends Trait> jpaEntityJavaType
-                    = (Class<? extends Trait>) LiteQLUtil.getClass(japEntityBean.getBeanClassName());
+                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
 
-            TypeName typeName = LiteQLUtil.getTypeName(jpaEntityJavaType);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(jpaEntityJavaType);
 
             if (typeName != null) {
                 Set<Type> typeWithinSchema = typeWithinSchemas.get(typeName.getSchema());
@@ -194,17 +216,17 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         Set<BeanDefinition> graphQLEntityBeans = new HashSet<>();
 
-        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
             graphQLEntityBeans.addAll(graphQLEntityScanner.findCandidateComponents(packageToScan));
         }
 
         for (BeanDefinition graphQLEntityBean : graphQLEntityBeans) {
-            Class<?> graphQLEntityJavaType = LiteQLUtil.getClass(graphQLEntityBean.getBeanClassName());
+            Class<?> graphQLEntityJavaType = LiteQL.ClassUtils.getClass(graphQLEntityBean.getBeanClassName());
 
             GraphQLEntity graphQLEntity = graphQLEntityJavaType.getAnnotation(GraphQLEntity.class);
 
             if (graphQLEntity != null && !graphQLEntity.extension().equals(Void.class) && !graphQLEntity.ignored()) {
-                TypeName domainTypeName = LiteQLUtil.getTypeName(graphQLEntity.extension());
+                TypeName domainTypeName = LiteQL.SchemaUtils.getTypeName(graphQLEntity.extension());
 
                 Set<Type> domainTypes = typeWithinSchemas.get(domainTypeName.getSchema());
 
@@ -229,7 +251,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             domainType.setGraphQLType(false);
         }
 
-        domainType.setVersion(LiteQLUtil.getVersionOfTrait(javaType));
+        domainType.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(javaType));
 
         performFieldsOfDomain(domainType, javaType);
 
@@ -243,7 +265,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     private TraitType traitInterfaceToTraitType(Class<? extends Trait> traitInterface, TypeName typeName) {
         TraitType traitType = new TraitType(typeName);
 
-        traitType.setVersion(LiteQLUtil.getVersionOfTrait(traitInterface));
+        traitType.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(traitInterface));
 
         performFieldsOfTrait(traitType, traitInterface);
 
@@ -338,7 +360,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         if (table != null) {
             for (javax.persistence.Index jpaIndex : table.indexes()) {
-                Set<String> columnNames = LiteQLUtil.convertDelimitedParameterToSetOfString(jpaIndex.columnList());
+                Set<String> columnNames
+                        = LiteQL.StringUtils.convertDelimitedParameterToSetOfString(jpaIndex.columnList());
 
                 Set<String> fieldNames = new LinkedHashSet<>();
 
@@ -524,25 +547,26 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
             if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                 referenceField.setDomainTypeName(
-                        LiteQLUtil.getTypeName(
+                        LiteQL.SchemaUtils.getTypeName(
                                 this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
             } else {
-                referenceField.setDomainTypeName(LiteQLUtil.getTypeName(referenceFieldAnnotation.targetDomainType()));
+                referenceField.setDomainTypeName(
+                        LiteQL.SchemaUtils.getTypeName(referenceFieldAnnotation.targetDomainType()));
             }
 
             if (Collection.class.isAssignableFrom(fieldType)) {
                 referenceField.setCollection(true);
 
-                if (!referenceFieldAnnotation.mappedDomainType().equals(VoidEntity.class)
+                if (!referenceFieldAnnotation.mappedDomainType().equals(VoidTrait.class)
                         && !referenceFieldAnnotation.targetDomainType().equals(
                         referenceFieldAnnotation.mappedDomainType())) {
                     if (this.traitImplements.containsKey(referenceFieldAnnotation.targetDomainType())) {
                         referenceField.setMappedDomainTypeName(
-                                LiteQLUtil.getTypeName(
+                                LiteQL.SchemaUtils.getTypeName(
                                         this.traitImplements.get(referenceFieldAnnotation.targetDomainType())));
                     } else {
                         referenceField.setMappedDomainTypeName(
-                                LiteQLUtil.getTypeName(referenceFieldAnnotation.targetDomainType()));
+                                LiteQL.SchemaUtils.getTypeName(referenceFieldAnnotation.targetDomainType()));
                     }
                 }
             }
@@ -587,7 +611,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         }
 
         for (Class<? extends Trait> traitInterface : traitInterfaces) {
-            TypeName typeName = LiteQLUtil.getTypeName(traitInterface);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitInterface);
 
             if (typeName != null) {
                 typeNames.add(typeName);
@@ -596,6 +620,50 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         if (CollectionUtils.isNotEmpty(typeNames)) {
             traitType.setTraits(typeNames);
+        }
+    }
+
+    @Override
+    protected void exportMigrations(
+            DomainType domainType, Map<String, Migration> migrations, File typeDirectory) throws IOException {
+        super.exportMigrations(domainType, migrations, typeDirectory);
+
+        if (MapUtils.isEmpty(migrations) || migrations.size() == 1) {
+            String migrationName = domainType.getVersion() +
+                    VERSION_BASELINE_SUFFIX + VERSION_CONCAT +
+                    MIGRATION_TIME_FORMAT.format(new Date()) +
+                    LiteQL.Constants.WORD_CONCAT +
+                    "create_" + domainType.getTypeName().getName();
+
+            File migrationsDirectory = new File(typeDirectory + "/" + Schema.NAME_OF_MIGRATIONS_DIRECTORY);
+
+            if (migrationsDirectory.exists()) {
+                for (File migrationDefinitionFile : migrationsDirectory.listFiles()) {
+                    if (migrationDefinitionFile.getName().startsWith(domainType.getVersion())) {
+                        migrationDefinitionFile.delete();
+                    }
+                }
+            }
+
+            File migrationDefinitionFile = new File(
+                    typeDirectory + "/" + Schema.NAME_OF_MIGRATIONS_DIRECTORY + "/" +
+                            migrationName + Schema.SUFFIX_OF_CONFIGURATION_FILE);
+
+            Migration migration = new Migration();
+            migration.setName(migrationName);
+            migration.setDomainTypeName(domainType.getTypeName());
+            migration.setVersion(domainType.getVersion() + VERSION_BASELINE_SUFFIX);
+            migration.setBaseline(true);
+
+            CreateTypeMigrationOperation createTypeMigrationOperation = new CreateTypeMigrationOperation();
+            createTypeMigrationOperation.setFields(domainType.getFields());
+            createTypeMigrationOperation.setIndexes(domainType.getIndexes());
+            createTypeMigrationOperation.setUniques(domainType.getUniques());
+
+            migration.setOperations(Collections.singletonList(createTypeMigrationOperation));
+
+            FileUtils.write(
+                    migrationDefinitionFile, LiteQL.JacksonJsonUtils.toJson(migration) + "\n", StandardCharsets.UTF_8);
         }
     }
 

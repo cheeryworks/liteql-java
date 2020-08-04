@@ -40,7 +40,7 @@ import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 
@@ -52,16 +52,16 @@ import java.util.Map;
 import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.INPUT_TYPE_NAME_SUFFIX;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.MUTATION_NAME_PREFIX_CREATE;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.MUTATION_TYPE_NAME;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_CONDITIONS;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_ID;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_ORDER_BY;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_FIRST;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY;
-import static org.cheeryworks.liteql.util.graphql.GraphQLConstants.QUERY_TYPE_NAME;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.INPUT_TYPE_NAME_SUFFIX;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_CREATE;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.MUTATION_TYPE_NAME;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ORDER_BY;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_FIRST;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_DEFAULT_DATA_LOADER_KEY;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.GraphQL.QUERY_TYPE_NAME;
 
 public class DefaultGraphQLService implements GraphQLService {
 
@@ -475,7 +475,7 @@ public class DefaultGraphQLService implements GraphQLService {
                                         .build())
                         .fieldDefinition(FieldDefinition
                                 .newFieldDefinition()
-                                .name(StringUtils.uncapitalize(LiteQLUtil.plural(typeEntry.getKey())))
+                                .name(StringUtils.uncapitalize(LiteQL.StringUtils.plural(typeEntry.getKey())))
                                 .inputValueDefinition(
                                         InputValueDefinition
                                                 .newInputValueDefinition()

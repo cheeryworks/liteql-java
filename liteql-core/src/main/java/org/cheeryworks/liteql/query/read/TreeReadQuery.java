@@ -1,10 +1,9 @@
 package org.cheeryworks.liteql.query.read;
 
-import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
 import org.cheeryworks.liteql.query.read.result.TreeReadResults;
-import org.cheeryworks.liteql.util.LiteQLUtil;
 
 public class TreeReadQuery extends AbstractTypedReadQuery<ReadQuery, TreeReadResults> implements PublicQuery {
 
@@ -28,7 +27,7 @@ public class TreeReadQuery extends AbstractTypedReadQuery<ReadQuery, TreeReadRes
 
     @Override
     public TreeReadResults getResult(ReadResults readResults) {
-        return LiteQLUtil.transformInTree(readResults);
+        return TreeReadResults.transformInTree(readResults);
     }
 
 }

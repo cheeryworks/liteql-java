@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.database;
 
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 
 import java.sql.Driver;
 
@@ -8,7 +8,7 @@ public abstract class AbstractDatabaseType implements DatabaseType {
 
     @Override
     public Class<? extends Driver> getDriverClass() {
-        return (Class<? extends Driver>) LiteQLUtil.getClass(getClassName());
+        return (Class<? extends Driver>) LiteQL.ClassUtils.getClass(getClassName());
     }
 
     abstract String getClassName();

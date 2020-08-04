@@ -17,7 +17,7 @@ import org.cheeryworks.liteql.schema.Type;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,7 +48,7 @@ public class QueryServiceController extends AbstractServiceController {
 
     @Autowired
     public QueryServiceController(SchemaService schemaService, QueryService queryService) {
-        this.schemaGen = new JsonSchemaGenerator(LiteQLUtil.OBJECT_MAPPER);
+        this.schemaGen = new JsonSchemaGenerator(LiteQL.JacksonJsonUtils.OBJECT_MAPPER);
         this.schemaService = schemaService;
         this.queryService = queryService;
     }
@@ -179,7 +179,7 @@ public class QueryServiceController extends AbstractServiceController {
         try {
             return queryService.execute(
                     queryContext,
-                    LiteQLUtil.toBean(liteQL.toString(), Queries.class));
+                    LiteQL.JacksonJsonUtils.toBean(liteQL.toString(), Queries.class));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
 

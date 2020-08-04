@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.model.Trait;
+import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.Type;
 

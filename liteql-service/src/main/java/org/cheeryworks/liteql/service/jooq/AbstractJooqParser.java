@@ -23,7 +23,7 @@ import org.cheeryworks.liteql.service.query.sql.AbstractSqlParser;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.util.JooqUtil;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.StringEncoder;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.DSLContext;
@@ -136,7 +136,7 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
         List<org.jooq.Field> jooqFields = new ArrayList<>();
 
         for (Field field : fields) {
-            String fieldName = LiteQLUtil.camelNameToLowerDashConnectedLowercaseName(field.getName());
+            String fieldName = LiteQL.StringUtils.camelNameToLowerDashConnectedLowercaseName(field.getName());
 
             if (field instanceof ReferenceField) {
                 if (((ReferenceField) field).isCollection()) {

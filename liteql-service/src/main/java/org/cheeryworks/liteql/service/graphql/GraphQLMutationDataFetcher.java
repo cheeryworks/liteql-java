@@ -9,7 +9,7 @@ import org.cheeryworks.liteql.query.save.UpdateQuery;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.util.LiteQL;
 
 public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
@@ -25,13 +25,13 @@ public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
-        if (mutationName.startsWith(GraphQLConstants.MUTATION_NAME_PREFIX_CREATE)) {
+        if (mutationName.startsWith(LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_CREATE)) {
             AbstractSaveQuery saveQuery = new CreateQuery();
             saveQuery.setDomainTypeName(GraphQLServiceUtil.toDomainTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());
 
             return getQueryService().save(queryContext, saveQuery).getData();
-        } else if (mutationName.startsWith(GraphQLConstants.MUTATION_NAME_PREFIX_UPDATE)) {
+        } else if (mutationName.startsWith(LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_UPDATE)) {
             AbstractSaveQuery saveQuery = new UpdateQuery();
             saveQuery.setDomainTypeName(GraphQLServiceUtil.toDomainTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());

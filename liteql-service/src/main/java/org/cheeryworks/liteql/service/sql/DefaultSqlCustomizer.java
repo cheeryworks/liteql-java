@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.util.LiteQLConstants;
+import org.cheeryworks.liteql.util.LiteQL;
 
 public class DefaultSqlCustomizer implements SqlCustomizer {
 
@@ -37,7 +37,7 @@ public class DefaultSqlCustomizer implements SqlCustomizer {
         ).toLowerCase();
 
         if (field instanceof ReferenceField) {
-            return columnName + LiteQLConstants.WORD_CONCAT + IdField.ID_FIELD_NAME;
+            return columnName + LiteQL.Constants.WORD_CONCAT + IdField.ID_FIELD_NAME;
         } else {
             return columnName;
         }

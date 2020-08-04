@@ -3,12 +3,12 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.model.Trait;
+import org.cheeryworks.liteql.schema.Trait;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.annotation.ReferenceField;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -45,17 +45,17 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
-        for (String packageToScan : LiteQLUtil.getSchemaDefinitionPackages()) {
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
             jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
             Class<? extends Trait> jpaEntityJavaType
-                    = (Class<? extends Trait>) LiteQLUtil.getClass(japEntityBean.getBeanClassName());
+                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
 
             Table table = jpaEntityJavaType.getAnnotation(Table.class);
 
-            TypeName typeName = LiteQLUtil.getTypeName(jpaEntityJavaType);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(jpaEntityJavaType);
 
             if (typeName != null) {
                 if (table != null) {

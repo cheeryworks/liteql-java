@@ -8,8 +8,7 @@ import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
 import graphql.schema.CoercingSerializeException;
 import graphql.schema.GraphQLScalarType;
-import org.cheeryworks.liteql.util.LiteQLUtil;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.util.LiteQL;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -47,7 +46,7 @@ public abstract class Scalars {
 
     private static GraphQLScalarType buildScalarLong() {
         return GraphQLScalarType.newScalar()
-                .name(GraphQLConstants.SCALAR_LONG_NAME)
+                .name(LiteQL.Constants.GraphQL.SCALAR_LONG_NAME)
                 .coercing(new Coercing<Long, Long>() {
                     private Long convertImpl(Object input) {
                         if (input instanceof Long) {
@@ -120,7 +119,7 @@ public abstract class Scalars {
 
     private static GraphQLScalarType buildScalarDecimal() {
         return GraphQLScalarType.newScalar()
-                .name(GraphQLConstants.SCALAR_DECIMAL_NAME)
+                .name(LiteQL.Constants.GraphQL.SCALAR_DECIMAL_NAME)
                 .coercing(
                         new Coercing<BigDecimal, BigDecimal>() {
                             private BigDecimal convertImpl(Object input) {
@@ -184,7 +183,7 @@ public abstract class Scalars {
 
     private static GraphQLScalarType buildScalarConditionValue() {
         return GraphQLScalarType.newScalar()
-                .name(GraphQLConstants.SCALAR_CONDITION_VALUE_NAME)
+                .name(LiteQL.Constants.GraphQL.SCALAR_CONDITION_VALUE_NAME)
                 .coercing(
                         new Coercing() {
                             @Override
@@ -207,12 +206,12 @@ public abstract class Scalars {
 
     private static GraphQLScalarType buildScalarTimestamp() {
         return GraphQLScalarType.newScalar()
-                .name(GraphQLConstants.SCALAR_TIMESTAMP_NAME)
+                .name(LiteQL.Constants.GraphQL.SCALAR_TIMESTAMP_NAME)
                 .coercing(
                         new Coercing() {
                             @Override
                             public Object serialize(Object dataFetcherResult) {
-                                return LiteQLUtil.OBJECT_MAPPER.getDateFormat().format(dataFetcherResult);
+                                return LiteQL.JacksonJsonUtils.OBJECT_MAPPER.getDateFormat().format(dataFetcherResult);
                             }
 
                             @Override
@@ -224,7 +223,8 @@ public abstract class Scalars {
 
                                     String value = ((StringValue) input).getValue();
                                     return new Timestamp(
-                                            LiteQLUtil.OBJECT_MAPPER.getDateFormat().parse(value).getTime());
+                                            LiteQL.JacksonJsonUtils.OBJECT_MAPPER
+                                                    .getDateFormat().parse(value).getTime());
                                 } catch (Exception ex) {
                                     throw new IllegalArgumentException("Parsing date failed, " + ex.getMessage());
                                 }

@@ -22,7 +22,7 @@ import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
 import org.dataloader.DataLoader;
 
@@ -63,7 +63,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         if (environment.getSource() == null) {
             if (isListOutputType(environment.getFieldType())) {
                 data = getByConditions(queryContext, environment);
-            } else if (environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_ID) != null) {
+            } else if (environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID) != null) {
                 data = getById(queryContext, environment);
             } else {
                 throw new UnsupportedGraphQLOutputTypeException(environment.getFieldType());
@@ -74,18 +74,18 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
             GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(environment.getFieldType());
 
             DataLoader defaultDataLoader = environment.getDataLoader(
-                    GraphQLConstants.QUERY_DEFAULT_DATA_LOADER_KEY);
+                    LiteQL.Constants.GraphQL.QUERY_DEFAULT_DATA_LOADER_KEY);
 
             Map<String, Object> keyContext = new HashMap<>();
-            keyContext.put(GraphQLConstants.QUERY_DOMAIN_TYPE_NAME_KEY, outputType.getName());
-            keyContext.put(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY, environment);
+            keyContext.put(LiteQL.Constants.GraphQL.QUERY_DOMAIN_TYPE_NAME_KEY, outputType.getName());
+            keyContext.put(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY, environment);
 
             String parentFieldName = environment.getField().getName();
 
             if (isListOutputType(environment.getFieldType())) {
                 Map<String, Object> childrenContext = getChildrenContext(
                         queryContext,
-                        source.get(GraphQLConstants.QUERY_ARGUMENT_NAME_ID).toString(),
+                        source.get(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID).toString(),
                         environment.getField().getName(),
                         outputType.getName(), keyContext);
                 data = defaultDataLoader.loadMany(
@@ -131,8 +131,8 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 outputType, environment.getField().getSelectionSet().getSelections());
 
         singleReadQuery.addCondition(
-                GraphQLConstants.QUERY_ARGUMENT_NAME_ID, ConditionClause.EQUALS, ConditionType.String,
-                environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_ID));
+                LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID, ConditionClause.EQUALS, ConditionType.String,
+                environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID));
 
         singleReadQuery.setFields(fields);
 
@@ -159,13 +159,13 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         readQuery.setFields(fields);
 
         Integer offset = null;
-        if (environment.containsArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET)) {
-            offset = environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET);
+        if (environment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET)) {
+            offset = environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET);
         }
 
         Integer first = null;
-        if (environment.containsArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_FIRST)) {
-            first = environment.getArgument(GraphQLConstants.QUERY_ARGUMENT_NAME_PAGINATION_FIRST);
+        if (environment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_FIRST)) {
+            first = environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_FIRST);
         }
 
         PublicQuery query = readQuery;
@@ -189,7 +189,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         ReadQuery readQuery = QueryBuilder
                 .read(domainTypeName)
                 .fields(
-                        field(GraphQLConstants.QUERY_ARGUMENT_NAME_ID),
+                        field(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID),
                         field(parentFieldName)
                 )
                 .conditions(
@@ -199,8 +199,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 )
                 .getQuery();
 
-        DataFetchingEnvironment dataFetchingEnvironment
-                = (DataFetchingEnvironment) keyContext.get(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
+        DataFetchingEnvironment dataFetchingEnvironment =
+                (DataFetchingEnvironment) keyContext.get(
+                        LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
 
         FieldDefinitions fields = readQuery.getFields();
 
@@ -213,7 +214,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         ReadResults dataSet = queryService.read(queryContext, readQuery);
 
         for (Map<String, Object> data : dataSet) {
-            childrenContext.put(data.get(GraphQLConstants.QUERY_ARGUMENT_NAME_ID).toString(), keyContext);
+            childrenContext.put(data.get(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID).toString(), keyContext);
         }
 
         return childrenContext;

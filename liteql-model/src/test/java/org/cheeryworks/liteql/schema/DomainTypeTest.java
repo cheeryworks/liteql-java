@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.schema;
 
 import org.cheeryworks.liteql.AbstractTest;
 import org.cheeryworks.liteql.util.FileReader;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -18,9 +18,9 @@ public class DomainTypeTest extends AbstractTest {
 
         for (Map.Entry<String, String> typeInJsonFile : typeInJsonFiles.entrySet()) {
             if (typeInJsonFile.getKey().contains(SUFFIX_OF_TYPE_DEFINITION)) {
-                DomainType domainType = LiteQLUtil.toBean(typeInJsonFile.getValue(), DomainType.class);
+                DomainType domainType = LiteQL.JacksonJsonUtils.toBean(typeInJsonFile.getValue(), DomainType.class);
 
-                getLogger().info(LiteQLUtil.toJson(domainType));
+                getLogger().info(LiteQL.JacksonJsonUtils.toJson(domainType));
             }
         }
     }

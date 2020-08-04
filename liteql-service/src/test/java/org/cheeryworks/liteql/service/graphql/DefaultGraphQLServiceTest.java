@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.graphql;
 import graphql.ExecutionResult;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqQueryServiceTest;
 import org.cheeryworks.liteql.service.jooq.JooqSchemaParserTest;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.graphql.builder.GraphQLBuilder;
 import org.cheeryworks.liteql.util.graphql.builder.GraphQLChildFieldQueryBuilder;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +41,7 @@ public class DefaultGraphQLServiceTest extends AbstractJooqQueryServiceTest {
                 .build()
                 .getQuery());
 
-        logger.info(LiteQLUtil.toJson(result));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(result));
 
         Assertions.assertTrue(result.getErrors().isEmpty());
         Assertions.assertTrue(result.isDataPresent());

@@ -1,17 +1,16 @@
-package org.cheeryworks.liteql.util.builder.query;
+package org.cheeryworks.liteql.util.query.builder;
 
 import org.cheeryworks.liteql.AbstractTest;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionOperator;
 import org.cheeryworks.liteql.query.enums.ConditionType;
-import org.cheeryworks.liteql.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.util.LiteQLUtil;
-import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public class QueryBuilderTest extends AbstractTest {
                 .read(new TypeName("liteql_test", "user"))
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(readQuery));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(readQuery));
     }
 
     @Test
@@ -116,7 +115,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(singleReadQuery));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(singleReadQuery));
     }
 
     @Test
@@ -141,7 +140,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(saveQuery));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(saveQuery));
     }
 
     @Test
@@ -176,7 +175,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQueries();
 
-        logger.info(LiteQLUtil.toJson(saveQueries));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(saveQueries));
     }
 
     @Test
@@ -189,7 +188,7 @@ public class QueryBuilderTest extends AbstractTest {
                 .truncated()
                 .getQuery();
 
-        logger.info(LiteQLUtil.toJson(deleteQuery));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(deleteQuery));
     }
 
     @Test
@@ -209,7 +208,7 @@ public class QueryBuilderTest extends AbstractTest {
                 )
                 .getQueries();
 
-        logger.info(LiteQLUtil.toJson(deleteQueries));
+        logger.info(LiteQL.JacksonJsonUtils.toJson(deleteQueries));
     }
 
 }

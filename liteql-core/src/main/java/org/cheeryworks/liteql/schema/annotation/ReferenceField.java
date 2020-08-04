@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.schema.annotation;
 
-import org.cheeryworks.liteql.model.VoidEntity;
-import org.cheeryworks.liteql.model.Entity;
+import org.cheeryworks.liteql.schema.VoidTrait;
+import org.cheeryworks.liteql.schema.Trait;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,8 +14,8 @@ public @interface ReferenceField {
 
     String name() default "";
 
-    Class<? extends Entity> targetDomainType();
+    Class<? extends Trait> targetDomainType();
 
-    Class<? extends Entity> mappedDomainType() default VoidEntity.class;
+    Class<? extends Trait> mappedDomainType() default VoidTrait.class;
 
 }

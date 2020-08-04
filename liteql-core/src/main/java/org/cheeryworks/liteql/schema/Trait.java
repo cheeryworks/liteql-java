@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.model;
+package org.cheeryworks.liteql.schema;
 
 import java.io.Serializable;
 

@@ -1,10 +1,10 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.cheeryworks.liteql.query.read.ReadQuery;
-import org.cheeryworks.liteql.util.FileReader;
-import org.cheeryworks.liteql.util.LiteQLUtil;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
+import org.cheeryworks.liteql.util.FileReader;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +31,11 @@ public class JooqQueryParserTest extends AbstractJooqTest {
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
 
-            ReadQuery readQuery = LiteQLUtil.toBean(readQueryInJson, ReadQuery.class);
+            ReadQuery readQuery = LiteQL.JacksonJsonUtils.toBean(readQueryInJson, ReadQuery.class);
 
             SqlReadQuery sqlQuery = jooqQueryParser.getSqlReadQuery(readQuery);
 
-            logger.info(LiteQLUtil.toJson(sqlQuery));
+            logger.info(LiteQL.JacksonJsonUtils.toJson(sqlQuery));
         }
     }
 

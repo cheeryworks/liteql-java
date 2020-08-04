@@ -18,24 +18,18 @@
       "type": "boolean"
     },
     {
-      "name": "creatorId",
-      "type": "string"
-    },
-    {
-      "name": "creatorName",
-      "type": "string"
+      "name": "creator",
+      "type": "reference",
+      "domainTypeName": "liteql.user_entity"
     },
     {
       "name": "createTime",
       "type": "timestamp"
     },
     {
-      "name": "lastModifierId",
-      "type": "string"
-    },
-    {
-      "name": "lastModifierName",
-      "type": "string"
+      "name": "lastModifier",
+      "type": "reference",
+      "domainTypeName": "liteql.user_entity"
     },
     {
       "name": "lastModifiedTime",

@@ -6,10 +6,10 @@ import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
-import org.cheeryworks.liteql.util.graphql.GraphQLConstants;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
+import org.cheeryworks.liteql.util.LiteQL;
+import org.cheeryworks.liteql.util.query.builder.QueryBuilder;
 import org.dataloader.BatchLoaderEnvironment;
 import org.dataloader.BatchLoaderWithContext;
 
@@ -45,21 +45,22 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         for (String key : keys) {
             Map<String, Object> keyContext = (Map<String, Object>) keyContexts.get(key);
 
-            String type = keyContext.get(GraphQLConstants.QUERY_DOMAIN_TYPE_NAME_KEY).toString();
+            String type = keyContext.get(LiteQL.Constants.GraphQL.QUERY_DOMAIN_TYPE_NAME_KEY).toString();
 
             if (!keysInTypes.containsKey(type)) {
                 keysInTypes.put(type, new HashMap<>());
             }
 
-            if (!keysInTypes.get(type).containsKey(GraphQLConstants.QUERY_DATA_FETCHING_KEYS_KEY)) {
-                keysInTypes.get(type).put(GraphQLConstants.QUERY_DATA_FETCHING_KEYS_KEY, new LinkedHashSet<>());
+            if (!keysInTypes.get(type).containsKey(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY)) {
                 keysInTypes.get(type).put(
-                        GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY,
-                        keyContext.get(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY));
+                        LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY, new LinkedHashSet<>());
+                keysInTypes.get(type).put(
+                        LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY,
+                        keyContext.get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY));
             }
 
             Set<String> keysInType = (Set<String>) keysInTypes
-                    .get(type).get(GraphQLConstants.QUERY_DATA_FETCHING_KEYS_KEY);
+                    .get(type).get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY);
 
             keysInType.add(key);
         }
@@ -76,14 +77,15 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
                     .fields()
                     .conditions(
                             condition(
-                                    GraphQLConstants.QUERY_ARGUMENT_NAME_ID,
+                                    LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID,
                                     ConditionClause.IN, ConditionType.String,
-                                    keyContext.get(GraphQLConstants.QUERY_DATA_FETCHING_KEYS_KEY))
+                                    keyContext.get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY))
                     )
                     .getQuery();
 
-            DataFetchingEnvironment dataFetchingEnvironment
-                    = (DataFetchingEnvironment) keyContext.get(GraphQLConstants.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
+            DataFetchingEnvironment dataFetchingEnvironment =
+                    (DataFetchingEnvironment) keyContext.get(
+                            LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
 
             ReadResults dataSubSet = queryService.read(dataFetchingEnvironment.getContext(), readQuery);
 
@@ -93,7 +95,7 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         Map<String, Map<String, Object>> dataSetInKey = new HashMap<>();
 
         for (Map<String, Object> data : dataSet) {
-            dataSetInKey.put(data.get(GraphQLConstants.QUERY_ARGUMENT_NAME_ID).toString(), data);
+            dataSetInKey.put(data.get(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID).toString(), data);
         }
 
         List<Map<String, Object>> sortedDataSet = new ArrayList<>();

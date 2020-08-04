@@ -4,7 +4,7 @@ import org.cheeryworks.liteql.query.Queries;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.util.FileReader;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
@@ -18,7 +18,7 @@ public class JooqQueryServiceTest extends AbstractJooqQueryServiceTest {
                 getClass().getResource("/liteql/liteql_test/queries/read").getPath());
 
         for (String readQueryInJson : readQueryJsonFiles.values()) {
-            ReadQuery readQuery = LiteQLUtil.toBean(readQueryInJson, ReadQuery.class);
+            ReadQuery readQuery = LiteQL.JacksonJsonUtils.toBean(readQueryInJson, ReadQuery.class);
 
             Object results = getQueryService().read(getQueryContext(), readQuery);
 
@@ -40,7 +40,7 @@ public class JooqQueryServiceTest extends AbstractJooqQueryServiceTest {
                 getClass().getResource("/liteql/liteql_test/queries/delete").getPath());
 
         for (String deleteQueryInJson : deleteQueryJsonFiles.values()) {
-            DeleteQuery deleteQuery = LiteQLUtil.toBean(deleteQueryInJson, DeleteQuery.class);
+            DeleteQuery deleteQuery = LiteQL.JacksonJsonUtils.toBean(deleteQueryInJson, DeleteQuery.class);
 
             getQueryService().delete(getQueryContext(), deleteQuery);
         }
@@ -52,11 +52,11 @@ public class JooqQueryServiceTest extends AbstractJooqQueryServiceTest {
                 getClass().getResource("/liteql/liteql_test/queries").getPath(), "json", false);
 
         for (String queriesJsonFile : queriesJsonFiles.values()) {
-            Queries queries = LiteQLUtil.toBean(queriesJsonFile, Queries.class);
+            Queries queries = LiteQL.JacksonJsonUtils.toBean(queriesJsonFile, Queries.class);
 
             Object results = getQueryService().execute(getQueryContext(), queries);
 
-            getLogger().info(LiteQLUtil.toJson(results));
+            getLogger().info(LiteQL.JacksonJsonUtils.toJson(results));
         }
 
         exportAndPrintDdl();

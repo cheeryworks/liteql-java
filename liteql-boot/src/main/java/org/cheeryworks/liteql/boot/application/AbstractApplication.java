@@ -18,9 +18,9 @@ import javax.servlet.http.HttpSessionListener;
 import java.io.File;
 import java.util.Collections;
 
-import static org.cheeryworks.liteql.util.LiteQLConstants.DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
-import static org.cheeryworks.liteql.util.LiteQLConstants.LITEQL_PROFILE_KEY;
-import static org.cheeryworks.liteql.util.LiteQLConstants.PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.LITEQL_PROFILE_KEY;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH;
 
 public abstract class AbstractApplication extends SpringBootServletInitializer {
 

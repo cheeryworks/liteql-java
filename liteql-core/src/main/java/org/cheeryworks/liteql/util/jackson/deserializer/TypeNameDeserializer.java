@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 
 import java.io.IOException;
 
@@ -20,7 +20,7 @@ public class TypeNameDeserializer extends StdDeserializer<TypeName> {
             JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode typeNode = jsonParser.readValueAsTree();
 
-        return LiteQLUtil.getTypeName(typeNode.asText());
+        return LiteQL.SchemaUtils.getTypeName(typeNode.asText());
     }
 
 }

@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.schema.migration;
 
 import org.cheeryworks.liteql.AbstractTest;
 import org.cheeryworks.liteql.util.FileReader;
-import org.cheeryworks.liteql.util.LiteQLUtil;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -16,9 +16,9 @@ public class MigrationTest extends AbstractTest {
 
         for (Map.Entry<String, String> migrationInJsonFile : migrationInJsonFiles.entrySet()) {
             if (migrationInJsonFile.getKey().contains("/migrations/")) {
-                Migration migration = LiteQLUtil.toBean(migrationInJsonFile.getValue(), Migration.class);
+                Migration migration = LiteQL.JacksonJsonUtils.toBean(migrationInJsonFile.getValue(), Migration.class);
 
-                getLogger().info(LiteQLUtil.toJson(migration));
+                getLogger().info(LiteQL.JacksonJsonUtils.toJson(migration));
             }
         }
     }
