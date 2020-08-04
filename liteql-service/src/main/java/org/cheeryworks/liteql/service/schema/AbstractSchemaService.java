@@ -97,7 +97,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     protected void addType(Type type) {
-        Schema schema = getSchema(type.getTypeName().getSchema());;
+        Schema schema = getSchema(type.getTypeName().getSchema());
 
         if (schema == null) {
             schema = new Schema(type.getTypeName().getSchema());
