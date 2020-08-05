@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.schema;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TypeDefinition {
+public class TypeMetadata {
 
     private String name;
 
@@ -27,7 +27,7 @@ public class TypeDefinition {
         return migrationContents;
     }
 
-    public TypeDefinition(String name) {
+    public TypeMetadata(String name) {
         this.name = name;
     }
 

@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 
 public class DropTypeMigrationOperation extends AbstractMigrationOperation {
@@ -10,8 +10,8 @@ public class DropTypeMigrationOperation extends AbstractMigrationOperation {
     }
 
     @Override
-    public void merge(DomainType domainType) {
-        domainType.setDropped(true);
+    public void merge(DomainTypeDefinition domainTypeDefinition) {
+        domainTypeDefinition.setDropped(true);
     }
 
 }

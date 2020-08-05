@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.service.jooq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.enums.IndexType;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
@@ -88,7 +88,7 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
             AbstractIndexMigrationOperation<? extends AbstractIndex> indexMigrationOperation) {
         String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
-        DomainType domainType = getSchemaService().getDomainType(domainTypeName);
+        DomainTypeDefinition domainTypeDefinition = getSchemaService().getDomainTypeDefinition(domainTypeName);
 
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
@@ -109,7 +109,7 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
                     } else {
                         query = getDslContext()
                                 .createIndex(indexName)
-                                .on(table(tableName), transformToJooqFields(domainType, index.getFields()));
+                                .on(table(tableName), transformToJooqFields(domainTypeDefinition, index.getFields()));
                     }
                 } else {
                     if (MigrationOperationType.DROP_UNIQUE.equals(indexMigrationOperation.getType())) {
@@ -121,7 +121,7 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
                         query = getDslContext()
                                 .alterTable(tableName)
                                 .add(constraint(indexName).
-                                        unique(transformToJooqFields(domainType, index.getFields())));
+                                        unique(transformToJooqFields(domainTypeDefinition, index.getFields())));
                     }
                 }
 
@@ -191,13 +191,14 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
         }
     }
 
-    private org.jooq.Field[] transformToJooqFields(DomainType domainType, Set<String> fieldNames) {
+    private org.jooq.Field[] transformToJooqFields(
+            DomainTypeDefinition domainTypeDefinition, Set<String> fieldNames) {
         Set<Field> fields = new LinkedHashSet<>();
 
         for (String fieldName : fieldNames) {
             boolean exist = false;
 
-            for (Field field : domainType.getFields()) {
+            for (Field field : domainTypeDefinition.getFields()) {
                 if (field.getName().equalsIgnoreCase(fieldName)) {
                     fields.add(field);
 

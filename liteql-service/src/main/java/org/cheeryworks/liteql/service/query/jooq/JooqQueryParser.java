@@ -21,7 +21,7 @@ import org.cheeryworks.liteql.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
@@ -105,7 +105,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 readQuery.getConditions(), getSqlCustomizer());
 
         List<org.jooq.Field<Object>> fields = getSelectFields(
-                getSchemaService().getDomainType(readQuery.getDomainTypeName()),
+                getSchemaService().getDomainTypeDefinition(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
 
         List<JooqJoinedTable> joinedTables = parseJoins(
@@ -209,7 +209,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 joinedTable.setTableAlias(parentTableAliasPrefix + joinedTables.size());
                 joinedTable.setFields(
                         getSelectFields(
-                                getSchemaService().getDomainType(joinedReadQuery.getDomainTypeName()),
+                                getSchemaService().getDomainTypeDefinition(joinedReadQuery.getDomainTypeName()),
                                 joinedReadQuery.getFields(), joinedTable.getTableAlias(), sqlReadQuery));
 
                 QueryConditions joinConditions = new QueryConditions();
@@ -245,7 +245,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
     }
 
     private List<org.jooq.Field<Object>> getSelectFields(
-            DomainType domainType, FieldDefinitions fieldDefinitions,
+            DomainTypeDefinition domainTypeDefinition, FieldDefinitions fieldDefinitions,
             String tableAlias, SqlReadQuery sqlReadQuery) {
         List<org.jooq.Field<Object>> fields = new ArrayList<>();
 
@@ -254,14 +254,15 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         }
 
         if (TABLE_ALIAS_PREFIX.equals(tableAlias) && CollectionUtils.isEmpty(fieldDefinitions)) {
-            for (Field field : domainType.getFields()) {
+            for (Field field : domainTypeDefinition.getFields()) {
                 if (field instanceof ReferenceField) {
                     if (((ReferenceField) field).isCollection()) {
                         continue;
                     }
                 }
 
-                String columnName = getSqlCustomizer().getColumnName(domainType.getTypeName(), field.getName());
+                String columnName = getSqlCustomizer().getColumnName(
+                        domainTypeDefinition.getTypeName(), field.getName());
 
                 fields.add(field(tableAlias + "." + columnName));
 
@@ -270,7 +271,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         } else if (CollectionUtils.isNotEmpty(fieldDefinitions)) {
             for (FieldDefinition fieldDefinition : fieldDefinitions) {
                 String columnName = getSqlCustomizer().getColumnName(
-                        domainType.getTypeName(), fieldDefinition.getName());
+                        domainTypeDefinition.getTypeName(), fieldDefinition.getName());
 
                 fields.add(field(tableAlias + "." + columnName).as(fieldDefinition.getAlias()));
 
@@ -282,12 +283,12 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
     }
 
     @Override
-    public SqlSaveQuery getSqlSaveQuery(AbstractSaveQuery saveQuery, DomainType domainType) {
+    public SqlSaveQuery getSqlSaveQuery(AbstractSaveQuery saveQuery, DomainTypeDefinition domainTypeDefinition) {
         Map<String, Object> data = saveQuery.getData();
 
         SqlSaveQuery sqlSaveQuery = new InlineSqlSaveQuery();
 
-        Map<String, Class> fieldDefinitions = SqlQueryServiceUtil.getFieldDefinitions(domainType);
+        Map<String, Class> fieldDefinitions = SqlQueryServiceUtil.getFieldDefinitions(domainTypeDefinition);
 
         if (saveQuery instanceof CreateQuery) {
             InsertSetStep insertSetStep = getDslContext()
@@ -302,20 +303,21 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
-                if (domainType.isReferenceField(dataEntry.getKey())) {
-                    String fieldName = getSqlCustomizer().getColumnName(domainType.getTypeName(), dataEntry.getKey());
+                if (domainTypeDefinition.isReferenceField(dataEntry.getKey())) {
+                    String fieldName = getSqlCustomizer().getColumnName(
+                            domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
                     if (dataEntry.getValue() instanceof Map) {
                         insertSetMoreStep.set(
                                 field(fieldName, dataType),
-                                getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
+                                getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
                     } else {
                         insertSetMoreStep.set(field(fieldName, dataType), dataEntry.getValue());
                     }
                 } else {
                     insertSetMoreStep.set(
                             field(getSqlCustomizer().getColumnName(
-                                    domainType.getTypeName(), dataEntry.getKey()), dataType),
+                                    domainTypeDefinition.getTypeName(), dataEntry.getKey()), dataType),
                             dataEntry.getValue());
                 }
             }
@@ -328,7 +330,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             UpdateSetStep updateSetStep = getDslContext()
                     .update(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
 
-            Unique uniqueKey = getUniqueKey(domainType, data);
+            Unique uniqueKey = getUniqueKey(domainTypeDefinition, data);
 
             Condition condition = DSL.trueCondition();
 
@@ -347,23 +349,25 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                     condition = condition.and(
                             field(getSqlCustomizer().getColumnName(
-                                    domainType.getTypeName(), dataEntry.getKey()), dataType).eq(dataEntry.getValue()));
+                                    domainTypeDefinition.getTypeName(),
+                                    dataEntry.getKey()), dataType).eq(dataEntry.getValue()));
                 } else {
-                    if (domainType.isReferenceField(dataEntry.getKey())) {
+                    if (domainTypeDefinition.isReferenceField(dataEntry.getKey())) {
                         String fieldName = getSqlCustomizer().getColumnName(
-                                domainType.getTypeName(), dataEntry.getKey());
+                                domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
                         if (dataEntry.getValue() instanceof Map) {
                             updateSetStep.set(
                                     field(fieldName, dataType),
-                                    getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainType));
+                                    getReferenceIdSelect(
+                                            dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
                         } else {
                             updateSetStep.set(field(fieldName, dataType), dataEntry.getValue());
                         }
                     } else {
                         updateSetStep.set(
                                 field(getSqlCustomizer().getColumnName(
-                                        domainType.getTypeName(), dataEntry.getKey()), dataType),
+                                        domainTypeDefinition.getTypeName(), dataEntry.getKey()), dataType),
                                 dataEntry.getValue());
                     }
                 }
@@ -374,13 +378,15 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             sqlSaveQuery.setSql(updateFinalStep.getSQL());
             sqlSaveQuery.setSqlParameters(updateFinalStep.getBindValues().toArray());
         } else {
-            throw new IllegalArgumentException("Unsupported query domainType " + saveQuery.getClass().getSimpleName());
+            throw new IllegalArgumentException(
+                    "Unsupported query domainTypeDefinition " + saveQuery.getClass().getSimpleName());
         }
 
         return sqlSaveQuery;
     }
 
-    private Object getReferenceIdSelect(String fieldName, Object fieldValue, DomainType domainType) {
+    private Object getReferenceIdSelect(
+            String fieldName, Object fieldValue, DomainTypeDefinition domainTypeDefinition) {
         Condition condition = DSL.trueCondition();
 
         for (Map.Entry<String, Object> fieldValueEntry : ((Map<String, Object>) fieldValue).entrySet()) {
@@ -391,12 +397,12 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 .select(
                         field("id"))
                 .from(table(getSqlCustomizer().getTableName(
-                        new TypeName(domainType.getTypeName().getSchema(), fieldName))))
+                        new TypeName(domainTypeDefinition.getTypeName().getSchema(), fieldName))))
                 .where(condition).asField();
     }
 
-    private Unique getUniqueKey(DomainType domainType, Map<String, Object> data) {
-        for (Unique uniqueKey : domainType.getUniques()) {
+    private Unique getUniqueKey(DomainTypeDefinition domainTypeDefinition, Map<String, Object> data) {
+        for (Unique uniqueKey : domainTypeDefinition.getUniques()) {
             boolean matched = true;
 
             for (String field : uniqueKey.getFields()) {
@@ -411,7 +417,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         }
 
         throw new IllegalArgumentException(
-                "No unique key matched in data " + data + " for domainType " + domainType.getTypeName().getFullname());
+                "No unique key matched in data " + data
+                        + " for domainTypeDefinition [" + domainTypeDefinition.getTypeName().getFullname() + "]");
     }
 
     @Override

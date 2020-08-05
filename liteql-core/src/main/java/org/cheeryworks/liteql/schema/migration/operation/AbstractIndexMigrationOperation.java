@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.index.AbstractIndex;
 import org.cheeryworks.liteql.schema.index.Index;
@@ -28,34 +28,34 @@ public abstract class AbstractIndexMigrationOperation<T extends AbstractIndex> e
     }
 
     @Override
-    public void merge(DomainType domainType) {
+    public void merge(DomainTypeDefinition domainTypeDefinition) {
         switch (getType()) {
             case CREATE_UNIQUE:
                 for (T index : indexes) {
-                    if (CollectionUtils.isEmpty(domainType.getUniques())) {
-                        domainType.setUniques(new HashSet<>());
+                    if (CollectionUtils.isEmpty(domainTypeDefinition.getUniques())) {
+                        domainTypeDefinition.setUniques(new HashSet<>());
                     }
 
-                    domainType.getUniques().add((Unique) index);
+                    domainTypeDefinition.getUniques().add((Unique) index);
                 }
 
                 return;
             case CREATE_INDEX:
                 for (T index : indexes) {
-                    if (CollectionUtils.isEmpty(domainType.getIndexes())) {
-                        domainType.setIndexes(new HashSet<>());
+                    if (CollectionUtils.isEmpty(domainTypeDefinition.getIndexes())) {
+                        domainTypeDefinition.setIndexes(new HashSet<>());
                     }
 
-                    domainType.getIndexes().add((Index) index);
+                    domainTypeDefinition.getIndexes().add((Index) index);
                 }
 
                 return;
             case DROP_UNIQUE:
-                dropIndex(domainType.getUniques());
+                dropIndex(domainTypeDefinition.getUniques());
 
                 return;
             case DROP_INDEX:
-                dropIndex(domainType.getIndexes());
+                dropIndex(domainTypeDefinition.getIndexes());
 
                 return;
             default:

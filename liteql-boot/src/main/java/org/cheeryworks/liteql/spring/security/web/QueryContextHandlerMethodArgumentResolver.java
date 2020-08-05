@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.spring.security.web;
 
 import org.cheeryworks.liteql.query.DefaultQueryContext;
 import org.cheeryworks.liteql.query.QueryContext;
-import org.cheeryworks.liteql.model.UserEntity;
+import org.cheeryworks.liteql.model.UserType;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,13 +26,13 @@ public class QueryContextHandlerMethodArgumentResolver implements HandlerMethodA
     public Object resolveArgument(
             MethodParameter parameter, ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        UserEntity user = null;
+        UserType user = null;
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getPrincipal() instanceof UserEntity) {
-                user = new SecurityUser((UserEntity) authentication.getPrincipal());
+            if (authentication.getPrincipal() instanceof UserType) {
+                user = new SecurityUser((UserType) authentication.getPrincipal());
             } else if (authentication.getPrincipal() instanceof UserDetails) {
                 user = new SecurityUser((UserDetails) authentication.getPrincipal());
             }

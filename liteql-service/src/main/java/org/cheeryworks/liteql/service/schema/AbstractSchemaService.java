@@ -3,10 +3,10 @@ package org.cheeryworks.liteql.service.schema;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.Schema;
-import org.cheeryworks.liteql.schema.TraitType;
-import org.cheeryworks.liteql.schema.Type;
+import org.cheeryworks.liteql.schema.TraitTypeDefinition;
+import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
@@ -30,12 +30,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_BASELINE_SUFFIX;
-import static org.cheeryworks.liteql.service.schema.SchemaDefinition.VERSION_CONCAT;
+import static org.cheeryworks.liteql.service.schema.SchemaMetadata.VERSION_BASELINE_SUFFIX;
+import static org.cheeryworks.liteql.service.schema.SchemaMetadata.VERSION_CONCAT;
 
 public abstract class AbstractSchemaService extends AbstractLiteQLService implements SchemaService {
 
-    private Set<SchemaDefinition> schemaDefinitions = new TreeSet<>(Comparator.comparing(SchemaDefinition::getName));
+    private Set<SchemaMetadata> schemaMetadataSet = new TreeSet<>(Comparator.comparing(SchemaMetadata::getName));
 
     private List<Schema> schemas = new ArrayList<>();
 
@@ -45,32 +45,33 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         super(liteQLProperties);
     }
 
-    protected void processSchemaDefinition(SchemaDefinition schemaDefinition) {
-        if (!this.schemaDefinitions.contains(schemaDefinition)) {
-            this.schemaDefinitions.add(schemaDefinition);
+    protected void processSchemaMetadata(SchemaMetadata schemaMetadata) {
+        if (!this.schemaMetadataSet.contains(schemaMetadata)) {
+            this.schemaMetadataSet.add(schemaMetadata);
         } else {
-            throw new IllegalArgumentException("Schema [" + schemaDefinition.getName() + "] exist");
+            throw new IllegalArgumentException("Schema [" + schemaMetadata.getName() + "] exist");
         }
 
-        for (TypeDefinition typeDefinition : schemaDefinition.getTypeDefinitions().values()) {
-            TypeName typeName = new TypeName(schemaDefinition.getName(), typeDefinition.getName());
+        for (TypeMetadata typeMetadata : schemaMetadata.getTypeMetadataSet().values()) {
+            TypeName typeName = new TypeName(schemaMetadata.getName(), typeMetadata.getName());
 
-            String key = typeDefinition
+            String key = typeMetadata
                     .getContents()
                     .keySet()
                     .stream()
                     .max(String::compareToIgnoreCase)
                     .get();
 
-            Type type = LiteQL.JacksonJsonUtils.toBean(typeDefinition.getContents().get(key), Type.class);
+            TypeDefinition typeDefinition = LiteQL.JacksonJsonUtils.toBean(
+                    typeMetadata.getContents().get(key), TypeDefinition.class);
 
-            TraitType traitType = (TraitType) type;
-            traitType.setTypeName(typeName);
-            traitType.setVersion(key.split(VERSION_CONCAT)[0]);
+            TraitTypeDefinition traitTypeDefinition = (TraitTypeDefinition) typeDefinition;
+            traitTypeDefinition.setTypeName(typeName);
+            traitTypeDefinition.setVersion(key.split(VERSION_CONCAT)[0]);
 
-            addType(type);
+            addType(typeDefinition);
 
-            for (Map.Entry<String, String> migrationContent : typeDefinition.getMigrationContents().entrySet()) {
+            for (Map.Entry<String, String> migrationContent : typeMetadata.getMigrationContents().entrySet()) {
                 if (!migrationContent.getKey().startsWith(key.substring(0, key.indexOf(VERSION_CONCAT)))) {
                     continue;
                 }
@@ -88,31 +89,31 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             }
         }
 
-        verifyMigrationsOfSchema(schemaDefinition.getName());
+        verifyMigrationsOfSchema(schemaMetadata.getName());
     }
 
-    protected Type getType(TypeName typeName) {
-        Type type = getDomainType(typeName);
+    protected TypeDefinition getType(TypeName typeName) {
+        TypeDefinition typeDefinition = getDomainTypeDefinition(typeName);
 
-        if (type == null) {
-            type = getTraitType(typeName);
+        if (typeDefinition == null) {
+            typeDefinition = getTraitTypeDefinition(typeName);
         }
 
-        return type;
+        return typeDefinition;
     }
 
-    protected void addType(Type type) {
-        Schema schema = getSchema(type.getTypeName().getSchema());
+    protected void addType(TypeDefinition typeDefinition) {
+        Schema schema = getSchema(typeDefinition.getTypeName().getSchema());
 
         if (schema == null) {
-            schema = new Schema(type.getTypeName().getSchema());
+            schema = new Schema(typeDefinition.getTypeName().getSchema());
             this.schemas.add(schema);
         }
 
-        if (type instanceof DomainType) {
-            schema.getDomainTypes().add((DomainType) type);
-        } else if (type instanceof TraitType) {
-            schema.getTraitTypes().add((TraitType) type);
+        if (typeDefinition instanceof DomainTypeDefinition) {
+            schema.getDomainTypeDefinitions().add((DomainTypeDefinition) typeDefinition);
+        } else if (typeDefinition instanceof TraitTypeDefinition) {
+            schema.getTraitTypeDefinitions().add((TraitTypeDefinition) typeDefinition);
         }
     }
 
@@ -135,37 +136,39 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     private void verifyMigrationsOfSchema(String schemaName) {
         Schema schema = getSchema(schemaName);
 
-        for (DomainType domainType : schema.getDomainTypes()) {
-            Map<String, Migration> migrations = schema.getMigrations().get(domainType.getTypeName());
+        for (DomainTypeDefinition domainTypeDefinition : schema.getDomainTypeDefinitions()) {
+            Map<String, Migration> migrations = schema.getMigrations().get(domainTypeDefinition.getTypeName());
 
-            DomainType migratedDomainType = new DomainType(domainType.getTypeName());
+            DomainTypeDefinition migratedDomainTypeDefinition =
+                    new DomainTypeDefinition(domainTypeDefinition.getTypeName());
 
-            migratedDomainType.setTraits(domainType.getTraits());
+            migratedDomainTypeDefinition.setTraits(domainTypeDefinition.getTraits());
 
-            if (!domainType.isGraphQLType()) {
-                migratedDomainType.setGraphQLType(false);
+            if (!domainTypeDefinition.isGraphQLType()) {
+                migratedDomainTypeDefinition.setGraphQLType(false);
             }
 
             if (MapUtils.isNotEmpty(migrations)) {
                 for (Migration migration : migrations.values()) {
                     for (MigrationOperation migrationOperation : migration.getOperations()) {
-                        migrationOperation.merge(migratedDomainType);
+                        migrationOperation.merge(migratedDomainTypeDefinition);
                     }
                 }
             }
 
-            if (!domainType.equals(migratedDomainType)) {
+            if (!domainTypeDefinition.equals(migratedDomainTypeDefinition)) {
                 throw new IllegalStateException(
-                        "Migrations of domain type [" + domainType.getTypeName().getFullname() + "] is not matched"
-                                + ", definition is " + LiteQL.JacksonJsonUtils.toJson(domainType)
-                                + ", but migrated is " + LiteQL.JacksonJsonUtils.toJson(migratedDomainType));
+                        "Migrations of domain type [" + domainTypeDefinition.getTypeName().getFullname() + "]"
+                                + " is not matched"
+                                + ", definition is " + LiteQL.JacksonJsonUtils.toJson(domainTypeDefinition)
+                                + ", but migrated is " + LiteQL.JacksonJsonUtils.toJson(migratedDomainTypeDefinition));
             }
         }
 
         for (TypeName domainTypeName : schema.getMigrations().keySet()) {
-            DomainType domainType = getDomainType(domainTypeName);
+            DomainTypeDefinition domainTypeDefinition = getDomainTypeDefinition(domainTypeName);
 
-            if (domainType == null) {
+            if (domainTypeDefinition == null) {
                 throw new IllegalStateException(
                         "Migrations of domain type [" + domainTypeName.getFullname() + "] is not matched"
                                 + ", definition is missed");
@@ -185,22 +188,22 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     @Override
-    public Set<TraitType> getTraitTypes(String schemaName) {
+    public Set<TraitTypeDefinition> getTraitTypeDefinitions(String schemaName) {
         Schema schema = getSchema(schemaName);
 
         if (schema != null) {
-            return schema.getTraitTypes();
+            return schema.getTraitTypeDefinitions();
         }
 
         return Collections.EMPTY_SET;
     }
 
     @Override
-    public Set<DomainType> getDomainTypes(String schemaName) {
+    public Set<DomainTypeDefinition> getDomainTypeDefinitions(String schemaName) {
         Schema schema = getSchema(schemaName);
 
         if (schema != null) {
-            return schema.getDomainTypes();
+            return schema.getDomainTypeDefinitions();
         }
 
         return Collections.EMPTY_SET;
@@ -215,14 +218,14 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     @Override
-    public TraitType getTraitType(TypeName typeName) {
+    public TraitTypeDefinition getTraitTypeDefinition(TypeName typeName) {
         Objects.requireNonNull(typeName, "TypeName is required");
 
         Schema schema = getSchema(typeName.getSchema());
 
-        if (schema != null && schema.getTraitTypes() != null) {
+        if (schema != null && schema.getTraitTypeDefinitions() != null) {
             return getSchema(typeName.getSchema())
-                    .getTraitTypes()
+                    .getTraitTypeDefinitions()
                     .stream()
                     .filter(traitType -> traitType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
                     .findFirst()
@@ -233,14 +236,14 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     @Override
-    public DomainType getDomainType(TypeName typeName) {
+    public DomainTypeDefinition getDomainTypeDefinition(TypeName typeName) {
         Objects.requireNonNull(typeName, "TypeName is required");
 
         Schema schema = getSchema(typeName.getSchema());
 
-        if (schema != null && schema.getDomainTypes() != null) {
+        if (schema != null && schema.getDomainTypeDefinitions() != null) {
             return getSchema(typeName.getSchema())
-                    .getDomainTypes()
+                    .getDomainTypeDefinitions()
                     .stream()
                     .filter(domainType -> domainType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
                     .findFirst()
@@ -286,9 +289,9 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
                 typesDirectory.mkdirs();
 
-                exportTypes(typesDirectory.getPath(), schema.getDomainTypes());
+                exportTypes(typesDirectory.getPath(), schema.getDomainTypeDefinitions());
 
-                exportTypes(typesDirectory.getPath(), schema.getTraitTypes());
+                exportTypes(typesDirectory.getPath(), schema.getTraitTypeDefinitions());
             }
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
@@ -297,30 +300,37 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         return schemasRootPath;
     }
 
-    private void exportTypes(String typesDirectoryPath, Set<? extends Type> types) throws IOException {
-        for (Type type : types) {
-            File typeDirectory = new File(typesDirectoryPath + "/" + type.getTypeName().getName());
+    private void exportTypes(
+            String typesDirectoryPath, Set<? extends TypeDefinition> typeDefinitions) throws IOException {
+        for (TypeDefinition typeDefinition : typeDefinitions) {
+            File typeDirectory = new File(typesDirectoryPath + "/" + typeDefinition.getTypeName().getName());
 
             typeDirectory.mkdir();
 
-            File typeDefinition = new File(
-                    typeDirectory + "/" + type.getVersion() + VERSION_CONCAT + Schema.SUFFIX_OF_TYPE_DEFINITION);
+            File typeDefinitionFile = new File(
+                    typeDirectory + "/" + typeDefinition.getVersion()
+                            + VERSION_CONCAT + Schema.SUFFIX_OF_TYPE_DEFINITION);
 
-            FileUtils.write(typeDefinition, LiteQL.JacksonJsonUtils.toJson(type) + "\n", StandardCharsets.UTF_8);
+            FileUtils.write(
+                    typeDefinitionFile,
+                    LiteQL.JacksonJsonUtils.toJson(typeDefinition) + "\n",
+                    StandardCharsets.UTF_8);
 
-            if (!type.isTrait()) {
-                DomainType domainType = (DomainType) type;
+            if (!typeDefinition.isTrait()) {
+                DomainTypeDefinition domainTypeDefinition = (DomainTypeDefinition) typeDefinition;
 
-                Map<String, Migration> migrations
-                        = getMigrations(domainType.getTypeName().getSchema()).get(domainType.getTypeName());
+                Map<String, Migration> migrations =
+                        getMigrations(domainTypeDefinition.getTypeName().getSchema())
+                                .get(domainTypeDefinition.getTypeName());
 
-                exportMigrations(domainType, migrations, typeDirectory);
+                exportMigrations(domainTypeDefinition, migrations, typeDirectory);
             }
         }
     }
 
     protected void exportMigrations(
-            DomainType domainType, Map<String, Migration> migrations, File typeDirectory) throws IOException {
+            DomainTypeDefinition domainTypeDefinition,
+            Map<String, Migration> migrations, File typeDirectory) throws IOException {
         if (MapUtils.isNotEmpty(migrations)) {
             for (Map.Entry<String, Migration> migrationEntry : migrations.entrySet()) {
                 File migrationDefinitionFile = new File(
@@ -328,7 +338,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                                 + migrationEntry.getKey() + Schema.SUFFIX_OF_CONFIGURATION_FILE);
 
                 FileUtils.write(
-                        migrationDefinitionFile, LiteQL.JacksonJsonUtils.toJson(migrationEntry.getValue()) + "\n",
+                        migrationDefinitionFile,
+                        LiteQL.JacksonJsonUtils.toJson(migrationEntry.getValue()) + "\n",
                         StandardCharsets.UTF_8);
             }
         }

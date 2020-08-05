@@ -44,6 +44,6 @@
     }
   ],
   "traits": [
-    "liteql.entity"
+    "liteql.domain_type"
   ]
 }

@@ -112,7 +112,7 @@
     }
   ],
   "traits": [
-    "liteql.audit_entity",
-    "liteql.user_entity"
+    "liteql.audit_type",
+    "liteql.user_type"
   ]
 }

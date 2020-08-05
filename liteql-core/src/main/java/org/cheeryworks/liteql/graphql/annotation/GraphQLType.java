@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.schema.annotation;
+package org.cheeryworks.liteql.graphql.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,8 +7,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TraitInstance {
+public @interface GraphQLType {
 
-    Class implement();
+    boolean ignored() default false;
+
+    Class extension() default Void.class;
 
 }

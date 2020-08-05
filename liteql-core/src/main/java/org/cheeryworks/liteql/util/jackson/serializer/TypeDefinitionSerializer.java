@@ -5,21 +5,21 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.cheeryworks.liteql.schema.Type;
+import org.cheeryworks.liteql.schema.TypeDefinition;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-public class TypeSerializer extends StdSerializer<Type> {
+public class TypeDefinitionSerializer extends StdSerializer<TypeDefinition> {
 
-    public TypeSerializer() {
-        super(Type.class);
+    public TypeDefinitionSerializer() {
+        super(TypeDefinition.class);
     }
 
     @Override
-    public void serialize(Type value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(TypeDefinition value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
 
         if (value.isTrait()) {

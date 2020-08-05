@@ -308,11 +308,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (saveQuery instanceof CreateQuery) {
                     queryAuditingService.auditingDomainObject(
-                            saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(), schemaService.getDomainTypeDefinition(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 } else {
                     queryAuditingService.auditingExistedDomainObject(
-                            saveQuery.getData(), schemaService.getDomainType(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(), schemaService.getDomainTypeDefinition(saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 }
             }
@@ -327,7 +327,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
                 : saveQueriesWithType.entrySet()) {
             List<AbstractSaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
-                    schemaService.getDomainType(saveQueriesWithTypeEntry.getKey()));
+                    schemaService.getDomainTypeDefinition(saveQueriesWithTypeEntry.getKey()));
 
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (CollectionUtils.isNotEmpty(saveQuery.getAssociations())) {
@@ -453,7 +453,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
-                        saveQuery, schemaService.getDomainType(saveQueriesWithTypeEntry.getKey()));
+                        saveQuery, schemaService.getDomainTypeDefinition(saveQueriesWithTypeEntry.getKey()));
 
                 if (sql == null) {
                     sql = sqlSaveQuery.getSql();

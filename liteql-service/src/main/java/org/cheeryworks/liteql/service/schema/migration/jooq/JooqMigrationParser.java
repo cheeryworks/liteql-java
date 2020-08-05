@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.service.schema.migration.jooq;
 
 import org.apache.commons.collections4.MapUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.schema.migration.operation.CreateFieldMigrationOperation;
@@ -153,15 +153,15 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
 
         String tableName = getSqlCustomizer().getTableName(typeName);
 
-        DomainType domainType = getSchemaService().getDomainType(typeName);
+        DomainTypeDefinition domainTypeDefinition = getSchemaService().getDomainTypeDefinition(typeName);
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        typeName, new DropUniqueMigrationOperation(domainType.getUniques())));
+                        typeName, new DropUniqueMigrationOperation(domainTypeDefinition.getUniques())));
 
         operationsInSql.addAll(
                 parsingIndexMigrationOperation(
-                        typeName, new DropIndexMigrationOperation(domainType.getIndexes())));
+                        typeName, new DropIndexMigrationOperation(domainTypeDefinition.getIndexes())));
 
         DropTableFinalStep dropTableFinalStep = getDslContext()
                 .dropTable(tableName)

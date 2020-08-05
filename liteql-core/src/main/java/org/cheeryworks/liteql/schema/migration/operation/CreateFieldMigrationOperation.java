@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
 
@@ -27,12 +27,12 @@ public class CreateFieldMigrationOperation extends AbstractMigrationOperation {
     }
 
     @Override
-    public void merge(DomainType domainType) {
-        if (CollectionUtils.isEmpty(domainType.getFields())) {
-            domainType.setFields(new HashSet<>());
+    public void merge(DomainTypeDefinition domainTypeDefinition) {
+        if (CollectionUtils.isEmpty(domainTypeDefinition.getFields())) {
+            domainTypeDefinition.setFields(new HashSet<>());
         }
 
-        domainType.getFields().addAll(fields);
+        domainTypeDefinition.getFields().addAll(fields);
     }
 
 }

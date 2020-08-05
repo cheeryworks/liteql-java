@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
 
@@ -24,9 +24,9 @@ public class DropFieldMigrationOperation extends AbstractMigrationOperation {
     }
 
     @Override
-    public void merge(DomainType domainType) {
+    public void merge(DomainTypeDefinition domainTypeDefinition) {
         for (String field : fields) {
-            Iterator<Field> fieldIterator = domainType.getFields().iterator();
+            Iterator<Field> fieldIterator = domainTypeDefinition.getFields().iterator();
 
             while (fieldIterator.hasNext()) {
                 if (fieldIterator.next().getName().equalsIgnoreCase(field)) {

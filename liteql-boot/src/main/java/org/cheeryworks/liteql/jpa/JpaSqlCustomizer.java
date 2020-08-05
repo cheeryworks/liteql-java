@@ -3,9 +3,9 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.schema.Trait;
+import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.schema.annotation.ReferenceField;
+import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQL;
@@ -50,12 +50,12 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
         }
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
-            Class<? extends Trait> jpaEntityJavaType
-                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
+            Class<? extends TraitType> traitType
+                    = LiteQL.SchemaUtils.getTraitType(japEntityBean.getBeanClassName());
 
-            Table table = jpaEntityJavaType.getAnnotation(Table.class);
+            Table table = traitType.getAnnotation(Table.class);
 
-            TypeName typeName = LiteQL.SchemaUtils.getTypeName(jpaEntityJavaType);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitType);
 
             if (typeName != null) {
                 if (table != null) {
@@ -70,7 +70,7 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
                 fieldNames.put(typeName, fieldsOfType);
 
-                List<Field> javaFields = FieldUtils.getAllFieldsList(jpaEntityJavaType);
+                List<Field> javaFields = FieldUtils.getAllFieldsList(traitType);
 
                 for (java.lang.reflect.Field javaField : javaFields) {
                     if (Modifier.isFinal(javaField.getModifiers()) || Modifier.isStatic(javaField.getModifiers())) {
@@ -87,7 +87,7 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
                 }
 
                 Method[] columnMethods
-                        = MethodUtils.getMethodsWithAnnotation(jpaEntityJavaType, Column.class, true, true);
+                        = MethodUtils.getMethodsWithAnnotation(traitType, Column.class, true, true);
 
                 for (Method method : columnMethods) {
                     processAttribute(
@@ -102,10 +102,10 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
             Map<String, String> columnsOfType, Map<String, String> fieldsOfType) {
         Column column = javaField.getAnnotation(Column.class);
 
-        ReferenceField referenceField = javaField.getAnnotation(ReferenceField.class);
+        LiteQLReferenceField liteQLReferenceField = javaField.getAnnotation(LiteQLReferenceField.class);
 
-        if (referenceField != null && StringUtils.isNotBlank(referenceField.name())) {
-            fieldName = referenceField.name();
+        if (liteQLReferenceField != null && StringUtils.isNotBlank(liteQLReferenceField.name())) {
+            fieldName = liteQLReferenceField.name();
         }
 
         if (column != null && StringUtils.isNotBlank(column.name())) {

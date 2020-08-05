@@ -18,7 +18,7 @@ public class DefaultSqlCustomizer implements SqlCustomizer {
     @Override
     public String getColumnName(TypeName domainTypeName, String fieldName) {
         Field field = this.schemaService
-                .getDomainType(domainTypeName)
+                .getDomainTypeDefinition(domainTypeName)
                 .getFields()
                 .stream()
                 .filter(currentField -> currentField.getName().equalsIgnoreCase(fieldName))

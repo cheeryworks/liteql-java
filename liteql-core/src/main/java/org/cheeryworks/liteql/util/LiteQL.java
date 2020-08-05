@@ -15,8 +15,8 @@ import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.query.save.SaveQueryAssociations;
 import org.cheeryworks.liteql.schema.SchemaDefinitionProvider;
-import org.cheeryworks.liteql.schema.Trait;
-import org.cheeryworks.liteql.schema.Type;
+import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.enums.DataType;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
@@ -35,7 +35,7 @@ import org.cheeryworks.liteql.util.jackson.deserializer.PublicQueryDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryConditionsDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryTypeDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.SaveQueryAssociationsDeserializer;
-import org.cheeryworks.liteql.util.jackson.deserializer.TypeDeserializer;
+import org.cheeryworks.liteql.util.jackson.deserializer.TypeDefinitionDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.TypeNameDeserializer;
 import org.cheeryworks.liteql.util.jackson.serializer.ConditionClauseSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.ConditionOperatorSerializer;
@@ -44,7 +44,7 @@ import org.cheeryworks.liteql.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.MigrationOperationTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.QueryTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
-import org.cheeryworks.liteql.util.jackson.serializer.TypeSerializer;
+import org.cheeryworks.liteql.util.jackson.serializer.TypeDefinitionSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -168,20 +168,20 @@ public abstract class LiteQL {
             return schemaDefinitionPackages;
         }
 
-        public static String getSchemaOfTrait(Class<? extends Trait> traitJavaType) {
-            return getProperty(traitJavaType, SchemaDefinitionProvider::getSchema);
+        public static String getSchemaOfTrait(Class<? extends TraitType> traitType) {
+            return getProperty(traitType, SchemaDefinitionProvider::getSchema);
         }
 
-        public static String getVersionOfTrait(Class<? extends Trait> traitJavaType) {
-            return getProperty(traitJavaType, SchemaDefinitionProvider::getVersion);
+        public static String getVersionOfTrait(Class<? extends TraitType> traitType) {
+            return getProperty(traitType, SchemaDefinitionProvider::getVersion);
         }
 
         private static <T> T getProperty(
-                Class<? extends Trait> entityJavaType, Function<SchemaDefinitionProvider, T> consumer) {
+                Class<? extends TraitType> traitType, Function<SchemaDefinitionProvider, T> consumer) {
             for (SchemaDefinitionProvider schemaDefinitionProvider : schemaDefinitionProviders) {
                 boolean matched = Arrays.stream(schemaDefinitionProvider.getPackages())
                         .anyMatch(schemaDefinitionPackage -> schemaDefinitionPackage.equals(
-                                entityJavaType.getPackage().getName()));
+                                traitType.getPackage().getName()));
 
                 if (matched) {
                     return consumer.apply(schemaDefinitionProvider);
@@ -191,14 +191,14 @@ public abstract class LiteQL {
             return null;
         }
 
-        public static TypeName getTypeName(Class<? extends Trait> traitJavaType) {
-            String schema = getSchemaOfTrait(traitJavaType);
+        public static TypeName getTypeName(Class<? extends TraitType> traitType) {
+            String schema = getSchemaOfTrait(traitType);
 
             if (org.apache.commons.lang3.StringUtils.isNotBlank(schema)) {
                 TypeName typeName = new TypeName();
-                typeName.setSchema(getSchemaOfTrait(traitJavaType));
+                typeName.setSchema(getSchemaOfTrait(traitType));
                 typeName.setName(
-                        StringUtils.camelNameToLowerDashConnectedLowercaseName(traitJavaType.getSimpleName()));
+                        StringUtils.camelNameToLowerDashConnectedLowercaseName(traitType.getSimpleName()));
 
                 return typeName;
             }
@@ -220,14 +220,14 @@ public abstract class LiteQL {
             return typeName;
         }
 
-        public static Class<? extends Trait> getTraitJavaType(String traitJavaTypeName) {
-            Class<?> javaType = ClassUtils.getClass(traitJavaTypeName);
+        public static Class<? extends TraitType> getTraitType(String traitTypeName) {
+            Class<?> javaType = ClassUtils.getClass(traitTypeName);
 
-            if (Trait.class.equals(javaType) || !Trait.class.isAssignableFrom(javaType)) {
+            if (TraitType.class.equals(javaType) || !TraitType.class.isAssignableFrom(javaType)) {
                 throw new IllegalArgumentException("Sub type of Trait is Required");
             }
 
-            return (Class<? extends Trait>) javaType;
+            return (Class<? extends TraitType>) javaType;
         }
 
     }
@@ -310,7 +310,7 @@ public abstract class LiteQL {
             SimpleModule module = new SimpleModule();
 
             module.addDeserializer(TypeName.class, new TypeNameDeserializer());
-            module.addDeserializer(Type.class, new TypeDeserializer());
+            module.addDeserializer(TypeDefinition.class, new TypeDefinitionDeserializer());
             module.addDeserializer(Field.class, new FieldDeserializer());
             module.addDeserializer(MigrationOperation.class, new MigrationOperationDeserializer());
             module.addDeserializer(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
@@ -325,7 +325,7 @@ public abstract class LiteQL {
             module.addDeserializer(PublicQuery.class, new PublicQueryDeserializer());
 
             module.addSerializer(TypeName.class, new TypeNameSerializer());
-            module.addSerializer(Type.class, new TypeSerializer());
+            module.addSerializer(TypeDefinition.class, new TypeDefinitionSerializer());
             module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
             module.addSerializer(QueryType.class, new QueryTypeSerializer());
             module.addSerializer(DataType.class, new DataTypeSerializer());

@@ -1,11 +1,11 @@
 package org.cheeryworks.liteql.model;
 
-import org.cheeryworks.liteql.schema.annotation.Position;
-import org.cheeryworks.liteql.schema.annotation.ReferenceField;
+import org.cheeryworks.liteql.schema.annotation.LiteQLFieldPosition;
+import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
 
 import java.util.Date;
 
-public interface AuditEntity extends Entity {
+public interface AuditType extends DomainType {
 
     String ENABLED_FIELD_NAME = "enabled";
 
@@ -23,30 +23,30 @@ public interface AuditEntity extends Entity {
 
     String LAST_MODIFIED_TIME_FIELD_NAME = "lastModifiedTime";
 
-    @Position(1)
+    @LiteQLFieldPosition(1)
     boolean isEnabled();
 
-    @Position(2)
+    @LiteQLFieldPosition(2)
     boolean isDeleted();
 
-    @Position(3)
+    @LiteQLFieldPosition(3)
     boolean isDeletable();
 
-    @Position(4)
+    @LiteQLFieldPosition(4)
     boolean isInherent();
 
-    @Position(5)
-    @ReferenceField(name = "creator", targetDomainType = UserEntity.class)
+    @LiteQLFieldPosition(5)
+    @LiteQLReferenceField(name = "creator", targetDomainType = UserType.class)
     String getCreatorId();
 
-    @Position(6)
+    @LiteQLFieldPosition(6)
     Date getCreateTime();
 
-    @Position(7)
-    @ReferenceField(name = "lastModifier", targetDomainType = UserEntity.class)
+    @LiteQLFieldPosition(7)
+    @LiteQLReferenceField(name = "lastModifier", targetDomainType = UserType.class)
     String getLastModifierId();
 
-    @Position(8)
+    @LiteQLFieldPosition(8)
     Date getLastModifiedTime();
 
 }

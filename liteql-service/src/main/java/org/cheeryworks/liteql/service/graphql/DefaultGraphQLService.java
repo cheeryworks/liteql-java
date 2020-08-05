@@ -33,7 +33,7 @@ import org.cheeryworks.liteql.query.enums.ConditionOperator;
 import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.enums.Direction;
 import org.cheeryworks.liteql.query.read.sort.QuerySort;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
@@ -210,12 +210,12 @@ public class DefaultGraphQLService implements GraphQLService {
         Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
 
         for (String schema : schemaService.getSchemaNames()) {
-            for (DomainType domainType : schemaService.getDomainTypes(schema)) {
-                if (!domainType.isGraphQLType()) {
+            for (DomainTypeDefinition domainTypeDefinition : schemaService.getDomainTypeDefinitions(schema)) {
+                if (!domainTypeDefinition.isGraphQLType()) {
                     continue;
                 }
 
-                String objectTypeName = GraphQLServiceUtil.toObjectTypeName(domainType.getTypeName());
+                String objectTypeName = GraphQLServiceUtil.toObjectTypeName(domainTypeDefinition.getTypeName());
 
                 ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
                         .newObjectTypeDefinition()
@@ -223,7 +223,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
                 objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
 
-                for (Field field : domainType.getFields()) {
+                for (Field field : domainTypeDefinition.getFields()) {
                     if (!field.isGraphQLField()) {
                         continue;
                     }

@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.util;
 
 import org.cheeryworks.liteql.schema.enums.DataType;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.field.Field;
 
 import java.math.BigDecimal;
@@ -11,10 +11,10 @@ import java.util.Map;
 
 public abstract class SqlQueryServiceUtil {
 
-    public static Map<String, Class> getFieldDefinitions(DomainType domainType) {
+    public static Map<String, Class> getFieldDefinitions(DomainTypeDefinition domainTypeDefinition) {
         Map<String, Class> fieldDefinitions = new HashMap<>();
 
-        for (Field field : domainType.getFields()) {
+        for (Field field : domainTypeDefinition.getFields()) {
             fieldDefinitions.put(field.getName(), getDataType(field.getType()));
         }
 

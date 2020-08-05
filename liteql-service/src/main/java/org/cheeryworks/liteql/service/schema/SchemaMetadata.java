@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-public class SchemaDefinition {
+public class SchemaMetadata {
 
     public static final String VERSION_CONCAT = "__";
 
@@ -12,17 +12,17 @@ public class SchemaDefinition {
 
     private String name;
 
-    private Map<String, TypeDefinition> typeDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private Map<String, TypeMetadata> typeMetadataSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public String getName() {
         return name;
     }
 
-    public Map<String, TypeDefinition> getTypeDefinitions() {
-        return typeDefinitions;
+    public Map<String, TypeMetadata> getTypeMetadataSet() {
+        return typeMetadataSet;
     }
 
-    public SchemaDefinition(String name) {
+    public SchemaMetadata(String name) {
         this.name = name;
     }
 
@@ -32,11 +32,11 @@ public class SchemaDefinition {
             return true;
         }
 
-        if (!(o instanceof SchemaDefinition)) {
+        if (!(o instanceof SchemaMetadata)) {
             return false;
         }
 
-        SchemaDefinition that = (SchemaDefinition) o;
+        SchemaMetadata that = (SchemaMetadata) o;
 
         return name.equals(that.name);
     }

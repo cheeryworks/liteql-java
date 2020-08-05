@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.schema;
 
-import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
+import org.cheeryworks.liteql.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
 
@@ -12,13 +12,13 @@ public interface SchemaService {
 
     Set<String> getSchemaNames();
 
-    Set<DomainType> getDomainTypes(String schemaName);
+    Set<DomainTypeDefinition> getDomainTypeDefinitions(String schemaName);
 
-    Set<TraitType> getTraitTypes(String schemaName);
+    Set<TraitTypeDefinition> getTraitTypeDefinitions(String schemaName);
 
-    DomainType getDomainType(TypeName typeName);
+    DomainTypeDefinition getDomainTypeDefinition(TypeName typeName);
 
-    TraitType getTraitType(TypeName typeName);
+    TraitTypeDefinition getTraitTypeDefinition(TypeName typeName);
 
     Map<TypeName, Map<String, Migration>> getMigrations(String schemaName);
 

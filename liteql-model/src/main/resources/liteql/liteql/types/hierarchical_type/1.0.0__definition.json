@@ -11,6 +11,6 @@
     }
   ],
   "traits": [
-    "liteql.sortable_entity"
+    "liteql.sortable_type"
   ]
 }

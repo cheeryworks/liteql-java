@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.schema.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.CreateUniqueMigrationOperation;
@@ -37,12 +37,12 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
 
     @Override
     public String schemaToSql(String schemaName) {
-        Set<DomainType> domainTypes = getSchemaService().getDomainTypes(schemaName);
+        Set<DomainTypeDefinition> domainTypeDefinitions = getSchemaService().getDomainTypeDefinitions(schemaName);
 
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        for (DomainType domainType : domainTypes) {
-            schemaSqlBuilder.append(domainTypeToSql(domainType));
+        for (DomainTypeDefinition domainTypeDefinition : domainTypeDefinitions) {
+            schemaSqlBuilder.append(domainTypeDefinitionToSql(domainTypeDefinition));
         }
 
         return schemaSqlBuilder.toString();
@@ -50,17 +50,17 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
 
     @Override
     public String domainTypeToSql(TypeName domainTypeName) {
-        return domainTypeToSql(getSchemaService().getDomainType(domainTypeName));
+        return domainTypeDefinitionToSql(getSchemaService().getDomainTypeDefinition(domainTypeName));
     }
 
-    private String domainTypeToSql(DomainType domainType) {
+    private String domainTypeDefinitionToSql(DomainTypeDefinition domainTypeDefinition) {
         StringBuilder schemaSqlBuilder = new StringBuilder();
 
-        String tableName = getSqlCustomizer().getTableName(domainType.getTypeName());
+        String tableName = getSqlCustomizer().getTableName(domainTypeDefinition.getTypeName());
 
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 
-        for (Field field : getJooqFields(domainType.getFields())) {
+        for (Field field : getJooqFields(domainTypeDefinition.getFields())) {
             if (createTableColumnStep == null) {
                 createTableColumnStep = createTableColumnStep.column(field, field.getDataType());
             } else {
@@ -73,14 +73,16 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
         schemaSqlBuilder.append(parsingAddPrimaryKey(tableName)).append(";").append("\n\n");
 
         List<String> uniqueSqls = parsingIndexMigrationOperation(
-                domainType.getTypeName(), new CreateUniqueMigrationOperation(domainType.getUniques()));
+                domainTypeDefinition.getTypeName(),
+                new CreateUniqueMigrationOperation(domainTypeDefinition.getUniques()));
 
         for (String uniqueSql : uniqueSqls) {
             schemaSqlBuilder.append(uniqueSql).append(";").append("\n\n");
         }
 
         List<String> indexSqls = parsingIndexMigrationOperation(
-                domainType.getTypeName(), new CreateIndexMigrationOperation(domainType.getIndexes()));
+                domainTypeDefinition.getTypeName(),
+                new CreateIndexMigrationOperation(domainTypeDefinition.getIndexes()));
 
         for (String indexSql : indexSqls) {
             schemaSqlBuilder.append(indexSql).append(";").append("\n\n");

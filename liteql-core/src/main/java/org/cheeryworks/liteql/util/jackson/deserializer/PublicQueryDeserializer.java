@@ -19,7 +19,7 @@ import org.cheeryworks.liteql.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.SaveQueries;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
-import org.cheeryworks.liteql.schema.DomainType;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -47,7 +47,7 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
                     QueryType queryType = jsonParser.getCodec().treeToValue(
                             query.get(TypedQuery.QUERY_TYPE_KEY), QueryType.class);
 
-                    if (query.get(DomainType.DOMAIN_TYPE_NAME_KEY) == null) {
+                    if (query.get(DomainTypeDefinition.DOMAIN_TYPE_NAME_KEY) == null) {
                         throw new IllegalArgumentException("Required field domainType is not specified");
                     }
 

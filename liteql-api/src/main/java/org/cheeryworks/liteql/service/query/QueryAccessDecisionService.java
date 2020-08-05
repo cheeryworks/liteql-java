@@ -1,11 +1,11 @@
 package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.query.AbstractDomainQuery;
-import org.cheeryworks.liteql.model.UserEntity;
+import org.cheeryworks.liteql.model.UserType;
 
 public interface QueryAccessDecisionService {
 
-    default void decide(UserEntity user, AbstractDomainQuery query) {
+    default void decide(UserType user, AbstractDomainQuery query) {
 
     }
 

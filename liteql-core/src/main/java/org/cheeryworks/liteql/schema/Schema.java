@@ -22,11 +22,11 @@ public class Schema implements Serializable {
 
     private String name;
 
-    private Set<DomainType> domainTypes = new TreeSet<>(
+    private Set<DomainTypeDefinition> domainTypeDefinitions = new TreeSet<>(
             (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
                     o1.getTypeName().getName(), o2.getTypeName().getName()));
 
-    private Set<TraitType> traitTypes = new TreeSet<>(
+    private Set<TraitTypeDefinition> traitTypeDefinitions = new TreeSet<>(
             (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
                     o1.getTypeName().getName(), o2.getTypeName().getName()));
 
@@ -42,12 +42,12 @@ public class Schema implements Serializable {
         this.name = name;
     }
 
-    public Set<DomainType> getDomainTypes() {
-        return domainTypes;
+    public Set<DomainTypeDefinition> getDomainTypeDefinitions() {
+        return domainTypeDefinitions;
     }
 
-    public Set<TraitType> getTraitTypes() {
-        return traitTypes;
+    public Set<TraitTypeDefinition> getTraitTypeDefinitions() {
+        return traitTypeDefinitions;
     }
 
     public Map<TypeName, Map<String, Migration>> getMigrations() {

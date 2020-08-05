@@ -13,7 +13,7 @@ import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
-import org.cheeryworks.liteql.schema.Type;
+import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
@@ -114,18 +114,18 @@ public class QueryServiceController extends AbstractServiceController {
     @GetMapping(value = "/liteql/schema/{schema}/type")
     public Object getTypes(@PathVariable(name = "schema") String schema) {
         try {
-            List<Type> types = new ArrayList<>();
+            List<TypeDefinition> typeDefinitions = new ArrayList<>();
 
-            types.addAll(schemaService.getTraitTypes(schema));
-            types.addAll(schemaService.getDomainTypes(schema));
+            typeDefinitions.addAll(schemaService.getTraitTypeDefinitions(schema));
+            typeDefinitions.addAll(schemaService.getDomainTypeDefinitions(schema));
 
-            Map<String, Type> typesInMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, TypeDefinition> typeDefinitionsInMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-            for (Type type : types) {
-                typesInMap.put(type.getTypeName().getFullname(), type);
+            for (TypeDefinition typeDefinition : typeDefinitions) {
+                typeDefinitionsInMap.put(typeDefinition.getTypeName().getFullname(), typeDefinition);
             }
 
-            return getOkResponseEntity(typesInMap);
+            return getOkResponseEntity(typeDefinitionsInMap);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
 

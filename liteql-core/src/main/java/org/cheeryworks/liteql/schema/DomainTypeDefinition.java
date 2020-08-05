@@ -11,7 +11,7 @@ import org.cheeryworks.liteql.schema.index.Unique;
 import java.util.Objects;
 import java.util.Set;
 
-public class DomainType extends TraitType {
+public class DomainTypeDefinition extends TraitTypeDefinition {
 
     public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
 
@@ -73,14 +73,14 @@ public class DomainType extends TraitType {
         this.dropped = dropped;
     }
 
-    public DomainType() {
+    public DomainTypeDefinition() {
     }
 
-    public DomainType(TypeName typeName) {
+    public DomainTypeDefinition(TypeName typeName) {
         super(typeName);
     }
 
-    public DomainType(String schema, String name) {
+    public DomainTypeDefinition(String schema, String name) {
         super(schema, name);
     }
 
@@ -155,7 +155,7 @@ public class DomainType extends TraitType {
             return true;
         }
 
-        if (!(o instanceof DomainType)) {
+        if (!(o instanceof DomainTypeDefinition)) {
             return false;
         }
 
@@ -163,11 +163,11 @@ public class DomainType extends TraitType {
             return false;
         }
 
-        DomainType that = (DomainType) o;
+        DomainTypeDefinition domainTypeDefinition = (DomainTypeDefinition) o;
 
-        return Objects.equals(uniques, that.uniques) &&
-                Objects.equals(indexes, that.indexes) &&
-                Objects.equals(graphQLType, that.graphQLType);
+        return Objects.equals(uniques, domainTypeDefinition.uniques) &&
+                Objects.equals(indexes, domainTypeDefinition.indexes) &&
+                Objects.equals(graphQLType, domainTypeDefinition.graphQLType);
     }
 
     @Override

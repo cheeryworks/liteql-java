@@ -30,7 +30,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
     }
 
     private void init() {
-        Map<String, SchemaDefinition> schemaDefinitions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, SchemaMetadata> schemaMetadataSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         for (String location : locations) {
             try {
@@ -51,8 +51,8 @@ public class DefaultSchemaService extends AbstractSchemaService {
                     String schemaRootResourcePath = schemaRootResource.getURL().getPath()
                             .substring(0, schemaRootResource.getURL().getPath().lastIndexOf("."));
 
-                    if (schemaDefinitions.get(schemaName) == null) {
-                        schemaDefinitions.put(schemaName, new SchemaDefinition(schemaName));
+                    if (schemaMetadataSet.get(schemaName) == null) {
+                        schemaMetadataSet.put(schemaName, new SchemaMetadata(schemaName));
                         schemaPaths.put(schemaName, schemaRootResourcePath);
                     } else {
                         throw new IllegalArgumentException("Schema [" + schemaName + "]"
@@ -76,16 +76,16 @@ public class DefaultSchemaService extends AbstractSchemaService {
                                 continue;
                             }
 
-                            SchemaDefinition schemaDefinition = schemaDefinitions.get(schemaPathEntry.getKey());
+                            SchemaMetadata schemaMetadata = schemaMetadataSet.get(schemaPathEntry.getKey());
 
                             String typeName = schemaDefinitionResourceRelativePath.split("/")[1];
 
-                            TypeDefinition typeDefinition = schemaDefinition.getTypeDefinitions().get(typeName);
+                            TypeMetadata typeMetadata = schemaMetadata.getTypeMetadataSet().get(typeName);
 
-                            if (typeDefinition == null) {
-                                typeDefinition = new TypeDefinition(typeName);
+                            if (typeMetadata == null) {
+                                typeMetadata = new TypeMetadata(typeName);
 
-                                schemaDefinition.getTypeDefinitions().put(typeName, typeDefinition);
+                                schemaMetadata.getTypeMetadataSet().put(typeName, typeMetadata);
                             }
 
                             String contentName = schemaDefinitionResourceRelativePath.substring(
@@ -96,12 +96,12 @@ public class DefaultSchemaService extends AbstractSchemaService {
                                     schemaDefinitionResource.getInputStream(), StandardCharsets.UTF_8);
 
                             if (schemaDefinitionResourceRelativePath.endsWith(SUFFIX_OF_TYPE_DEFINITION)) {
-                                typeDefinition.getContents().put(contentName, content);
+                                typeMetadata.getContents().put(contentName, content);
                             }
 
                             if (schemaDefinitionResourceRelativePath
                                     .contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
-                                typeDefinition.getMigrationContents().put(contentName, content);
+                                typeMetadata.getMigrationContents().put(contentName, content);
                             }
 
                             break;
@@ -114,8 +114,8 @@ public class DefaultSchemaService extends AbstractSchemaService {
             }
         }
 
-        for (SchemaDefinition schemaDefinition : schemaDefinitions.values()) {
-            processSchemaDefinition(schemaDefinition);
+        for (SchemaMetadata schemaMetadata : schemaMetadataSet.values()) {
+            processSchemaMetadata(schemaMetadata);
         }
     }
 

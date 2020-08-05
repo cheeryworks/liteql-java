@@ -1,17 +1,17 @@
 package org.cheeryworks.liteql.query;
 
-import org.cheeryworks.liteql.model.UserEntity;
+import org.cheeryworks.liteql.model.UserType;
 
 public class DefaultQueryContext implements QueryContext {
 
-    private UserEntity user;
+    private UserType user;
 
-    public DefaultQueryContext(UserEntity user) {
+    public DefaultQueryContext(UserType user) {
         this.user = user;
     }
 
     @Override
-    public UserEntity getUser() {
+    public UserType getUser() {
         return this.user;
     }
 }

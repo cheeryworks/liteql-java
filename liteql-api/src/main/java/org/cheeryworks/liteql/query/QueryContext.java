@@ -1,9 +1,9 @@
 package org.cheeryworks.liteql.query;
 
-import org.cheeryworks.liteql.model.UserEntity;
+import org.cheeryworks.liteql.model.UserType;
 
 public interface QueryContext {
 
-    UserEntity getUser();
+    UserType getUser();
 
 }

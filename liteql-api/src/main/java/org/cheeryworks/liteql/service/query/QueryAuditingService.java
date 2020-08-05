@@ -1,14 +1,16 @@
 package org.cheeryworks.liteql.service.query;
 
-import org.cheeryworks.liteql.schema.DomainType;
-import org.cheeryworks.liteql.model.UserEntity;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
+import org.cheeryworks.liteql.model.UserType;
 
 import java.util.Map;
 
 public interface QueryAuditingService {
 
-    void auditingDomainObject(Map<String, Object> domainObject, DomainType domainType, UserEntity user);
+    void auditingDomainObject(
+            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, UserType user);
 
-    void auditingExistedDomainObject(Map<String, Object> domainObject, DomainType domainType, UserEntity user);
+    void auditingExistedDomainObject(
+            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, UserType user);
 
 }
