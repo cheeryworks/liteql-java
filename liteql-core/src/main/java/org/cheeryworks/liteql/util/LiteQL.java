@@ -23,6 +23,7 @@ import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
+import org.cheeryworks.liteql.util.jackson.LiteQLPrettyPrinter;
 import org.cheeryworks.liteql.util.jackson.deserializer.ConditionClauseDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.ConditionOperatorDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.ConditionTypeDeserializer;
@@ -299,9 +300,11 @@ public abstract class LiteQL {
             OBJECT_MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
             OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
             OBJECT_MAPPER.registerModule(getLiteQLJsonModule());
+
+            OBJECT_MAPPER.setDefaultPrettyPrinter(new LiteQLPrettyPrinter());
         }
 
         private JacksonJsonUtils() {
