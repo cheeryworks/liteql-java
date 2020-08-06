@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -31,8 +30,8 @@ import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.field.IntegerField;
 import org.cheeryworks.liteql.schema.field.StringField;
 import org.cheeryworks.liteql.schema.field.TimestampField;
-import org.cheeryworks.liteql.schema.index.Index;
-import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.index.IndexDefinition;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 import org.cheeryworks.liteql.schema.migration.Migration;
 import org.cheeryworks.liteql.schema.migration.operation.CreateTypeMigrationOperation;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
@@ -83,7 +82,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     private Map<Class, Class> traitImplements = initTraitImplements();
 
     public JpaSchemaService(LiteQLProperties liteQLProperties) {
-        super(liteQLProperties, "classpath*:/liteql");
+        super(liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
 
         Map<String, Set<TypeDefinition>> typeDefinitonWithinSchemas = getTypeDefinitionWithinSchemas();
 
@@ -195,7 +194,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
             Class<? extends TraitType> traitType
-                    = LiteQL.SchemaUtils.getTraitType(japEntityBean.getBeanClassName());
+                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
 
             TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitType);
 
@@ -236,7 +235,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
                 for (TypeDefinition domainTypeDefinition : domainTypeDefinitions) {
                     if (domainTypeDefinition.getTypeName().equals(domainTypeName)) {
-                        performFieldsOfDomain((DomainTypeDefinition) domainTypeDefinition, graphQLEntityJavaType);
+                        performFieldsOfDomainType((DomainTypeDefinition) domainTypeDefinition, graphQLEntityJavaType);
                         break;
                     }
                 }
@@ -258,9 +257,9 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         domainTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(traitType));
 
-        performFieldsOfDomain(domainTypeDefinition, traitType);
+        performFieldsOfDomainType(domainTypeDefinition, traitType);
 
-        performUniquesAndIndexesOfDomain(domainTypeDefinition, traitType);
+        performUniquesAndIndexesOfDomainType(domainTypeDefinition, traitType);
 
         performTraits(domainTypeDefinition, traitType);
 
@@ -280,7 +279,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return traitTypeDefinition;
     }
 
-    private void performFieldsOfDomain(DomainTypeDefinition domainTypeDefinition, Class<?> javaType) {
+    private void performFieldsOfDomainType(
+            DomainTypeDefinition domainTypeDefinition, Class<?> javaType) {
         Set<Field> fields = new LinkedHashSet<>();
 
         List<java.lang.reflect.Field> javaFields = FieldUtils.getAllFieldsList(javaType);
@@ -292,7 +292,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 = MethodUtils.getMethodsWithAnnotation(javaType, Lob.class, true, true);
 
         Method[] graphQLFieldMethods
-                = MethodUtils.getMethodsWithAnnotation(javaType, GraphQLType.class, true, true);
+                = MethodUtils.getMethodsWithAnnotation(javaType, GraphQLField.class, true, true);
 
         Method[] referenceFieldMethods
                 = MethodUtils.getMethodsWithAnnotation(javaType, LiteQLReferenceField.class, true, true);
@@ -343,8 +343,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     }
 
     private <T extends Annotation> T getAnnotation(
-            Method[] methods, String propertyName, AccessibleObject javaField, Class<T> annotationClass) {
-        T annotation = javaField.getAnnotation(annotationClass);
+            Method[] methods, String propertyName, AccessibleObject accessibleObject, Class<T> annotationClass) {
+        T annotation = accessibleObject.getAnnotation(annotationClass);
 
         if (annotation == null) {
             for (Method method : methods) {
@@ -358,11 +358,12 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return annotation;
     }
 
-    private void performUniquesAndIndexesOfDomain(DomainTypeDefinition domainTypeDefinition, Class<?> javaType) {
+    private void performUniquesAndIndexesOfDomainType(
+            DomainTypeDefinition domainTypeDefinition, Class<? extends TraitType> javaType) {
         Table table = javaType.getAnnotation(Table.class);
 
-        Set<Unique> uniques = new LinkedHashSet<>();
-        Set<Index> indexes = new LinkedHashSet<>();
+        Set<UniqueDefinition> uniqueDefinitions = new LinkedHashSet<>();
+        Set<IndexDefinition> indexDefinitions = new LinkedHashSet<>();
 
         if (table != null) {
             for (javax.persistence.Index jpaIndex : table.indexes()) {
@@ -376,29 +377,29 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 }
 
                 if (jpaIndex.unique()) {
-                    Unique unique = new Unique();
-                    unique.setFields(fieldNames);
+                    UniqueDefinition uniqueDefinition = new UniqueDefinition();
+                    uniqueDefinition.setFields(fieldNames);
 
-                    uniques.add(unique);
+                    uniqueDefinitions.add(uniqueDefinition);
                 } else {
-                    Index index = new Index();
-                    index.setFields(fieldNames);
+                    IndexDefinition indexDefinition = new IndexDefinition();
+                    indexDefinition.setFields(fieldNames);
 
-                    indexes.add(index);
+                    indexDefinitions.add(indexDefinition);
                 }
             }
         }
 
-        if (CollectionUtils.isNotEmpty(uniques)) {
-            domainTypeDefinition.setUniques(uniques);
+        if (CollectionUtils.isNotEmpty(uniqueDefinitions)) {
+            domainTypeDefinition.setUniques(uniqueDefinitions);
         }
 
-        if (CollectionUtils.isNotEmpty(indexes)) {
-            domainTypeDefinition.setIndexes(indexes);
+        if (CollectionUtils.isNotEmpty(indexDefinitions)) {
+            domainTypeDefinition.setIndexes(indexDefinitions);
         }
     }
 
-    public String getFieldName(TypeName domainTypeName, String columnName) {
+    private String getFieldName(TypeName domainTypeName, String columnName) {
         String fieldName = null;
 
         if (fieldNames.get(domainTypeName) != null) {
@@ -422,7 +423,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return fieldName;
     }
 
-    private void performFieldsOfTrait(TraitTypeDefinition traitTypeDefinition, Class traitInterface) {
+    private void performFieldsOfTrait(
+            TraitTypeDefinition traitTypeDefinition, Class<? extends TraitType> traitInterface) {
         Set<Field> fields = new LinkedHashSet<>();
 
         Method[] methods = traitInterface.getDeclaredMethods();
@@ -597,10 +599,11 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         return field;
     }
 
-    private void performTraits(TraitTypeDefinition traitTypeDefinition, Class javaType) {
+    private void performTraits(
+            TraitTypeDefinition traitTypeDefinition, Class<? extends TraitType> javaType) {
         Set<TypeName> typeNames = new LinkedHashSet<>();
 
-        List<Class<?>> javaTypeInterfaces = ClassUtils.getAllInterfaces(javaType);
+        List<Class<?>> javaTypeInterfaces = org.apache.commons.lang3.ClassUtils.getAllInterfaces(javaType);
 
         Set<Class<? extends TraitType>> traitTypes = new TreeSet<>((o1, o2) -> {
             if (o1.isAssignableFrom(o2)) {

@@ -2,9 +2,9 @@ package org.cheeryworks.liteql.schema.index;
 
 import org.cheeryworks.liteql.schema.enums.IndexType;
 
-public class Unique extends AbstractIndex {
+public class UniqueDefinition extends AbstractIndexDefinition {
 
-    public Unique() {
+    public UniqueDefinition() {
         super(IndexType.Unique);
     }
 

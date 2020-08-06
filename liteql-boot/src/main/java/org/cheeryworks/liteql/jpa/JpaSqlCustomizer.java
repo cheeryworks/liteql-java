@@ -51,7 +51,7 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
         for (BeanDefinition japEntityBean : jpaEntityBeans) {
             Class<? extends TraitType> traitType
-                    = LiteQL.SchemaUtils.getTraitType(japEntityBean.getBeanClassName());
+                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
 
             Table table = traitType.getAnnotation(Table.class);
 

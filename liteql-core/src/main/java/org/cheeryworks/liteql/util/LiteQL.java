@@ -43,8 +43,8 @@ import org.cheeryworks.liteql.util.jackson.serializer.ConditionTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.MigrationOperationTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.QueryTypeSerializer;
-import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeDefinitionSerializer;
+import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +66,8 @@ public abstract class LiteQL {
     public static final class Constants {
 
         public static final String SPECIFICATION_VERSION = "1.0.0";
+
+        public static final String SCHEMA_DEFINITION_CLASSPATH_ROOT = "liteql";
 
         public static final String SCHEMA = "liteql";
 
@@ -220,7 +222,7 @@ public abstract class LiteQL {
             return typeName;
         }
 
-        public static Class<? extends TraitType> getTraitType(String traitTypeName) {
+        public static Class<? extends TraitType> getTraitJavaType(String traitTypeName) {
             Class<?> javaType = ClassUtils.getClass(traitTypeName);
 
             if (TraitType.class.equals(javaType) || !TraitType.class.isAssignableFrom(javaType)) {
@@ -238,10 +240,10 @@ public abstract class LiteQL {
 
         }
 
-        public static java.lang.String camelNameToLowerDashConnectedLowercaseName(java.lang.String camelName) {
-            java.lang.String[] words = org.apache.commons.lang3.StringUtils.splitByCharacterTypeCamelCase(camelName);
+        public static String camelNameToLowerDashConnectedLowercaseName(String camelName) {
+            String[] words = org.apache.commons.lang3.StringUtils.splitByCharacterTypeCamelCase(camelName);
 
-            return java.lang.String.join("_", words).toLowerCase();
+            return String.join("_", words).toLowerCase();
         }
 
         public static String plural(String word) {

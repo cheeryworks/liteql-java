@@ -17,7 +17,7 @@ import org.cheeryworks.liteql.schema.field.LongField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.schema.field.StringField;
 import org.cheeryworks.liteql.schema.field.TimestampField;
-import org.cheeryworks.liteql.schema.index.AbstractIndex;
+import org.cheeryworks.liteql.schema.index.AbstractIndexDefinition;
 import org.cheeryworks.liteql.schema.migration.operation.AbstractIndexMigrationOperation;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlParser;
 import org.cheeryworks.liteql.service.schema.SchemaService;
@@ -85,14 +85,14 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
 
     protected List<String> parsingIndexMigrationOperation(
             TypeName domainTypeName,
-            AbstractIndexMigrationOperation<? extends AbstractIndex> indexMigrationOperation) {
+            AbstractIndexMigrationOperation<? extends AbstractIndexDefinition> indexMigrationOperation) {
         String tableName = getSqlCustomizer().getTableName(domainTypeName);
 
         DomainTypeDefinition domainTypeDefinition = getSchemaService().getDomainTypeDefinition(domainTypeName);
 
         List<String> sqls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(indexMigrationOperation.getIndexes())) {
-            for (AbstractIndex index : indexMigrationOperation.getIndexes()) {
+            for (AbstractIndexDefinition index : indexMigrationOperation.getIndexes()) {
                 String fieldsInString = Arrays.toString(
                         index.getFields().toArray(new String[index.getFields().size()]));
                 String indexName = (IndexType.Normal.equals(index.getType()) ? INDEX_KEY_PREFIX : UNIQUE_KEY_PREFIX)

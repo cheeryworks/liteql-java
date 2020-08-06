@@ -26,7 +26,7 @@ import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
-import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqParser;
 import org.cheeryworks.liteql.service.query.sql.InlineSqlDeleteQuery;
 import org.cheeryworks.liteql.service.query.sql.InlineSqlReadQuery;
@@ -330,7 +330,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             UpdateSetStep updateSetStep = getDslContext()
                     .update(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
 
-            Unique uniqueKey = getUniqueKey(domainTypeDefinition, data);
+            UniqueDefinition uniqueDefinitionKey = getUniqueDefinition(domainTypeDefinition, data);
 
             Condition condition = DSL.trueCondition();
 
@@ -344,7 +344,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
-                if (uniqueKey.getFields().contains(dataEntry.getKey())) {
+                if (uniqueDefinitionKey.getFields().contains(dataEntry.getKey())) {
                     condition = condition.and(field(dataEntry.getKey()).eq(dataEntry.getValue()));
 
                     condition = condition.and(
@@ -401,18 +401,18 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 .where(condition).asField();
     }
 
-    private Unique getUniqueKey(DomainTypeDefinition domainTypeDefinition, Map<String, Object> data) {
-        for (Unique uniqueKey : domainTypeDefinition.getUniques()) {
+    private UniqueDefinition getUniqueDefinition(DomainTypeDefinition domainTypeDefinition, Map<String, Object> data) {
+        for (UniqueDefinition uniqueDefinition : domainTypeDefinition.getUniques()) {
             boolean matched = true;
 
-            for (String field : uniqueKey.getFields()) {
+            for (String field : uniqueDefinition.getFields()) {
                 if (!data.containsKey(field)) {
                     matched = false;
                 }
             }
 
             if (matched) {
-                return uniqueKey;
+                return uniqueDefinition;
             }
         }
 

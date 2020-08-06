@@ -9,6 +9,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LiteQLField {
 
+    int length() default 255;
+
+    boolean nullable() default true;
+
     boolean lob() default false;
 
     boolean ignore() default false;

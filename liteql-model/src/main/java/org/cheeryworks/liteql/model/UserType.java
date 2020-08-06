@@ -2,8 +2,9 @@ package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.annotation.LiteQLFieldPosition;
 import org.cheeryworks.liteql.schema.annotation.LiteQLType;
+import org.cheeryworks.liteql.util.LiteQL;
 
-@LiteQLType
+@LiteQLType(schema = LiteQL.Constants.SCHEMA, version = LiteQL.Constants.SPECIFICATION_VERSION)
 public interface UserType extends DomainType {
 
     @LiteQLFieldPosition(1)

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
-import org.cheeryworks.liteql.schema.index.Index;
-import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.index.IndexDefinition;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 
 import java.util.Objects;
 import java.util.Set;
@@ -15,27 +15,27 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
 
     public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
 
-    private Set<Unique> uniques;
+    private Set<UniqueDefinition> uniques;
 
-    private Set<Index> indexes;
+    private Set<IndexDefinition> indexes;
 
     private Boolean graphQLType;
 
     private Boolean dropped;
 
-    public Set<Unique> getUniques() {
+    public Set<UniqueDefinition> getUniques() {
         return this.uniques;
     }
 
-    public Set<Index> getIndexes() {
+    public Set<IndexDefinition> getIndexes() {
         return this.indexes;
     }
 
-    public void setUniques(Set<Unique> uniques) {
-        this.uniques = uniques;
+    public void setUniques(Set<UniqueDefinition> uniqueDefinitions) {
+        this.uniques = uniqueDefinitions;
     }
 
-    public void setIndexes(Set<Index> indexes) {
+    public void setIndexes(Set<IndexDefinition> indexes) {
         this.indexes = indexes;
     }
 

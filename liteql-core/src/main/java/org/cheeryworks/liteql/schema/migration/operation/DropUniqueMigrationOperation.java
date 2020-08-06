@@ -1,19 +1,19 @@
 package org.cheeryworks.liteql.schema.migration.operation;
 
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
-import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 
 import java.util.Set;
 
-public class DropUniqueMigrationOperation extends AbstractIndexMigrationOperation<Unique> {
+public class DropUniqueMigrationOperation extends AbstractIndexMigrationOperation<UniqueDefinition> {
 
     public DropUniqueMigrationOperation() {
         this(null);
     }
 
-    public DropUniqueMigrationOperation(Set<Unique> uniques) {
+    public DropUniqueMigrationOperation(Set<UniqueDefinition> uniqueDefinitions) {
         super(MigrationOperationType.DROP_UNIQUE);
-        this.setIndexes(uniques);
+        this.setIndexes(uniqueDefinitions);
     }
 
 }

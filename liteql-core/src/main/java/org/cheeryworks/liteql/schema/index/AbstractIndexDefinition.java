@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class AbstractIndex implements Serializable {
+public abstract class AbstractIndexDefinition implements Serializable {
 
     @JsonIgnore
     private IndexType type;
@@ -26,7 +26,7 @@ public abstract class AbstractIndex implements Serializable {
         this.fields = fields;
     }
 
-    public AbstractIndex(IndexType type) {
+    public AbstractIndexDefinition(IndexType type) {
         this.type = type;
     }
 
@@ -36,11 +36,11 @@ public abstract class AbstractIndex implements Serializable {
             return true;
         }
 
-        if (!(o instanceof AbstractIndex)) {
+        if (!(o instanceof AbstractIndexDefinition)) {
             return false;
         }
 
-        AbstractIndex that = (AbstractIndex) o;
+        AbstractIndexDefinition that = (AbstractIndexDefinition) o;
 
         if (type != that.type) {
             return false;

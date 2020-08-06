@@ -4,8 +4,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.schema.field.Field;
-import org.cheeryworks.liteql.schema.index.Index;
-import org.cheeryworks.liteql.schema.index.Unique;
+import org.cheeryworks.liteql.schema.index.IndexDefinition;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 
 import java.util.Set;
 
@@ -13,9 +13,9 @@ public class CreateTypeMigrationOperation extends AbstractMigrationOperation {
 
     private Set<Field> fields;
 
-    private Set<Unique> uniques;
+    private Set<UniqueDefinition> uniques;
 
-    private Set<Index> indexes;
+    private Set<IndexDefinition> indexes;
 
     public Set<Field> getFields() {
         return fields;
@@ -25,19 +25,19 @@ public class CreateTypeMigrationOperation extends AbstractMigrationOperation {
         this.fields = fields;
     }
 
-    public Set<Unique> getUniques() {
+    public Set<UniqueDefinition> getUniques() {
         return uniques;
     }
 
-    public void setUniques(Set<Unique> uniques) {
-        this.uniques = uniques;
+    public void setUniques(Set<UniqueDefinition> uniqueDefinitions) {
+        this.uniques = uniqueDefinitions;
     }
 
-    public Set<Index> getIndexes() {
+    public Set<IndexDefinition> getIndexes() {
         return indexes;
     }
 
-    public void setIndexes(Set<Index> indexes) {
+    public void setIndexes(Set<IndexDefinition> indexes) {
         this.indexes = indexes;
     }
 
