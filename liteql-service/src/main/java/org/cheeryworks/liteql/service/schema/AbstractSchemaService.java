@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.schema;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
@@ -8,7 +9,18 @@ import org.cheeryworks.liteql.schema.Schema;
 import org.cheeryworks.liteql.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.schema.index.AbstractIndexDefinition;
+import org.cheeryworks.liteql.schema.index.IndexDefinition;
+import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 import org.cheeryworks.liteql.schema.migration.Migration;
+import org.cheeryworks.liteql.schema.migration.operation.AbstractIndexMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.CreateFieldMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.CreateIndexMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.CreateTypeMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.CreateUniqueMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.DropFieldMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQL;
@@ -21,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -151,7 +165,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             if (MapUtils.isNotEmpty(migrations)) {
                 for (Migration migration : migrations.values()) {
                     for (MigrationOperation migrationOperation : migration.getOperations()) {
-                        migrationOperation.merge(migratedDomainTypeDefinition);
+                        mergeMigrationOperation(migrationOperation, migratedDomainTypeDefinition);
                     }
                 }
             }
@@ -172,6 +186,134 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                 throw new IllegalStateException(
                         "Migrations of domain type [" + domainTypeName.getFullname() + "] is not matched"
                                 + ", definition is missed");
+            }
+        }
+    }
+
+    private void mergeMigrationOperation(
+            MigrationOperation migrationOperation, DomainTypeDefinition domainTypeDefinition) {
+        switch (migrationOperation.getType()) {
+            case CREATE_TYPE:
+                mergeCreateTypeMigrationOperation(
+                        (CreateTypeMigrationOperation) migrationOperation, domainTypeDefinition);
+                return;
+            case DROP_TYPE:
+                mergeDropTypeMigrationOperation(
+                        (DropTypeMigrationOperation) migrationOperation, domainTypeDefinition);
+                return;
+            case CREATE_FIELD:
+                mergeCreateFieldMigrationOperation(
+                        (CreateFieldMigrationOperation) migrationOperation, domainTypeDefinition);
+                return;
+            case DROP_FIELD:
+                mergeDropFieldMigrationOperation(
+                        (DropFieldMigrationOperation) migrationOperation, domainTypeDefinition);
+                return;
+            case CREATE_INDEX:
+            case DROP_INDEX:
+            case CREATE_UNIQUE:
+            case DROP_UNIQUE:
+                mergeIndexMigrationOperation(
+                        (AbstractIndexMigrationOperation<? extends AbstractIndexDefinition>) migrationOperation,
+                        domainTypeDefinition);
+                return;
+            default:
+                return;
+        }
+    }
+
+    private void mergeCreateTypeMigrationOperation(
+            CreateTypeMigrationOperation createTypeMigrationOperation, DomainTypeDefinition domainTypeDefinition) {
+        CreateFieldMigrationOperation createFieldMigrationOperation
+                = new CreateFieldMigrationOperation(createTypeMigrationOperation.getFields());
+        mergeCreateFieldMigrationOperation(createFieldMigrationOperation, domainTypeDefinition);
+
+        if (CollectionUtils.isNotEmpty(createTypeMigrationOperation.getUniques())) {
+            CreateUniqueMigrationOperation createUniqueMigrationOperation
+                    = new CreateUniqueMigrationOperation(createTypeMigrationOperation.getUniques());
+            mergeIndexMigrationOperation(createUniqueMigrationOperation, domainTypeDefinition);
+        }
+
+        if (CollectionUtils.isNotEmpty(createTypeMigrationOperation.getIndexes())) {
+            CreateIndexMigrationOperation createIndexMigrationOperation
+                    = new CreateIndexMigrationOperation(createTypeMigrationOperation.getIndexes());
+            mergeIndexMigrationOperation(createIndexMigrationOperation, domainTypeDefinition);
+        }
+    }
+
+    private void mergeDropTypeMigrationOperation(
+            DropTypeMigrationOperation dropTypeMigrationOperation, DomainTypeDefinition domainTypeDefinition) {
+        domainTypeDefinition.setDropped(true);
+    }
+
+    private void mergeCreateFieldMigrationOperation(
+            CreateFieldMigrationOperation createFieldMigrationOperation, DomainTypeDefinition domainTypeDefinition) {
+        if (CollectionUtils.isEmpty(domainTypeDefinition.getFields())) {
+            domainTypeDefinition.setFields(new HashSet<>());
+        }
+
+        domainTypeDefinition.getFields().addAll(createFieldMigrationOperation.getFields());
+    }
+
+    private void mergeDropFieldMigrationOperation(
+            DropFieldMigrationOperation dropFieldMigrationOperation, DomainTypeDefinition domainTypeDefinition) {
+        for (String field : dropFieldMigrationOperation.getFields()) {
+            Iterator<Field> fieldIterator = domainTypeDefinition.getFields().iterator();
+
+            while (fieldIterator.hasNext()) {
+                if (fieldIterator.next().getName().equalsIgnoreCase(field)) {
+                    fieldIterator.remove();
+                }
+            }
+        }
+    }
+
+    private void mergeIndexMigrationOperation(
+            AbstractIndexMigrationOperation<? extends AbstractIndexDefinition> indexMigrationOperation,
+            DomainTypeDefinition domainTypeDefinition) {
+        switch (indexMigrationOperation.getType()) {
+            case CREATE_UNIQUE:
+                for (AbstractIndexDefinition index : indexMigrationOperation.getIndexes()) {
+                    if (CollectionUtils.isEmpty(domainTypeDefinition.getUniques())) {
+                        domainTypeDefinition.setUniques(new HashSet<>());
+                    }
+
+                    domainTypeDefinition.getUniques().add((UniqueDefinition) index);
+                }
+
+                return;
+            case CREATE_INDEX:
+                for (AbstractIndexDefinition index : indexMigrationOperation.getIndexes()) {
+                    if (CollectionUtils.isEmpty(domainTypeDefinition.getIndexes())) {
+                        domainTypeDefinition.setIndexes(new HashSet<>());
+                    }
+
+                    domainTypeDefinition.getIndexes().add((IndexDefinition) index);
+                }
+
+                return;
+            case DROP_UNIQUE:
+                dropIndex(indexMigrationOperation.getIndexes(), domainTypeDefinition.getUniques());
+
+                return;
+            case DROP_INDEX:
+                dropIndex(indexMigrationOperation.getIndexes(), domainTypeDefinition.getIndexes());
+
+                return;
+            default:
+                return;
+        }
+    }
+
+    private void dropIndex(
+            Set<? extends AbstractIndexDefinition> indexes, Set<? extends AbstractIndexDefinition> existIndexes) {
+        for (AbstractIndexDefinition index : indexes) {
+            Iterator<? extends AbstractIndexDefinition> existIndexIterator = existIndexes.iterator();
+
+            while (existIndexIterator.hasNext()) {
+                if (existIndexIterator.next().equals(index)) {
+                    existIndexIterator.remove();
+                }
             }
         }
     }
