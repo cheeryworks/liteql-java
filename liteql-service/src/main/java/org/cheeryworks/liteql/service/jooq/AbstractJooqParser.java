@@ -46,32 +46,26 @@ import static org.jooq.impl.DSL.table;
 
 public abstract class AbstractJooqParser extends AbstractSqlParser {
 
-    private SchemaService schemaService;
-
     private DSLContext dslContext;
 
     private Database database;
 
     public AbstractJooqParser(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, sqlCustomizer);
+            LiteQLProperties liteQLProperties,
+            SchemaService schemaService, SqlCustomizer sqlCustomizer,
+            DSLContext dslContext) {
+        super(liteQLProperties, schemaService, sqlCustomizer);
 
-        this.schemaService = schemaService;
         this.dslContext = dslContext;
         this.database = JooqUtil.getDatabase(dslContext.dialect());
     }
 
-    protected SchemaService getSchemaService() {
-        return schemaService;
+    public DSLContext getDslContext() {
+        return dslContext;
     }
 
     protected Database getDatabase() {
         return database;
-    }
-
-    protected DSLContext getDslContext() {
-        return dslContext;
     }
 
     protected String parsingAddPrimaryKey(String tableName) {

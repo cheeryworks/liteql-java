@@ -13,8 +13,7 @@ public class JooqMigrationServiceTest extends AbstractJooqTest {
     public JooqMigrationServiceTest() {
         super();
 
-        jooqMigrationService = new JooqMigrationService(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
+        jooqMigrationService = new JooqMigrationService(getLiteQLProperties(), getJooqQueryParser());
     }
 
     @Test

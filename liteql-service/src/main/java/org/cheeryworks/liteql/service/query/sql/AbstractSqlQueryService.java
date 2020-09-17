@@ -38,7 +38,6 @@ import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryEventPublisher;
-import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
@@ -63,8 +62,6 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     private static Logger logger = LoggerFactory.getLogger(AbstractSqlQueryService.class);
 
-    private SchemaService schemaService;
-
     private SqlQueryParser sqlQueryParser;
 
     private SqlQueryExecutor sqlQueryExecutor;
@@ -77,14 +74,12 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     public AbstractSqlQueryService(
             LiteQLProperties liteQLProperties,
-            SchemaService schemaService,
             SqlQueryParser sqlQueryParser,
             SqlQueryExecutor sqlQueryExecutor,
             QueryAuditingService queryAuditingService,
             QueryAccessDecisionService queryAccessDecisionService,
             QueryEventPublisher queryEventPublisher) {
         super(liteQLProperties);
-        this.schemaService = schemaService;
         this.sqlQueryParser = sqlQueryParser;
         this.sqlQueryExecutor = sqlQueryExecutor;
         this.queryAuditingService = queryAuditingService;
@@ -308,11 +303,15 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (saveQuery instanceof CreateQuery) {
                     queryAuditingService.auditingDomainObject(
-                            saveQuery.getData(), schemaService.getDomainTypeDefinition(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(),
+                            this.sqlQueryParser.getSchemaService().getDomainTypeDefinition(
+                                    saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 } else {
                     queryAuditingService.auditingExistedDomainObject(
-                            saveQuery.getData(), schemaService.getDomainTypeDefinition(saveQuery.getDomainTypeName()),
+                            saveQuery.getData(),
+                            this.sqlQueryParser.getSchemaService().getDomainTypeDefinition(
+                                    saveQuery.getDomainTypeName()),
                             queryContext.getUser());
                 }
             }
@@ -327,7 +326,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
                 : saveQueriesWithType.entrySet()) {
             List<AbstractSaveQuery> saveQueries = saveQueriesWithTypeEntry.getValue();
             Map<String, Class> domainFieldsInMap = SqlQueryServiceUtil.getFieldDefinitions(
-                    schemaService.getDomainTypeDefinition(saveQueriesWithTypeEntry.getKey()));
+                    this.sqlQueryParser.getSchemaService().getDomainTypeDefinition(
+                            saveQueriesWithTypeEntry.getKey()));
 
             for (AbstractSaveQuery saveQuery : saveQueries) {
                 if (CollectionUtils.isNotEmpty(saveQuery.getAssociations())) {
@@ -453,7 +453,9 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
-                        saveQuery, schemaService.getDomainTypeDefinition(saveQueriesWithTypeEntry.getKey()));
+                        saveQuery,
+                        this.sqlQueryParser.getSchemaService().getDomainTypeDefinition(
+                                saveQueriesWithTypeEntry.getKey()));
 
                 if (sql == null) {
                     sql = sqlSaveQuery.getSql();

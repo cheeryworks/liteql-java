@@ -1,20 +1,16 @@
 package org.cheeryworks.liteql.service.schema.migration.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.schema.migration.AbstractSqlMigrationService;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
-import org.jooq.DSLContext;
 
 public class JooqMigrationService extends AbstractSqlMigrationService {
 
     public JooqMigrationService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
+            LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser) {
         super(
-                schemaService,
-                new JooqMigrationParser(liteQLProperties, schemaService, dslContext, sqlCustomizer),
-                new JooqMigrationExecutor(liteQLProperties, dslContext));
+                new JooqMigrationParser(liteQLProperties, jooqQueryParser),
+                new JooqMigrationExecutor(liteQLProperties, jooqQueryParser.getDslContext()));
     }
 
 }

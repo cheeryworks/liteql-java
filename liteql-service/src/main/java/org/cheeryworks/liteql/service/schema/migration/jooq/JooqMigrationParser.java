@@ -2,6 +2,9 @@ package org.cheeryworks.liteql.service.schema.migration.jooq;
 
 import org.apache.commons.collections4.MapUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
@@ -9,18 +12,17 @@ import org.cheeryworks.liteql.schema.migration.operation.CreateFieldMigrationOpe
 import org.cheeryworks.liteql.schema.migration.operation.CreateIndexMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.CreateTypeMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.CreateUniqueMigrationOperation;
+import org.cheeryworks.liteql.schema.migration.operation.DataMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.DropFieldMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.DropIndexMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.DropUniqueMigrationOperation;
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqParser;
-import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.schema.migration.SqlMigrationParser;
-import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.jooq.AlterTableFinalStep;
 import org.jooq.CreateTableColumnStep;
-import org.jooq.DSLContext;
 import org.jooq.DropTableFinalStep;
 import org.jooq.Field;
 
@@ -30,10 +32,17 @@ import java.util.Map;
 
 public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrationParser {
 
+    private JooqQueryParser jooqQueryParser;
+
     public JooqMigrationParser(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, schemaService, dslContext, sqlCustomizer);
+            LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser) {
+        super(
+                liteQLProperties,
+                jooqQueryParser.getSchemaService(),
+                jooqQueryParser.getSqlCustomizer(),
+                jooqQueryParser.getDslContext());
+
+        this.jooqQueryParser = jooqQueryParser;
     }
 
     @Override
@@ -60,11 +69,11 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
         for (MigrationOperation operation : migration.getOperations()) {
             if (operation instanceof CreateTypeMigrationOperation) {
                 migrationInSql.addAll(
-                        parsingCreateTypeOperation(
+                        parsingCreateTypeMigrationOperation(
                                 migration.getDomainTypeName(), (CreateTypeMigrationOperation) operation));
             } else if (operation instanceof CreateFieldMigrationOperation) {
                 migrationInSql.addAll(
-                        parsingCreateFieldOperation(
+                        parsingCreateFieldMigrationOperation(
                                 migration.getDomainTypeName(), (CreateFieldMigrationOperation) operation));
             } else if (operation instanceof CreateUniqueMigrationOperation) {
                 migrationInSql.addAll(
@@ -76,11 +85,11 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
                                 migration.getDomainTypeName(), (CreateIndexMigrationOperation) operation));
             } else if (operation instanceof DropTypeMigrationOperation) {
                 migrationInSql.addAll(
-                        parsingDropTypeOperation(
+                        parsingDropTypeMigrationOperation(
                                 migration.getDomainTypeName(), (DropTypeMigrationOperation) operation));
             } else if (operation instanceof DropFieldMigrationOperation) {
                 migrationInSql.addAll(
-                        parsingDropFieldOperation(
+                        parsingDropFieldMigrationOperation(
                                 migration.getDomainTypeName(), (DropFieldMigrationOperation) operation));
             } else if (operation instanceof DropUniqueMigrationOperation) {
                 migrationInSql.addAll(
@@ -90,13 +99,17 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
                 migrationInSql.addAll(
                         parsingIndexMigrationOperation(
                                 migration.getDomainTypeName(), (DropIndexMigrationOperation) operation));
+            } else if (operation instanceof DataMigrationOperation) {
+                migrationInSql.addAll(
+                        parsingDataMigrationOperation(
+                                migration.getDomainTypeName(), (DataMigrationOperation) operation));
             }
         }
 
         return migrationInSql;
     }
 
-    private List<String> parsingCreateTypeOperation(
+    private List<String> parsingCreateTypeMigrationOperation(
             TypeName domainTypeName, CreateTypeMigrationOperation createTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
@@ -128,7 +141,7 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
         return operationsInSql;
     }
 
-    private List<String> parsingCreateFieldOperation(
+    private List<String> parsingCreateFieldMigrationOperation(
             TypeName domainTypeName, CreateFieldMigrationOperation createFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
@@ -147,7 +160,7 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
         return operationsInSql;
     }
 
-    private List<String> parsingDropTypeOperation(
+    private List<String> parsingDropTypeMigrationOperation(
             TypeName typeName, DropTypeMigrationOperation dropTypeMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
@@ -172,7 +185,7 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
         return operationsInSql;
     }
 
-    private List<String> parsingDropFieldOperation(
+    private List<String> parsingDropFieldMigrationOperation(
             TypeName domainTypeName, DropFieldMigrationOperation dropFieldMigrationOperation) {
         List<String> operationsInSql = new ArrayList<>();
 
@@ -184,6 +197,26 @@ public class JooqMigrationParser extends AbstractJooqParser implements SqlMigrat
                     .dropColumn(getSqlCustomizer().getColumnName(domainTypeName, field));
 
             operationsInSql.add(alterTableFinalStep.getSQL());
+        }
+
+        return operationsInSql;
+    }
+
+    private List<String> parsingDataMigrationOperation(
+            TypeName domainTypeName, DataMigrationOperation dataMigrationOperation) {
+        List<String> operationsInSql = new ArrayList<>();
+
+        DomainTypeDefinition domainTypeDefinition = getSchemaService().getDomainTypeDefinition(domainTypeName);
+
+        for (Map.Entry<String, PublicQuery> queryEntry : dataMigrationOperation.getQueries().entrySet()) {
+            if (queryEntry.getValue() instanceof AbstractSaveQuery) {
+                operationsInSql.add(
+                        jooqQueryParser.getSqlSaveQuery(
+                                (AbstractSaveQuery) queryEntry.getValue(), domainTypeDefinition).getSql());
+            } else if (queryEntry.getValue() instanceof DeleteQuery) {
+                operationsInSql.add(
+                        jooqQueryParser.getSqlDeleteQuery((DeleteQuery) queryEntry.getValue()).getSql());
+            }
         }
 
         return operationsInSql;

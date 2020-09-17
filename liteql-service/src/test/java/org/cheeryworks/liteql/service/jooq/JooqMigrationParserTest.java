@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationParser;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -17,7 +18,8 @@ public class JooqMigrationParserTest extends AbstractJooqTest {
         super();
 
         jooqMigrationParser = new JooqMigrationParser(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
+                getLiteQLProperties(),
+                new JooqQueryParser(getLiteQLProperties(), getSchemaService(), getSqlCustomizer(), getDslContext()));
     }
 
     @Test

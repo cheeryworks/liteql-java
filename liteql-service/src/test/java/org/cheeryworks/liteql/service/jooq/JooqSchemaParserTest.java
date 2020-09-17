@@ -16,7 +16,7 @@ public class JooqSchemaParserTest extends AbstractJooqTest {
         super();
 
         jooqSchemaParser = new JooqSchemaParser(
-                getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
+                getLiteQLProperties(), getSchemaService(), getSqlCustomizer(), getDslContext());
     }
 
     @Test

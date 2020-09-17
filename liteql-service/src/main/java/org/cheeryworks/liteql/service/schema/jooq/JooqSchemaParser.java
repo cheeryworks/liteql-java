@@ -19,9 +19,10 @@ import java.util.Set;
 public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaParser {
 
     public JooqSchemaParser(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, schemaService, dslContext, sqlCustomizer);
+            LiteQLProperties liteQLProperties,
+            SchemaService schemaService, SqlCustomizer sqlCustomizer,
+            DSLContext dslContext) {
+        super(liteQLProperties, schemaService, sqlCustomizer, dslContext);
     }
 
     @Override

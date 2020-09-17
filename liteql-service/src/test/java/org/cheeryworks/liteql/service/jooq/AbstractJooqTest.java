@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.service.jooq;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.sql.AbstractSqlTest;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.DSLContext;
@@ -17,8 +18,14 @@ public abstract class AbstractJooqTest extends AbstractSqlTest {
 
     private DSLContext dslContext;
 
+    private JooqQueryParser jooqQueryParser;
+
     public DSLContext getDslContext() {
         return dslContext;
+    }
+
+    public JooqQueryParser getJooqQueryParser() {
+        return jooqQueryParser;
     }
 
     public AbstractJooqTest() {
@@ -33,6 +40,9 @@ public abstract class AbstractJooqTest extends AbstractSqlTest {
 
         this.dslContext = new DefaultDSLContext(
                 getDataSource(), JooqUtil.getSqlDialect(getDatabase()), settings);
+
+        this.jooqQueryParser = new JooqQueryParser(
+                getLiteQLProperties(), getSchemaService(), getSqlCustomizer(), getDslContext());
 
         initDatabase();
     }

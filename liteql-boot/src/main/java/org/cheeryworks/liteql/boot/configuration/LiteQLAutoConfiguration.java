@@ -12,6 +12,8 @@ import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
 import org.cheeryworks.liteql.service.query.json.QueryServiceController;
 import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
@@ -61,7 +63,7 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SchemaService.class)
-    public SchemaService repository(LiteQLProperties liteQLProperties) {
+    public SchemaService schemaService(LiteQLProperties liteQLProperties) {
         return new DefaultSchemaService(
                 liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
     }
@@ -85,11 +87,23 @@ public class LiteQLAutoConfiguration {
     }
 
     @Bean
+    public JooqQueryParser jooqQueryParser(
+            LiteQLProperties liteQLProperties,
+            SchemaService schemaService, SqlCustomizer sqlCustomizer,
+            DSLContext dslContext) {
+        return new JooqQueryParser(liteQLProperties, schemaService, sqlCustomizer, dslContext);
+
+    }
+
+    @Bean
+    public JooqQueryExecutor jooqQueryExecutor(LiteQLProperties liteQLProperties, DSLContext dslContext) {
+        return new JooqQueryExecutor(liteQLProperties, dslContext);
+    }
+
+    @Bean
     public MigrationService migrationService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        MigrationService migrationService = new JooqMigrationService(
-                liteQLProperties, schemaService, dslContext, sqlCustomizer);
+            LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser) {
+        MigrationService migrationService = new JooqMigrationService(liteQLProperties, jooqQueryParser);
 
         logger.info("MigrationService is ready.");
 
@@ -104,13 +118,13 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     public QueryService queryService(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer,
-            QueryAuditingService queryAuditingService,
-            QueryAccessDecisionService queryAccessDecisionService,
+            LiteQLProperties liteQLProperties,
+            JooqQueryParser jooqQueryParser, JooqQueryExecutor jooqQueryExecutor,
+            QueryAuditingService queryAuditingService, QueryAccessDecisionService queryAccessDecisionService,
             ApplicationEventPublisher applicationEventPublisher) {
         QueryService queryService = new JooqQueryService(
-                liteQLProperties, schemaService, dslContext, sqlCustomizer,
+                liteQLProperties,
+                jooqQueryParser, jooqQueryExecutor,
                 queryAuditingService, queryAccessDecisionService,
                 new SpringQueryEventPublisher(applicationEventPublisher));
 

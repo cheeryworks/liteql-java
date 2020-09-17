@@ -6,6 +6,7 @@ import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.LoggingQueryEventPublisher;
 import org.cheeryworks.liteql.service.query.QueryService;
+import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
 import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaParser;
@@ -23,9 +24,10 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
         super();
 
         queryService = new JooqQueryService(
-                getLiteQLProperties(), getSchemaService(), getDslContext(),
-                getSqlCustomizer(), new DefaultQueryAuditingService(),
-                new DefaultQueryAccessDecisionService(), new LoggingQueryEventPublisher());
+                getLiteQLProperties(),
+                getJooqQueryParser(), new JooqQueryExecutor(getLiteQLProperties(), getDslContext()),
+                new DefaultQueryAuditingService(), new DefaultQueryAccessDecisionService(),
+                new LoggingQueryEventPublisher());
     }
 
     protected QueryService getQueryService() {
@@ -40,7 +42,7 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
     protected String[] getInitSqls() {
         try {
             JooqSchemaParser jooqSchemaParser = new JooqSchemaParser(
-                    getLiteQLProperties(), getSchemaService(), getDslContext(), getSqlCustomizer());
+                    getLiteQLProperties(), getSchemaService(), getSqlCustomizer(), getDslContext());
 
             String schemaSqls = jooqSchemaParser.schemaToSql().replaceAll("\n", "");
 

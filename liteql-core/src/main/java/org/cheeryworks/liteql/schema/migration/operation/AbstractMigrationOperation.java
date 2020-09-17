@@ -6,6 +6,7 @@ public abstract class AbstractMigrationOperation implements MigrationOperation {
 
     private MigrationOperationType type;
 
+    @Override
     public MigrationOperationType getType() {
         return type;
     }

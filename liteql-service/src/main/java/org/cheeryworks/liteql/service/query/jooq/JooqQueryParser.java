@@ -73,9 +73,10 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
     private static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
     public JooqQueryParser(
-            LiteQLProperties liteQLProperties, SchemaService schemaService,
-            DSLContext dslContext, SqlCustomizer sqlCustomizer) {
-        super(liteQLProperties, schemaService, dslContext, sqlCustomizer);
+            LiteQLProperties liteQLProperties,
+            SchemaService schemaService, SqlCustomizer sqlCustomizer,
+            DSLContext dslContext) {
+        super(liteQLProperties, schemaService, sqlCustomizer, dslContext);
     }
 
     @Override

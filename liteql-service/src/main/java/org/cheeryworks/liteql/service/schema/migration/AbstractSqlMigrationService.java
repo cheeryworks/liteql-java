@@ -4,7 +4,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
-import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,23 +15,15 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractSqlMigrationService.class);
 
-    private SchemaService schemaService;
-
     private SqlMigrationParser sqlMigrationParser;
 
     private SqlMigrationExecutor sqlMigrationExecutor;
 
     public AbstractSqlMigrationService(
-            SchemaService schemaService,
             SqlMigrationParser sqlMigrationParser,
             SqlMigrationExecutor sqlMigrationExecutor) {
-        this.schemaService = schemaService;
         this.sqlMigrationParser = sqlMigrationParser;
         this.sqlMigrationExecutor = sqlMigrationExecutor;
-    }
-
-    public SchemaService getSchemaService() {
-        return schemaService;
     }
 
     public SqlMigrationParser getSqlMigrationParser() {
@@ -47,8 +38,9 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
     public void migrate() {
         sqlMigrationExecutor.isDatabaseReady();
 
-        for (String schema : this.schemaService.getSchemaNames()) {
-            Map<TypeName, Map<String, Migration>> migrations = this.schemaService.getMigrations(schema);
+        for (String schema : this.sqlMigrationParser.getSchemaService().getSchemaNames()) {
+            Map<TypeName, Map<String, Migration>> migrations
+                    = this.sqlMigrationParser.getSchemaService().getMigrations(schema);
 
             if (MapUtils.isEmpty(migrations)) {
                 continue;
