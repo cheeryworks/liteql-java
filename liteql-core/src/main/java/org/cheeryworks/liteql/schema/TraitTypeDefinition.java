@@ -1,8 +1,10 @@
 package org.cheeryworks.liteql.schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cheeryworks.liteql.schema.field.Field;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,8 +16,10 @@ public class TraitTypeDefinition implements TypeDefinition {
     @JsonIgnore
     private String version;
 
+    @JsonDeserialize(as = LinkedHashSet.class)
     private Set<Field> fields;
 
+    @JsonDeserialize(as = LinkedHashSet.class)
     private Set<TypeName> traits;
 
     @Override

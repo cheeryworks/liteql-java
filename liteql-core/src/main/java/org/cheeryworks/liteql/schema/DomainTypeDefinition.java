@@ -2,12 +2,14 @@ package org.cheeryworks.liteql.schema;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.schema.index.IndexDefinition;
 import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,8 +17,10 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
 
     public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
 
+    @JsonDeserialize(as = LinkedHashSet.class)
     private Set<UniqueDefinition> uniques;
 
+    @JsonDeserialize(as = LinkedHashSet.class)
     private Set<IndexDefinition> indexes;
 
     private Boolean graphQLType;
