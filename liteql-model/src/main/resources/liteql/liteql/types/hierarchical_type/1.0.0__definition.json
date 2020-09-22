@@ -3,11 +3,13 @@
   "fields": [
     {
       "name": "parentId",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "leaf",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     }
   ],
   "traits": [

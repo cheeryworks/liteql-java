@@ -3,27 +3,33 @@
   "fields": [
     {
       "name": "name",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "username",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "email",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "phone",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "avatarUrl",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "enabled",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     }
   ],
   "traits": [

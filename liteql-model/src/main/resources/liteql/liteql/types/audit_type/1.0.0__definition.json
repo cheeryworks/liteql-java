@@ -3,24 +3,28 @@
   "fields": [
     {
       "name": "enabled",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     },
     {
       "name": "deleted",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     },
     {
       "name": "deletable",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     },
     {
       "name": "inherent",
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": false
     },
     {
       "name": "creator",
       "type": "reference",
-      "domainTypeName": "liteql.user_entity"
+      "domainTypeName": "liteql.user_type"
     },
     {
       "name": "createTime",
@@ -29,7 +33,7 @@
     {
       "name": "lastModifier",
       "type": "reference",
-      "domainTypeName": "liteql.user_entity"
+      "domainTypeName": "liteql.user_type"
     },
     {
       "name": "lastModifiedTime",

@@ -3,7 +3,8 @@
   "fields": [
     {
       "name": "sortCode",
-      "type": "string"
+      "type": "string",
+      "length": 255
     },
     {
       "name": "priority",
