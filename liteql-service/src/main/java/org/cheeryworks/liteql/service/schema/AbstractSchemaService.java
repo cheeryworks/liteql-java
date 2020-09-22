@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -52,6 +53,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     private Set<SchemaMetadata> schemaMetadataSet = new TreeSet<>(Comparator.comparing(SchemaMetadata::getName));
 
     private List<Schema> schemas = new ArrayList<>();
+
+    private Map<TypeName, TypeName> traitImplements = new HashMap<>();
 
     private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
 
@@ -129,6 +132,10 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         } else if (typeDefinition instanceof TraitTypeDefinition) {
             schema.getTraitTypeDefinitions().add((TraitTypeDefinition) typeDefinition);
         }
+    }
+
+    protected void addTraitImplement(TypeName traitTypeName, TypeName domainTypeName) {
+        this.traitImplements.put(traitTypeName, domainTypeName);
     }
 
     private void addMigration(Migration migration) {
@@ -404,6 +411,11 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         return null;
+    }
+
+    @Override
+    public TypeName getTraitImplement(TypeName traitTypeName) {
+        return this.traitImplements.get(traitTypeName);
     }
 
     @Override

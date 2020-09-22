@@ -79,15 +79,13 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
     private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
-    private Map<Class, Class> traitImplements = initTraitImplements();
-
     public JpaSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
 
-        Map<String, Set<TypeDefinition>> typeDefinitonWithinSchemas = getTypeDefinitionWithinSchemas();
+        Map<String, Set<TypeDefinition>> typeDefinitionWithinSchemas = getTypeDefinitionWithinSchemas();
 
         for (Map.Entry<String, Set<TypeDefinition>> typeDefinitionWithinSchema
-                : typeDefinitonWithinSchemas.entrySet()) {
+                : typeDefinitionWithinSchemas.entrySet()) {
             for (TypeDefinition typeDefinition : typeDefinitionWithinSchema.getValue()) {
 
                 TypeDefinition existTypeDefinition = getType(typeDefinition.getTypeName());
@@ -101,9 +99,11 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 addType(typeDefinition);
             }
         }
+
+        initTraitImplements();
     }
 
-    private Map<Class, Class> initTraitImplements() {
+    private void initTraitImplements() {
         ClassPathScanningCandidateComponentProvider traitInstanceScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
@@ -115,26 +115,25 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
         }
 
-        Map<Class, Class> traitImplements = new HashMap<>();
-
         for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
-            Class<?> domainJavaType = LiteQL.ClassUtils.getClass(traitInstanceDefinition.getBeanClassName());
+            Class<? extends TraitType> domainJavaType
+                    = LiteQL.SchemaUtils.getTraitJavaType(traitInstanceDefinition.getBeanClassName());
 
             LiteQLTraitInstance liteQLTraitInstance = domainJavaType.getAnnotation(LiteQLTraitInstance.class);
 
             if (!liteQLTraitInstance.implement().equals(Void.class)) {
-                if (traitImplements.containsKey(liteQLTraitInstance.implement())) {
+                if (getTraitImplement(LiteQL.SchemaUtils.getTypeName(liteQLTraitInstance.implement())) != null) {
                     throw new IllegalStateException(
                             "Duplicated implements of"
                                     + " [" + liteQLTraitInstance.implement().getName() + "]"
                                     + " in different package");
                 } else {
-                    traitImplements.put(liteQLTraitInstance.implement(), domainJavaType);
+                    addTraitImplement(
+                            LiteQL.SchemaUtils.getTypeName(liteQLTraitInstance.implement()),
+                            LiteQL.SchemaUtils.getTypeName(domainJavaType));
                 }
             }
         }
-
-        return Collections.unmodifiableMap(traitImplements);
     }
 
     private Map<String, Set<TypeDefinition>> getTypeDefinitionWithinSchemas() {
@@ -553,14 +552,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 referenceField.setName(liteQLReferenceFieldAnnotation.name());
             }
 
-            if (this.traitImplements.containsKey(liteQLReferenceFieldAnnotation.targetDomainType())) {
-                referenceField.setDomainTypeName(
-                        LiteQL.SchemaUtils.getTypeName(
-                                this.traitImplements.get(liteQLReferenceFieldAnnotation.targetDomainType())));
-            } else {
-                referenceField.setDomainTypeName(
-                        LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
-            }
+            referenceField.setDomainTypeName(
+                    LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
 
             if (Collection.class.isAssignableFrom(fieldType)) {
                 referenceField.setCollection(true);
@@ -568,14 +561,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 if (!liteQLReferenceFieldAnnotation.mappedDomainType().equals(VoidTraitType.class)
                         && !liteQLReferenceFieldAnnotation.targetDomainType().equals(
                         liteQLReferenceFieldAnnotation.mappedDomainType())) {
-                    if (this.traitImplements.containsKey(liteQLReferenceFieldAnnotation.targetDomainType())) {
-                        referenceField.setMappedDomainTypeName(
-                                LiteQL.SchemaUtils.getTypeName(
-                                        this.traitImplements.get(liteQLReferenceFieldAnnotation.targetDomainType())));
-                    } else {
-                        referenceField.setMappedDomainTypeName(
-                                LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
-                    }
+                    referenceField.setMappedDomainTypeName(
+                            LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
                 }
             }
 

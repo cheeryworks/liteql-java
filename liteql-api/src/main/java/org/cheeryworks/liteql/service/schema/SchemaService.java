@@ -22,6 +22,8 @@ public interface SchemaService {
 
     Map<TypeName, Map<String, Migration>> getMigrations(String schemaName);
 
+    TypeName getTraitImplement(TypeName traitTypeName);
+
     String export();
 
 }

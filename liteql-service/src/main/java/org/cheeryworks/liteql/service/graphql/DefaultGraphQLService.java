@@ -279,6 +279,14 @@ public class DefaultGraphQLService implements GraphQLService {
             case Reference:
                 ReferenceField referenceField
                         = (ReferenceField) field;
+
+                org.cheeryworks.liteql.schema.TypeName traitImplement
+                        = schemaService.getTraitImplement(referenceField.getDomainTypeName());
+
+                if (traitImplement != null) {
+                    return GraphQLServiceUtil.toObjectTypeName(traitImplement);
+                }
+
                 return GraphQLServiceUtil.toObjectTypeName(referenceField.getDomainTypeName());
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + field.getType().name());
