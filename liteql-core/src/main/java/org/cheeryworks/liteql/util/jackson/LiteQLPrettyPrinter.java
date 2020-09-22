@@ -37,7 +37,6 @@ public class LiteQLPrettyPrinter implements PrettyPrinter {
 
     @Override
     public void writeObjectFieldValueSeparator(JsonGenerator gen) throws IOException {
-        gen.writeRaw(' ');
         gen.writeRaw(':');
         gen.writeRaw(' ');
     }
