@@ -23,6 +23,7 @@ import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
+import org.cheeryworks.liteql.spring.context.SpringMigrationEventPublisher;
 import org.cheeryworks.liteql.spring.context.SpringQueryEventPublisher;
 import org.cheeryworks.liteql.util.LiteQL;
 import org.jooq.DSLContext;
@@ -102,8 +103,11 @@ public class LiteQLAutoConfiguration {
 
     @Bean
     public MigrationService migrationService(
-            LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser) {
-        MigrationService migrationService = new JooqMigrationService(liteQLProperties, jooqQueryParser);
+            LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser,
+            ApplicationEventPublisher applicationEventPublisher) {
+        MigrationService migrationService = new JooqMigrationService(
+                liteQLProperties, jooqQueryParser,
+                new SpringMigrationEventPublisher(applicationEventPublisher));
 
         logger.info("MigrationService is ready.");
 

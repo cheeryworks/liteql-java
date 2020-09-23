@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.jooq;
 
+import org.cheeryworks.liteql.service.schema.migration.LoggingMigrationEventPublisher;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationService;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,8 @@ public class JooqMigrationServiceTest extends AbstractJooqTest {
     public JooqMigrationServiceTest() {
         super();
 
-        jooqMigrationService = new JooqMigrationService(getLiteQLProperties(), getJooqQueryParser());
+        jooqMigrationService = new JooqMigrationService(
+                getLiteQLProperties(), getJooqQueryParser(), new LoggingMigrationEventPublisher());
     }
 
     @Test

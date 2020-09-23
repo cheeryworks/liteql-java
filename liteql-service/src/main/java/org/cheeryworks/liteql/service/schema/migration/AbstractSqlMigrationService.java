@@ -4,6 +4,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.migration.Migration;
+import org.cheeryworks.liteql.schema.migration.event.MigrationCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +20,16 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
 
     private SqlMigrationExecutor sqlMigrationExecutor;
 
+    private MigrationEventPublisher migrationEventPublisher;
+
     public AbstractSqlMigrationService(
             SqlMigrationParser sqlMigrationParser,
-            SqlMigrationExecutor sqlMigrationExecutor) {
+            SqlMigrationExecutor sqlMigrationExecutor,
+            MigrationEventPublisher migrationEventPublisher) {
         this.sqlMigrationParser = sqlMigrationParser;
         this.sqlMigrationExecutor = sqlMigrationExecutor;
+
+        this.migrationEventPublisher = migrationEventPublisher;
     }
 
     public SqlMigrationParser getSqlMigrationParser() {
@@ -95,6 +101,8 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
                         "Migrating schema " + schema + " finished failed, " + ex.getMessage(), ex);
             }
         }
+
+        migrationEventPublisher.publish(new MigrationCompletedEvent());
     }
 
 }
