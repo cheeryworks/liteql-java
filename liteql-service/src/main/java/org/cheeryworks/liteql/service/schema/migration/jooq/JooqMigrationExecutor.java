@@ -32,19 +32,19 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
     }
 
     @Override
-    public String getLatestMigrationVersion(String schemaVersionTableName, TypeName domainTypeName) {
+    public String getLatestMigrationVersion(String migrationHistoryTableName, TypeName domainTypeName) {
         try {
             String version = (String) getDslContext()
                     .select(max(field("version")))
-                    .from(schemaVersionTableName)
+                    .from(migrationHistoryTableName)
                     .where(field("domain_type_name").eq(domainTypeName.getFullname()))
                     .fetchOne(0);
 
             return version;
         } catch (Exception ex) {
-            logger.info("Initializing schema version table " + schemaVersionTableName);
+            logger.info("Initializing schema version table " + migrationHistoryTableName);
 
-            CreateTableFinalStep createTableFinalStep = getDslContext().createTable(schemaVersionTableName)
+            CreateTableFinalStep createTableFinalStep = getDslContext().createTable(migrationHistoryTableName)
                     .column("domain_type_name", JooqUtil.getStringDataType(false, 255))
                     .column("version", JooqUtil.getStringDataType(false, 32))
                     .column("description", JooqUtil.getStringDataType(true, 1000))
@@ -57,8 +57,8 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             createTableFinalStep.execute();
 
             AlterTableFinalStep alterTableFinalStep = getDslContext()
-                    .alterTable(schemaVersionTableName).add(
-                            constraint(PRIMARY_KEY_PREFIX + schemaVersionTableName)
+                    .alterTable(migrationHistoryTableName).add(
+                            constraint(PRIMARY_KEY_PREFIX + migrationHistoryTableName)
                                     .primaryKey("domain_type_name", "version"));
 
             if (getLiteQLProperties().isDiagnosticEnabled()) {
@@ -67,7 +67,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
 
             alterTableFinalStep.execute();
 
-            logger.info("Schema version table " + schemaVersionTableName + " is ready");
+            logger.info("Schema version table " + migrationHistoryTableName + " is ready");
         }
 
         return null;
@@ -75,10 +75,10 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
 
     @Override
     public void migrate(String schema, TypeName domainTypeName, String version, String description, List<String> sqls) {
-        String schemaVersionTableName = getSchemaVersionTableName(schema);
+        String migrationHistoryTableName = getMigrationHistoryTableName(schema);
 
         try {
-            InsertFinalStep insertFinalStep = getDslContext().insertInto(table(schemaVersionTableName))
+            InsertFinalStep insertFinalStep = getDslContext().insertInto(table(migrationHistoryTableName))
                     .columns(field("domain_type_name"), field("version"), field("description"), field("state"))
                     .values(domainTypeName.getFullname(), version, description, Migration.STATE_PENDING);
 
@@ -97,7 +97,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
                 }
             }
 
-            UpdateFinalStep updateFinalStep = getDslContext().update(table(schemaVersionTableName))
+            UpdateFinalStep updateFinalStep = getDslContext().update(table(migrationHistoryTableName))
                     .set(field("state"), Migration.STATE_SUCCESS)
                     .where(
                             field("domain_type_name").eq(domainTypeName.getFullname())
@@ -110,7 +110,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
 
             updateFinalStep.execute();
         } catch (Exception ex) {
-            UpdateFinalStep updateFinalStep = getDslContext().update(table(schemaVersionTableName))
+            UpdateFinalStep updateFinalStep = getDslContext().update(table(migrationHistoryTableName))
                     .set(field("state"), Migration.STATE_FAILED)
                     .where(
                             field("domain_type_name").eq(domainTypeName.getFullname())
@@ -127,8 +127,8 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
         }
     }
 
-    private String getSchemaVersionTableName(String schema) {
-        return schema + SCHEMA_VERSION_TABLE_SUFFIX;
+    private String getMigrationHistoryTableName(String schema) {
+        return schema + MIGRATION_HISTORY_TABLE_SUFFIX;
     }
 
 }

@@ -1,11 +1,11 @@
-create table liteql_test_schema_version(
+create table liteql_test_migration_history(
   domain_type_name varchar(255) not null,
   version varchar(32) not null,
   description varchar(1000) null,
   state varchar(30) null
 );
 
-alter table liteql_test_schema_version
+alter table liteql_test_migration_history
   add primary key (domain_type_name, version);
 
 create table liteql_test_organization(

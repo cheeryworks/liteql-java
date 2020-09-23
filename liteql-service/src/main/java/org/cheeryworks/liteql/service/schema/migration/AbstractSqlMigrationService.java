@@ -49,7 +49,7 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
             logger.info("Migrating schema " + schema + "...");
 
             try {
-                String schemaVersionTableName = schema + SqlMigrationExecutor.SCHEMA_VERSION_TABLE_SUFFIX;
+                String migrationHistoryTableName = schema + SqlMigrationExecutor.MIGRATION_HISTORY_TABLE_SUFFIX;
 
                 for (Map.Entry<TypeName, Map<String, Migration>> migrationOfDomainType : migrations.entrySet()) {
                     if (MapUtils.isEmpty(migrationOfDomainType.getValue())) {
@@ -57,7 +57,7 @@ public abstract class AbstractSqlMigrationService implements MigrationService {
                     }
 
                     String latestVersion = getSqlMigrationExecutor().getLatestMigrationVersion(
-                            schemaVersionTableName, migrationOfDomainType.getKey());
+                            migrationHistoryTableName, migrationOfDomainType.getKey());
 
                     Set<String> baselineVersions = new LinkedHashSet<>();
 

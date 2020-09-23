@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface SqlMigrationExecutor extends SqlExecutor {
 
-    String SCHEMA_VERSION_TABLE_SUFFIX = "_schema_version";
+    String MIGRATION_HISTORY_TABLE_SUFFIX = "_migration_history";
 
-    String getLatestMigrationVersion(String schemaVersionTableName, TypeName domainTypeName);
+    String getLatestMigrationVersion(String migrationHistoryTableName, TypeName domainTypeName);
 
     void migrate(String schema, TypeName domainTypeName, String version, String description, List<String> sqls);
 
