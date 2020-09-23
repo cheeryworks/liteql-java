@@ -4,9 +4,9 @@ public class LiteQLProperties {
 
     private boolean enabled = true;
 
-    private boolean jsonBasedSchemaIgnored = false;
+    private boolean jsonBasedSchemaEnabled = true;
 
-    private boolean migrationEnabled = false;
+    private boolean migrationEnabled = true;
 
     private boolean diagnosticEnabled = false;
 
@@ -20,12 +20,12 @@ public class LiteQLProperties {
         this.enabled = enabled;
     }
 
-    public boolean isJsonBasedSchemaIgnored() {
-        return jsonBasedSchemaIgnored;
+    public boolean isJsonBasedSchemaEnabled() {
+        return jsonBasedSchemaEnabled;
     }
 
-    public void setJsonBasedSchemaIgnored(boolean jsonBasedSchemaIgnored) {
-        this.jsonBasedSchemaIgnored = jsonBasedSchemaIgnored;
+    public void setJsonBasedSchemaEnabled(boolean jsonBasedSchemaEnabled) {
+        this.jsonBasedSchemaEnabled = jsonBasedSchemaEnabled;
     }
 
     public boolean isMigrationEnabled() {

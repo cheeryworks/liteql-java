@@ -26,7 +26,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
 
         this.locations = locations;
 
-        if (!liteQLProperties.isJsonBasedSchemaIgnored()) {
+        if (liteQLProperties.isJsonBasedSchemaEnabled()) {
             init();
         }
     }
