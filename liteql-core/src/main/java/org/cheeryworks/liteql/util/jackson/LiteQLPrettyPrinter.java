@@ -50,7 +50,11 @@ public class LiteQLPrettyPrinter implements PrettyPrinter {
     @Override
     public void writeEndArray(JsonGenerator gen, int nrOfValues) throws IOException {
         gen.writeRaw('\n');
-        nesting--;
+
+        if (nesting > 0) {
+            nesting--;
+        }
+
         gen.writeRaw(String.valueOf(' ').repeat(nesting * 2));
         gen.writeRaw(']');
     }
