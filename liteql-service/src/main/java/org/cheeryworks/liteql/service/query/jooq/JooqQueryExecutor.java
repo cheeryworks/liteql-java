@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
@@ -37,9 +38,13 @@ public class JooqQueryExecutor extends AbstractJooqExecutor implements SqlQueryE
                 Map<String, Object> subResultInMap = new HashMap<>();
 
                 for (org.jooq.Field jooqField : record.fields()) {
-                    subResultInMap.put(
-                            sqlReadQuery.getFields().get(jooqField.getName().toLowerCase()),
-                            record.getValue(jooqField.getName()));
+                    String fieldName = sqlReadQuery.getFields().get(jooqField.getName().toLowerCase());
+
+                    if (StringUtils.isNotBlank(fieldName)) {
+                        subResultInMap.put(
+                                sqlReadQuery.getFields().get(jooqField.getName().toLowerCase()),
+                                record.getValue(jooqField.getName()));
+                    }
                 }
 
                 return new ReadResult(subResultInMap);

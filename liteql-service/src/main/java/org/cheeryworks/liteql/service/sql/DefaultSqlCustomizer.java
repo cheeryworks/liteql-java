@@ -23,18 +23,20 @@ public class DefaultSqlCustomizer implements SqlCustomizer {
                 .stream()
                 .filter(currentField -> currentField.getName().equalsIgnoreCase(fieldName))
                 .findFirst()
-                .<IllegalArgumentException>orElseThrow(() -> {
-                    throw new IllegalArgumentException("Can not get field [" + fieldName + "]");
-                });
+                .orElse(null);
 
-        String columnName = field.getName().replaceAll(
-                String.format("%s|%s|%s",
-                        "(?<=[A-Z])(?=[A-Z][a-z])",
-                        "(?<=[^A-Z])(?=[A-Z])",
-                        "(?<=[A-Za-z])(?=[^A-Za-z])"
-                ),
-                "_"
-        ).toLowerCase();
+        String columnName = fieldName;
+
+        if (field != null) {
+            columnName = field.getName().replaceAll(
+                    String.format("%s|%s|%s",
+                            "(?<=[A-Z])(?=[A-Z][a-z])",
+                            "(?<=[^A-Z])(?=[A-Z])",
+                            "(?<=[A-Za-z])(?=[^A-Za-z])"
+                    ),
+                    "_"
+            ).toLowerCase();
+        }
 
         if (field instanceof ReferenceField) {
             return columnName + LiteQL.Constants.WORD_CONCAT + IdField.ID_FIELD_NAME;

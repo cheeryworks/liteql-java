@@ -70,6 +70,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
     private static final String TABLE_ALIAS_PREFIX = "a";
 
+    private static final String ACCESS_DECISION_FIELD_ALIAS_SUFFIX = "ADF";
+
     private static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
     public JooqQueryParser(
@@ -101,10 +103,6 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                             readQuery.getAccessDecisionConditions(), getSqlCustomizer()));
         }
 
-        Condition condition = JooqUtil.getCondition(
-                readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
-                readQuery.getConditions(), getSqlCustomizer());
-
         List<org.jooq.Field<Object>> fields = getSelectFields(
                 getSchemaService().getDomainTypeDefinition(readQuery.getDomainTypeName()),
                 readQuery.getFields(), TABLE_ALIAS_PREFIX, sqlReadQuery);
@@ -117,12 +115,18 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 fields.addAll(joinedTable.getFields());
 
                 if (joinedTable.getCondition() != null) {
-                    if (condition != null) {
-                        condition = condition.and(joinedTable.getCondition());
-                    } else {
-                        condition = joinedTable.getCondition();
-                    }
+                    conditions.add(joinedTable.getCondition());
                 }
+            }
+        }
+
+        if (!accessDecisionFields.isEmpty()) {
+            for (String accessDecisionField : accessDecisionFields) {
+                fields.add(
+                        field(
+                                TABLE_ALIAS_PREFIX + "." + getSqlCustomizer().getColumnName(
+                                                readQuery.getDomainTypeName(), accessDecisionField))
+                                .as(accessDecisionField + ACCESS_DECISION_FIELD_ALIAS_SUFFIX));
             }
         }
 
@@ -138,7 +142,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             }
         }
 
-        SelectConditionStep selectConditionStep = selectJoinStep.where(condition);
+        SelectConditionStep selectConditionStep = selectJoinStep.where(conditions);
 
         sqlReadQuery.setTotalSql(getDslContext().select(count()).from(selectConditionStep).getSQL());
         sqlReadQuery.setTotalSqlParameters(selectConditionStep.getBindValues().toArray());
@@ -184,7 +188,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         for (QueryCondition accessDecisionCondition : accessDecisionConditions) {
             fields.add(accessDecisionCondition.getField());
 
-            accessDecisionCondition.setField(accessDecisionCondition.getField() + "ADF");
+            accessDecisionCondition.setField(accessDecisionCondition.getField());
 
             if (accessDecisionCondition.getConditions() != null) {
                 fields.addAll(getAccessDecisionFields(accessDecisionCondition.getConditions()));
