@@ -18,6 +18,8 @@ public interface AuditType extends DomainType {
 
     String INHERENT_FIELD_NAME = "inherent";
 
+    String CREATOR_REFERENCE_FIELD_NAME = "creator";
+
     String CREATOR_ID_FIELD_NAME = "creatorId";
 
     String CREATE_TIME_FIELD_NAME = "createTime";
