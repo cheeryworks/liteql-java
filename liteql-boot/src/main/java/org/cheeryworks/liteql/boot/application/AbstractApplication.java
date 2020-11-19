@@ -24,6 +24,8 @@ import static org.cheeryworks.liteql.util.LiteQL.Constants.PLATFORM_VERSION_SPEC
 
 public abstract class AbstractApplication extends SpringBootServletInitializer {
 
+    private static final String IMPORT_PROPERTY = "spring.config.import";
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         super.onStartup(servletContext);
@@ -45,8 +47,6 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
     }
 
     protected static void run(Class<?> primarySource, String[] args) {
-        String defaultSearchLocations = "classpath:/,classpath:/config/,file:./,file:./config/";
-
         String customizedConfigurationPath = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
 
         String profile = System.getProperty(LITEQL_PROFILE_KEY);
@@ -72,6 +72,8 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
                 StringUtils.removeEnd(
                         org.springframework.util.StringUtils.cleanPath(customizedConfigurationPath), "/") + "/";
 
+        customizedConfigurationPath = "optional:file:" + customizedConfigurationPath;
+
         String[] customizedArgs = new String[]{};
         int configLocationArgValueIndex = 0;
         boolean configLocationExist = false;
@@ -79,7 +81,7 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
         for (int i = 0; i < args.length; i++) {
             String customizedArg = args[i];
 
-            if (args[i].contains(ConfigFileApplicationListener.CONFIG_LOCATION_PROPERTY)) {
+            if (args[i].contains(IMPORT_PROPERTY)) {
                 if (args[i].contains("=")) {
                     customizedArg = args[i] + "," + customizedConfigurationPath;
                 } else {
@@ -99,8 +101,7 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
         if (!configLocationExist) {
             customizedArgs = ArrayUtils.add(
                     customizedArgs,
-                    "--" + ConfigFileApplicationListener.CONFIG_LOCATION_PROPERTY + "="
-                            + defaultSearchLocations + "," + customizedConfigurationPath);
+                    "--" + IMPORT_PROPERTY + "=" + customizedConfigurationPath);
         }
 
         SpringApplication.run(primarySource, customizedArgs);
