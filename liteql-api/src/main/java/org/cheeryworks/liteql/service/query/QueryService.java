@@ -19,8 +19,6 @@ import java.util.List;
 
 public interface QueryService {
 
-    QueryAccessDecisionService getQueryAccessDecisionService();
-
     ReadResults read(QueryContext queryContext, ReadQuery readQuery);
 
     ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery);

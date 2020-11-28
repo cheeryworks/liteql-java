@@ -91,8 +91,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         this.queryEventPublisher = queryEventPublisher;
     }
 
-    @Override
-    public QueryAccessDecisionService getQueryAccessDecisionService() {
+    protected QueryAccessDecisionService getQueryAccessDecisionService() {
         return this.queryAccessDecisionService;
     }
 
