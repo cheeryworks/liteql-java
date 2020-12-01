@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractServiceController {
@@ -24,28 +24,26 @@ public abstract class AbstractServiceController {
         }
     }
 
-    protected ResponseEntity getErrorResponseEntity(Object data) {
-        return getErrorResponseEntity(data, null);
+    protected ResponseEntity getErrorResponseEntity(String message) {
+        Map<String, Object> errorData = new HashMap<>();
+
+        errorData.put("message", message);
+
+        return getErrorResponseEntity(errorData);
     }
 
     protected ResponseEntity getErrorResponseEntity(Exception ex) {
-        return getErrorResponseEntity(null, ex);
-    }
+        Map<String, Object> errorData = new HashMap<>();
 
-    protected ResponseEntity getErrorResponseEntity(Object data, Exception ex) {
-        if (data == null && ex != null) {
-            Map<String, Object> errorData = new LinkedHashMap<>();
-
-            String message = ex.getMessage();
-
-            errorData.put("message", message);
-
-            data = errorData;
+        if (ex != null) {
+            errorData.put("message", ex.getMessage());
         }
 
-        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        return getErrorResponseEntity(errorData);
+    }
 
-        return new ResponseEntity(data, httpStatus);
+    protected ResponseEntity getErrorResponseEntity(Object errorData) {
+        return new ResponseEntity(errorData, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
