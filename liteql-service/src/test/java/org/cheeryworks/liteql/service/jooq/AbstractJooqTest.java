@@ -5,6 +5,7 @@ import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.sql.AbstractSqlTest;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.DSLContext;
+import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
 import org.jooq.conf.SettingsTools;
@@ -33,6 +34,7 @@ public abstract class AbstractJooqTest extends AbstractSqlTest {
 
         Settings settings = SettingsTools.defaultSettings();
         settings.setRenderQuotedNames(RenderQuotedNames.NEVER);
+        settings.setRenderNameCase(RenderNameCase.LOWER);
 
         if (getLiteQLProperties().isDiagnosticEnabled()) {
             settings.withRenderFormatted(true);
