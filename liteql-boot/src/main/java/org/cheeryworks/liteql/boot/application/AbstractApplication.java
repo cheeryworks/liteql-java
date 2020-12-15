@@ -19,7 +19,6 @@ import java.util.Collections;
 
 import static org.cheeryworks.liteql.util.LiteQL.Constants.DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
 import static org.cheeryworks.liteql.util.LiteQL.Constants.LITEQL_PROFILE_KEY;
-import static org.cheeryworks.liteql.util.LiteQL.Constants.PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH;
 
 public abstract class AbstractApplication extends SpringBootServletInitializer {
 
@@ -51,27 +50,18 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
         String profile = System.getProperty(LITEQL_PROFILE_KEY);
 
         if (StringUtils.isNotBlank(profile)) {
-            if (new File(
-                    PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH
-                            + File.separator + profile).exists()) {
-                customizedConfigurationPath = PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH
-                        + File.separator + profile;
-            } else if (new File(DEFAULT_CUSTOMIZED_CONFIGURATION_PATH
-                    + File.separator + profile).exists()) {
-                customizedConfigurationPath = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH
-                        + File.separator + profile;
+            if (new File(DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + profile).exists()) {
+                customizedConfigurationPath = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + profile;
             } else {
                 throw new IllegalArgumentException("Configuration of profile " + profile + " not found");
             }
-        } else if (new File(PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH).exists()) {
-            customizedConfigurationPath = PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH;
         }
 
         customizedConfigurationPath =
                 StringUtils.removeEnd(
                         org.springframework.util.StringUtils.cleanPath(customizedConfigurationPath), "/") + "/";
 
-        customizedConfigurationPath = "optional:file:" + customizedConfigurationPath;
+        customizedConfigurationPath = "optional:file:" + customizedConfigurationPath + "application.yml";
 
         String[] customizedArgs = new String[]{};
         int configLocationArgValueIndex = 0;

@@ -77,7 +77,7 @@ public abstract class LiteQL {
         public static final String NAME_CONCAT = ".";
 
         public static final String DEFAULT_CUSTOMIZED_CONFIGURATION_PATH
-                = System.getProperty("user.home") + File.separator + ".liteql";
+                = System.getProperty("user.home") + File.separator + ".liteql" + File.separator + SPECIFICATION_VERSION;
 
         public static final String PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH
                 = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + SPECIFICATION_VERSION;
