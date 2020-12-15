@@ -24,6 +24,14 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
 
     private static final String IMPORT_PROPERTY = "spring.config.import";
 
+    private static final String DEFAULT_OPTIONAL_IMPORTS
+            = "optional:file:/etc/soupe/application.yml,"
+            + "optional:file:/etc/soupe/*/application.yml,"
+            + "optional:file:/etc/soupe/application.yaml,"
+            + "optional:file:/etc/soupe/*/application.yaml,"
+            + "optional:file:/etc/soupe/application.properties,"
+            + "optional:file:/etc/soupe/*/application.properties";
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         super.onStartup(servletContext);
@@ -62,6 +70,8 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
                         org.springframework.util.StringUtils.cleanPath(customizedConfigurationPath), "/") + "/";
 
         customizedConfigurationPath = "optional:file:" + customizedConfigurationPath + "application.yml";
+
+        customizedConfigurationPath += "," + DEFAULT_OPTIONAL_IMPORTS;
 
         String[] customizedArgs = new String[]{};
         int configLocationArgValueIndex = 0;
