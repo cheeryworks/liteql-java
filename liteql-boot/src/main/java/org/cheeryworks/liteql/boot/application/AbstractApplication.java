@@ -4,16 +4,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.HttpSessionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,11 +48,6 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(getClass());
-    }
-
-    @Bean
-    public static ServletListenerRegistrationBean<HttpSessionListener> httpSessionEventPublisher() {
-        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
     }
 
     protected static void run(Class<?> primarySource, String[] args) {

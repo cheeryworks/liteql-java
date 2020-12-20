@@ -38,7 +38,7 @@ public class LiteQLSecurityAutoConfiguration {
             WebMvcConfigurer.class,
             Authentication.class
     })
-    public static class QueryContextHandlerMethodArgumentResolverConfigurer implements WebMvcConfigurer {
+    class QueryContextHandlerMethodArgumentResolverConfigurer implements WebMvcConfigurer {
 
         public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
             resolvers.add(new QueryContextHandlerMethodArgumentResolver());
