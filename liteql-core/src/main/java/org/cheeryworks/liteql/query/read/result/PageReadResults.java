@@ -41,7 +41,7 @@ public class PageReadResults extends AbstractPageable implements Page<ReadResult
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<ReadResult> iterator() {
         return data.iterator();
     }
 
