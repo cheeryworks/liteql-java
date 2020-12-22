@@ -58,11 +58,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-public abstract class LiteQL {
-
-    private LiteQL() {
-
-    }
+public final class LiteQL {
 
     public static final class Constants {
 
