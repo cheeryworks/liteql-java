@@ -44,7 +44,6 @@ import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.DeleteFinalStep;
 import org.jooq.InsertFinalStep;
-import org.jooq.InsertSetMoreStep;
 import org.jooq.InsertSetStep;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
@@ -125,7 +124,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 fields.add(
                         field(
                                 TABLE_ALIAS_PREFIX + "." + getSqlCustomizer().getColumnName(
-                                                readQuery.getDomainTypeName(), accessDecisionField))
+                                        readQuery.getDomainTypeName(), accessDecisionField))
                                 .as(accessDecisionField + ACCESS_DECISION_FIELD_ALIAS_SUFFIX));
             }
         }
@@ -301,9 +300,10 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
             DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(IdField.ID_FIELD_NAME));
 
-            InsertSetMoreStep insertSetMoreStep = insertSetStep.set(
-                    field("id", dataType),
-                    UUID_GENERATOR.generate());
+            if (!data.containsKey(IdField.ID_FIELD_NAME)) {
+                insertSetStep.set(
+                        field(IdField.ID_FIELD_NAME, dataType), UUID_GENERATOR.generate());
+            }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
@@ -313,14 +313,14 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                             domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
                     if (dataEntry.getValue() instanceof Map) {
-                        insertSetMoreStep.set(
+                        insertSetStep.set(
                                 field(fieldName, dataType),
                                 getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
                     } else {
-                        insertSetMoreStep.set(field(fieldName, dataType), dataEntry.getValue());
+                        insertSetStep.set(field(fieldName, dataType), dataEntry.getValue());
                     }
                 } else {
-                    insertSetMoreStep.set(
+                    insertSetStep.set(
                             field(getSqlCustomizer().getColumnName(
                                     domainTypeDefinition.getTypeName(), dataEntry.getKey()), dataType),
                             dataEntry.getValue());
@@ -335,7 +335,11 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             UpdateSetStep updateSetStep = getDslContext()
                     .update(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
 
-            UniqueDefinition uniqueDefinitionKey = getUniqueDefinition(domainTypeDefinition, data);
+            UniqueDefinition uniqueDefinition = null;
+
+            if (!data.containsKey(IdField.ID_FIELD_NAME)) {
+                uniqueDefinition = getUniqueDefinition(domainTypeDefinition, data);
+            }
 
             Condition condition = DSL.trueCondition();
 
@@ -349,31 +353,21 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
                 DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
-                if (uniqueDefinitionKey.getFields().contains(dataEntry.getKey())) {
-                    condition = condition.and(field(dataEntry.getKey()).eq(dataEntry.getValue()));
+                String fieldName = getSqlCustomizer().getColumnName(
+                        domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
-                    condition = condition.and(
-                            field(getSqlCustomizer().getColumnName(
-                                    domainTypeDefinition.getTypeName(),
-                                    dataEntry.getKey()), dataType).eq(dataEntry.getValue()));
+                if (dataEntry.getKey().equals(IdField.ID_FIELD_NAME)
+                        || (uniqueDefinition != null && uniqueDefinition.getFields().contains(dataEntry.getKey()))) {
+                    condition = condition.and(field(fieldName, dataType).eq(dataEntry.getValue()));
                 } else {
-                    if (domainTypeDefinition.isReferenceField(dataEntry.getKey())) {
-                        String fieldName = getSqlCustomizer().getColumnName(
-                                domainTypeDefinition.getTypeName(), dataEntry.getKey());
-
-                        if (dataEntry.getValue() instanceof Map) {
-                            updateSetStep.set(
-                                    field(fieldName, dataType),
-                                    getReferenceIdSelect(
-                                            dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
-                        } else {
-                            updateSetStep.set(field(fieldName, dataType), dataEntry.getValue());
-                        }
-                    } else {
+                    if (domainTypeDefinition.isReferenceField(dataEntry.getKey())
+                            && dataEntry.getValue() instanceof Map) {
                         updateSetStep.set(
-                                field(getSqlCustomizer().getColumnName(
-                                        domainTypeDefinition.getTypeName(), dataEntry.getKey()), dataType),
-                                dataEntry.getValue());
+                                field(fieldName, dataType),
+                                getReferenceIdSelect(
+                                        dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
+                    } else {
+                        updateSetStep.set(field(fieldName, dataType), dataEntry.getValue());
                     }
                 }
             }
