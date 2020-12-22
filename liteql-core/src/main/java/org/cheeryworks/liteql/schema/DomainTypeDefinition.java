@@ -9,6 +9,7 @@ import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.schema.index.IndexDefinition;
 import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -18,10 +19,10 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
     public static final String DOMAIN_TYPE_NAME_KEY = "domainTypeName";
 
     @JsonDeserialize(as = LinkedHashSet.class)
-    private Set<UniqueDefinition> uniques;
+    private Set<UniqueDefinition> uniques = new HashSet<>();
 
     @JsonDeserialize(as = LinkedHashSet.class)
-    private Set<IndexDefinition> indexes;
+    private Set<IndexDefinition> indexes = new HashSet<>();
 
     private Boolean graphQLType;
 
