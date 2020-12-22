@@ -6,6 +6,9 @@ public class DefaultQueryContext implements QueryContext {
 
     private UserType user;
 
+    public DefaultQueryContext() {
+    }
+
     public DefaultQueryContext(UserType user) {
         this.user = user;
     }
@@ -14,4 +17,5 @@ public class DefaultQueryContext implements QueryContext {
     public UserType getUser() {
         return this.user;
     }
+
 }
