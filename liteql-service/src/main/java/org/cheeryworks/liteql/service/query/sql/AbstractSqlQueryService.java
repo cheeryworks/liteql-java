@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
+import org.cheeryworks.liteql.model.DomainType;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.Queries;
 import org.cheeryworks.liteql.query.QueryContext;
@@ -33,6 +34,7 @@ import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.SaveQueries;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
+import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
 import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
@@ -42,6 +44,7 @@ import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
 import org.cheeryworks.liteql.sql.SqlSaveQuery;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.SqlQueryServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,8 +99,26 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     }
 
     @Override
+    public <T extends DomainType> List<T> read(
+            QueryContext queryContext, ReadQuery readQuery, Class<T> domainType) {
+        return SqlQueryServiceUtil.getTypedResults(read(queryContext, readQuery), domainType);
+    }
+
+    @Override
     public ReadResults read(QueryContext queryContext, ReadQuery readQuery) {
         return readQuery.getResult(query(queryContext, readQuery));
+    }
+
+    @Override
+    public <T extends DomainType> T read(
+            QueryContext queryContext, SingleReadQuery singleReadQuery, Class<T> domainType) {
+        ReadResult readResult = read(queryContext, singleReadQuery);
+
+        if (readResult != null) {
+            return SqlQueryServiceUtil.getTypedResult(readResult, domainType);
+        }
+
+        return null;
     }
 
     @Override
@@ -183,8 +204,18 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     }
 
     @Override
+    public <T extends DomainType> T create(T domainEntity) {
+        return save(domainEntity, QueryType.Create);
+    }
+
+    @Override
     public CreateQuery create(QueryContext queryContext, CreateQuery createQuery) {
         return (CreateQuery) save(queryContext, Collections.singletonList(createQuery)).get(0);
+    }
+
+    @Override
+    public <T extends DomainType> T update(T domainEntity) {
+        return save(domainEntity, QueryType.Update);
     }
 
     @Override
@@ -195,6 +226,28 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     @Override
     public AbstractSaveQuery save(QueryContext queryContext, AbstractSaveQuery saveQuery) {
         return save(queryContext, Collections.singletonList(saveQuery)).get(0);
+    }
+
+    private <T extends DomainType> T save(T domainEntity, QueryType queryType) {
+        try {
+            Class<T> domainType = (Class<T>) domainEntity.getClass();
+
+            DomainTypeDefinition domainTypeDefinition = this.sqlQueryParser.getSchemaService()
+                    .getDomainTypeDefinition(LiteQL.SchemaUtils.getTypeName(domainType));
+
+            AbstractSaveQuery saveQuery = SqlQueryServiceUtil.transformObjectToSaveQuery(
+                    domainEntity, queryType, domainTypeDefinition);
+
+            if (QueryType.Create.equals(queryType)) {
+                saveQuery = create((CreateQuery) saveQuery);
+            } else if (QueryType.Update.equals(queryType)) {
+                saveQuery = update((UpdateQuery) saveQuery);
+            }
+
+            return SqlQueryServiceUtil.getTypedResult(saveQuery.getData(), domainType);
+        } catch (Throwable throwable) {
+            throw new IllegalStateException(throwable.getMessage(), throwable);
+        }
     }
 
     @Override
@@ -566,8 +619,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             if (CollectionUtils.isEmpty(results)
                     && deleteQuery.getConditions() != null
                     && deleteQuery.getConditions().size() == 1
-                    && IdField.ID_FIELD_NAME.equals(
-                    deleteQuery.getConditions().get(0).getField())
+                    && IdField.ID_FIELD_NAME.equals(deleteQuery.getConditions().get(0).getField())
                     && ConditionClause.EQUALS.equals(deleteQuery.getConditions().get(0).getCondition())
                     && ConditionType.String.equals(deleteQuery.getConditions().get(0).getType())) {
                 Map<String, Object> result = new HashMap<>();
