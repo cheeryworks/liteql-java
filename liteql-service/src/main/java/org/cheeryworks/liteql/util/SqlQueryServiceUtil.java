@@ -25,6 +25,7 @@ public abstract class SqlQueryServiceUtil {
         switch (dataType) {
             case Id:
             case Reference:
+            case Clob:
             case String:
                 return String.class;
             case Long:
@@ -37,6 +38,8 @@ public abstract class SqlQueryServiceUtil {
                 return BigDecimal.class;
             case Timestamp:
                 return Timestamp.class;
+            case Blob:
+                return byte[].class;
             default:
                 throw new IllegalArgumentException("Unsupported data type " + dataType);
         }

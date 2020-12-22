@@ -148,6 +148,8 @@ public class JooqUtil {
             return getBigDecimalDataType();
         } else if (Date.class.isAssignableFrom(type)) {
             return getTimestampDataType();
+        } else if (byte[].class.isAssignableFrom(type)) {
+            return getBlobDataType();
         }
 
         throw new IllegalArgumentException(type.getName() + " not supported");
