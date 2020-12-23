@@ -9,6 +9,7 @@ import org.cheeryworks.liteql.query.read.PageReadQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.query.read.page.Page;
 import org.cheeryworks.liteql.query.read.result.PageReadResults;
 import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
@@ -17,6 +18,7 @@ import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface QueryService {
@@ -57,13 +59,29 @@ public interface QueryService {
         return read(EMPTY_QUERY_CONTEXT, pageReadQuery);
     }
 
+    default <T extends DomainType> Page<T> read(PageReadQuery pageReadQuery, Class<T> domainType) {
+        return read(EMPTY_QUERY_CONTEXT, pageReadQuery, domainType);
+    }
+
+    <T extends DomainType> Page<T> read(QueryContext queryContext, PageReadQuery pageReadQuery, Class<T> domainType);
+
     PageReadResults read(QueryContext queryContext, PageReadQuery pageReadQuery);
 
     default CreateQuery create(CreateQuery createQuery) {
         return create(EMPTY_QUERY_CONTEXT, createQuery);
     }
 
-    <T extends DomainType> T create(T domainEntity);
+    default <T extends DomainType> T create(T domainEntity) {
+        return create(EMPTY_QUERY_CONTEXT, domainEntity);
+    }
+
+    <T extends DomainType> T create(QueryContext queryContext, T domainEntity);
+
+    default <T extends DomainType> List<T> create(Collection<T> domainEntities) {
+        return create(EMPTY_QUERY_CONTEXT, domainEntities);
+    }
+
+    <T extends DomainType> List<T> create(QueryContext queryContext, Collection<T> domainEntities);
 
     CreateQuery create(QueryContext queryContext, CreateQuery createQuery);
 
@@ -71,7 +89,17 @@ public interface QueryService {
         return update(EMPTY_QUERY_CONTEXT, updateQuery);
     }
 
-    <T extends DomainType> T update(T domainEntity);
+    default <T extends DomainType> T update(T domainEntity) {
+        return update(EMPTY_QUERY_CONTEXT, domainEntity);
+    }
+
+    <T extends DomainType> T update(QueryContext queryContext, T domainEntity);
+
+    default <T extends DomainType> List<T> update(Collection<T> domainEntities) {
+        return update(EMPTY_QUERY_CONTEXT, domainEntities);
+    }
+
+    <T extends DomainType> List<T> update(QueryContext queryContext, Collection<T> domainEntities);
 
     UpdateQuery update(QueryContext queryContext, UpdateQuery updateQuery);
 

@@ -56,12 +56,27 @@ public abstract class SqlQueryServiceUtil {
         }
     }
 
-    public static <T extends TraitType> T getTypedResult(Map<String, Object> data, Class<T> type) {
+    public static <T extends TraitType> T getTypedResult(
+            Map<String, Object> data, Class<T> type, DomainTypeDefinition domainTypeDefinition) {
         try {
             T typedResult = type.getDeclaredConstructor().newInstance();
 
             for (Map.Entry<String, Object> sourceEntry : data.entrySet()) {
                 String fieldName = sourceEntry.getKey();
+
+                Field matchedField = domainTypeDefinition.getFields()
+                        .stream()
+                        .filter(field -> {
+                            return field.getName().equals(sourceEntry.getKey())
+                                    && field.getType().equals(DataType.Reference);
+                        })
+                        .findAny()
+                        .orElse(null);
+
+                if (matchedField != null) {
+                    fieldName += StringUtils.capitalize(IdField.ID_FIELD_NAME);
+                }
+
                 Object fieldValue = sourceEntry.getValue();
 
                 if (fieldValue == null) {
@@ -77,10 +92,14 @@ public abstract class SqlQueryServiceUtil {
         }
     }
 
-    public static <T extends TraitType> List<T> getTypedResults(List<ReadResult> data, Class<T> type) {
+    public static <T extends TraitType> List<T> getTypedResults(
+            List<ReadResult> data, Class<T> type, DomainTypeDefinition domainTypeDefinition) {
         List<T> typedResults = new LinkedList<>();
 
-        data.stream().map(readResult -> getTypedResult(readResult, type)).forEach(typedResults::add);
+        data
+                .stream()
+                .map(readResult -> getTypedResult(readResult, type, domainTypeDefinition))
+                .forEach(typedResults::add);
 
         return typedResults;
     }

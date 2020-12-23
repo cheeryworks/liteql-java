@@ -26,10 +26,12 @@ import org.cheeryworks.liteql.query.read.PageReadQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.read.TreeReadQuery;
+import org.cheeryworks.liteql.query.read.page.Page;
 import org.cheeryworks.liteql.query.read.result.PageReadResults;
 import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
 import org.cheeryworks.liteql.query.read.result.TreeReadResults;
+import org.cheeryworks.liteql.query.read.result.TypedPageReadResults;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.SaveQueries;
@@ -51,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,7 +104,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     @Override
     public <T extends DomainType> List<T> read(
             QueryContext queryContext, ReadQuery readQuery, Class<T> domainType) {
-        return SqlQueryServiceUtil.getTypedResults(read(queryContext, readQuery), domainType);
+
+        DomainTypeDefinition domainTypeDefinition = this.sqlQueryParser.getSchemaService()
+                .getDomainTypeDefinition(LiteQL.SchemaUtils.getTypeName(domainType));
+
+        return SqlQueryServiceUtil.getTypedResults(read(queryContext, readQuery), domainType, domainTypeDefinition);
     }
 
     @Override
@@ -114,8 +121,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             QueryContext queryContext, SingleReadQuery singleReadQuery, Class<T> domainType) {
         ReadResult readResult = read(queryContext, singleReadQuery);
 
+        DomainTypeDefinition domainTypeDefinition = this.sqlQueryParser.getSchemaService()
+                .getDomainTypeDefinition(LiteQL.SchemaUtils.getTypeName(domainType));
+
         if (readResult != null) {
-            return SqlQueryServiceUtil.getTypedResult(readResult, domainType);
+            return SqlQueryServiceUtil.getTypedResult(readResult, domainType, domainTypeDefinition);
         }
 
         return null;
@@ -129,6 +139,24 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     @Override
     public TreeReadResults read(QueryContext queryContext, TreeReadQuery treeReadQuery) {
         return treeReadQuery.getResult(query(queryContext, treeReadQuery));
+    }
+
+    @Override
+    public <T extends DomainType> Page<T> read(
+            QueryContext queryContext, PageReadQuery pageReadQuery, Class<T> domainType) {
+        PageReadResults pageReadResults = read(pageReadQuery);
+
+        List<T> results = new ArrayList<>();
+
+        DomainTypeDefinition domainTypeDefinition = this.sqlQueryParser.getSchemaService()
+                .getDomainTypeDefinition(LiteQL.SchemaUtils.getTypeName(domainType));
+
+        for (ReadResult readResult : pageReadResults.getData()) {
+            results.add(SqlQueryServiceUtil.getTypedResult(readResult, domainType, domainTypeDefinition));
+        }
+
+        return new TypedPageReadResults<>(
+                results, pageReadResults.getPage(), pageReadResults.getSize(), pageReadResults.getTotal());
     }
 
     @Override
@@ -204,8 +232,13 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     }
 
     @Override
-    public <T extends DomainType> T create(T domainEntity) {
-        return save(domainEntity, QueryType.Create);
+    public <T extends DomainType> T create(QueryContext queryContext, T domainEntity) {
+        return save(queryContext, domainEntity, QueryType.Create);
+    }
+
+    @Override
+    public <T extends DomainType> List<T> create(QueryContext queryContext, Collection<T> domainEntities) {
+        return save(queryContext, domainEntities, QueryType.Create);
     }
 
     @Override
@@ -214,8 +247,13 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     }
 
     @Override
-    public <T extends DomainType> T update(T domainEntity) {
-        return save(domainEntity, QueryType.Update);
+    public <T extends DomainType> T update(QueryContext queryContext, T domainEntity) {
+        return save(queryContext, domainEntity, QueryType.Update);
+    }
+
+    @Override
+    public <T extends DomainType> List<T> update(QueryContext queryContext, Collection<T> domainEntities) {
+        return save(queryContext, domainEntities, QueryType.Update);
     }
 
     @Override
@@ -228,7 +266,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         return save(queryContext, Collections.singletonList(saveQuery)).get(0);
     }
 
-    private <T extends DomainType> T save(T domainEntity, QueryType queryType) {
+    private <T extends DomainType> T save(QueryContext queryContext, T domainEntity, QueryType queryType) {
         try {
             Class<T> domainType = (Class<T>) domainEntity.getClass();
 
@@ -239,15 +277,46 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
                     domainEntity, queryType, domainTypeDefinition);
 
             if (QueryType.Create.equals(queryType)) {
-                saveQuery = create((CreateQuery) saveQuery);
+                saveQuery = create(queryContext, (CreateQuery) saveQuery);
             } else if (QueryType.Update.equals(queryType)) {
-                saveQuery = update((UpdateQuery) saveQuery);
+                saveQuery = update(queryContext, (UpdateQuery) saveQuery);
             }
 
-            return SqlQueryServiceUtil.getTypedResult(saveQuery.getData(), domainType);
+            return SqlQueryServiceUtil.getTypedResult(saveQuery.getData(), domainType, domainTypeDefinition);
         } catch (Throwable throwable) {
             throw new IllegalStateException(throwable.getMessage(), throwable);
         }
+    }
+
+    private <T extends DomainType> List<T> save(
+            QueryContext queryContext, Collection<T> entities, QueryType queryType) {
+        List<T> results = new ArrayList<>();
+
+        if (CollectionUtils.isEmpty(entities)) {
+            return results;
+        }
+
+        List<AbstractSaveQuery> saveQueries = new ArrayList<>();
+
+        Class<T> domainType = (Class<T>) entities.stream().findFirst().get().getClass();
+
+        DomainTypeDefinition domainTypeDefinition = this.sqlQueryParser.getSchemaService()
+                .getDomainTypeDefinition(LiteQL.SchemaUtils.getTypeName(domainType));
+
+        for (T entity : entities) {
+            AbstractSaveQuery saveQuery
+                    = SqlQueryServiceUtil.transformObjectToSaveQuery(entity, queryType, domainTypeDefinition);
+
+            saveQueries.add(saveQuery);
+        }
+
+        saveQueries = save(queryContext, saveQueries);
+
+        for (AbstractSaveQuery saveQuery : saveQueries) {
+            results.add(SqlQueryServiceUtil.getTypedResult(saveQuery.getData(), domainType, domainTypeDefinition));
+        }
+
+        return results;
     }
 
     @Override
