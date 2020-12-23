@@ -2,7 +2,9 @@ package org.cheeryworks.liteql.util.query.builder;
 
 import org.cheeryworks.liteql.query.save.CreateQuery;
 import org.cheeryworks.liteql.query.save.UpdateQuery;
+import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.query.builder.delete.DeleteQueriesBuilder;
 import org.cheeryworks.liteql.util.query.builder.delete.DeleteQueryConditionsBuilder;
 import org.cheeryworks.liteql.util.query.builder.delete.DeleteQueryMetadata;
@@ -14,6 +16,10 @@ import org.cheeryworks.liteql.util.query.builder.save.SaveQueryMetadata;
 
 public class QueryBuilder {
 
+    public static ReadQueryFieldsBuilder read(Class<? extends TraitType> domainType) {
+        return read(LiteQL.SchemaUtils.getTypeName(domainType));
+    }
+
     public static ReadQueryFieldsBuilder read(TypeName domainTypeName) {
         ReadQueryMetadata readQueryMetadata = new ReadQueryMetadata();
 
@@ -22,12 +28,20 @@ public class QueryBuilder {
         return new ReadQueryFieldsBuilder(readQueryMetadata);
     }
 
+    public static SaveQueryFieldsBuilder<CreateQuery> create(Class<? extends TraitType> domainType) {
+        return create(LiteQL.SchemaUtils.getTypeName(domainType));
+    }
+
     public static SaveQueryFieldsBuilder<CreateQuery> create(TypeName domainTypeName) {
         SaveQueryMetadata<CreateQuery> saveQueryMetadata = new SaveQueryMetadata<>(new CreateQuery());
 
         saveQueryMetadata.setDomainTypeName(domainTypeName);
 
         return new SaveQueryFieldsBuilder<>(saveQueryMetadata);
+    }
+
+    public static SaveQueryFieldsBuilder<UpdateQuery> update(Class<? extends TraitType> domainType) {
+        return update(LiteQL.SchemaUtils.getTypeName(domainType));
     }
 
     public static SaveQueryFieldsBuilder<UpdateQuery> update(TypeName domainTypeName) {
@@ -40,6 +54,10 @@ public class QueryBuilder {
 
     public static SaveQueriesBuilder save(SaveQueryMetadata... saveQueryMetadataArray) {
         return new SaveQueriesBuilder(saveQueryMetadataArray);
+    }
+
+    public static DeleteQueryConditionsBuilder delete(Class<? extends TraitType> domainType) {
+        return delete(LiteQL.SchemaUtils.getTypeName(domainType));
     }
 
     public static DeleteQueryConditionsBuilder delete(TypeName domainTypeName) {
