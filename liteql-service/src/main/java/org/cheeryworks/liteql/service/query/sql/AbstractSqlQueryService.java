@@ -591,7 +591,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 if (saveQuery instanceof CreateQuery) {
-                    saveQuery.getData().put("id", parametersList.get(i)[0]);
+                    saveQuery.getData().put(IdField.ID_FIELD_NAME, parametersList.get(i)[0]);
                 }
 
                 i++;
