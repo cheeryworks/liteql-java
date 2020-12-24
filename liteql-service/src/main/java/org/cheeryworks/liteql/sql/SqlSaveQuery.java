@@ -1,5 +1,5 @@
 package org.cheeryworks.liteql.sql;
 
-public interface SqlSaveQuery extends SqlQuery {
+public interface SqlSaveQuery extends SqlWriteQuery {
 
 }

@@ -1,5 +1,5 @@
 package org.cheeryworks.liteql.sql;
 
-public interface SqlDeleteQuery extends SqlQuery {
+public interface SqlDeleteQuery extends SqlWriteQuery {
 
 }
