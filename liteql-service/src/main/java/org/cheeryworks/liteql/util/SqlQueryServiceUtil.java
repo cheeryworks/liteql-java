@@ -12,6 +12,7 @@ import org.cheeryworks.liteql.schema.TraitType;
 import org.cheeryworks.liteql.schema.enums.DataType;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
+import org.cheeryworks.liteql.schema.field.ReferenceField;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -123,11 +124,19 @@ public abstract class SqlQueryServiceUtil {
             String propertyName = field.getName();
 
             if (DataType.Reference.equals(field.getType())) {
+                if (((ReferenceField) field).isCollection()) {
+                    return;
+                }
+
                 propertyName = field.getName() + StringUtils.capitalize(IdField.ID_FIELD_NAME);
             }
 
             try {
                 Object propertyValue = FieldUtils.readField(domainEntity, propertyName, true);
+
+                if (propertyValue == null && field.getName().equals(IdField.ID_FIELD_NAME)) {
+                    return;
+                }
 
                 domainEntityInMap.put(field.getName(), propertyValue);
             } catch (Exception ex) {
