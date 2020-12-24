@@ -1,11 +1,8 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
-import org.cheeryworks.liteql.query.QueryCondition;
-import org.cheeryworks.liteql.query.read.field.FieldDefinition;
 import org.jooq.Condition;
 import org.jooq.Field;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class JooqJoinedTable {
@@ -16,13 +13,9 @@ public class JooqJoinedTable {
 
     private List<Field<Object>> fields;
 
-    private LinkedList<FieldDefinition> joinedColumns = new LinkedList<>();
-
-    private LinkedList<QueryCondition> joinConditions = new LinkedList<>();
+    private Condition joinCondition;
 
     private Condition condition;
-
-    private Condition joinCondition;
 
     public String getTableName() {
         return tableName;
@@ -40,28 +33,12 @@ public class JooqJoinedTable {
         this.tableAlias = tableAlias;
     }
 
-    public LinkedList<FieldDefinition> getJoinedColumns() {
-        return joinedColumns;
+    public List<Field<Object>> getFields() {
+        return fields;
     }
 
-    public void setJoinedColumns(LinkedList<FieldDefinition> joinedColumns) {
-        this.joinedColumns = joinedColumns;
-    }
-
-    public LinkedList<QueryCondition> getJoinConditions() {
-        return joinConditions;
-    }
-
-    public void setJoinConditions(LinkedList<QueryCondition> joinConditions) {
-        this.joinConditions = joinConditions;
-    }
-
-    public Condition getCondition() {
-        return condition;
-    }
-
-    public void setCondition(Condition condition) {
-        this.condition = condition;
+    public void setFields(List<Field<Object>> fields) {
+        this.fields = fields;
     }
 
     public Condition getJoinCondition() {
@@ -72,12 +49,12 @@ public class JooqJoinedTable {
         this.joinCondition = joinCondition;
     }
 
-    public List<Field<Object>> getFields() {
-        return fields;
+    public Condition getCondition() {
+        return condition;
     }
 
-    public void setFields(List<Field<Object>> fields) {
-        this.fields = fields;
+    public void setCondition(Condition condition) {
+        this.condition = condition;
     }
 
 }
