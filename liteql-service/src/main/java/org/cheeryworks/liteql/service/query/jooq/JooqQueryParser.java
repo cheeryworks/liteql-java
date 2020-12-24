@@ -218,10 +218,14 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                 QueryConditions joinConditions = new QueryConditions();
 
-                joinConditions.add(new QueryCondition(
-                        IdField.ID_FIELD_NAME,
-                        ConditionClause.EQUALS, ConditionType.Field,
-                        joinedReadQuery.getDomainTypeName().getName()));
+                if (CollectionUtils.isEmpty(joinedReadQuery.getJoinConditions())) {
+                    joinConditions.add(new QueryCondition(
+                            IdField.ID_FIELD_NAME,
+                            ConditionClause.EQUALS, ConditionType.Field,
+                            joinedReadQuery.getDomainTypeName().getName()));
+                } else {
+                    joinConditions.addAll(joinedReadQuery.getJoinConditions());
+                }
 
                 joinedTable.setJoinCondition(
                         JooqUtil.getCondition(
@@ -231,6 +235,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                 joinedTable.setCondition(
                         JooqUtil.getCondition(
+                                parentDomainTypeName, parentTableAliasPrefix,
                                 joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
                                 joinedReadQuery.getConditions(), getSqlCustomizer()));
 
@@ -302,28 +307,29 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
             if (!data.containsKey(IdField.ID_FIELD_NAME)) {
                 insertSetStep.set(
-                        field(IdField.ID_FIELD_NAME, dataType), UUID_GENERATOR.generate());
+                        field(IdField.ID_FIELD_NAME, dataType), UUID_GENERATOR.generate().toString());
+            } else {
+                insertSetStep.set(
+                        field(IdField.ID_FIELD_NAME, dataType), data.get(IdField.ID_FIELD_NAME));
             }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
+                if (dataEntry.getKey().equals(IdField.ID_FIELD_NAME)) {
+                    continue;
+                }
+
                 dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
 
-                if (domainTypeDefinition.isReferenceField(dataEntry.getKey())) {
-                    String fieldName = getSqlCustomizer().getColumnName(
-                            domainTypeDefinition.getTypeName(), dataEntry.getKey());
+                String fieldName = getSqlCustomizer().getColumnName(
+                        domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
-                    if (dataEntry.getValue() instanceof Map) {
-                        insertSetStep.set(
-                                field(fieldName, dataType),
-                                getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
-                    } else {
-                        insertSetStep.set(field(fieldName, dataType), dataEntry.getValue());
-                    }
-                } else {
+                if (domainTypeDefinition.isReferenceField(dataEntry.getKey())
+                        && dataEntry.getValue() != null && dataEntry.getValue() instanceof Map) {
                     insertSetStep.set(
-                            field(getSqlCustomizer().getColumnName(
-                                    domainTypeDefinition.getTypeName(), dataEntry.getKey()), dataType),
-                            dataEntry.getValue());
+                            field(fieldName, dataType),
+                            getReferenceIdSelect(dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
+                } else {
+                    insertSetStep.set(field(fieldName, dataType), dataEntry.getValue());
                 }
             }
 
