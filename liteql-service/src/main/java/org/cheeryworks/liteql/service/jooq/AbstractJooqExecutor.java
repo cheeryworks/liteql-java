@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractJooqExecutor extends AbstractSqlExecutor {
 
@@ -68,17 +67,6 @@ public abstract class AbstractJooqExecutor extends AbstractSqlExecutor {
         BatchBindStep batchBindStep = getDslContext().batch(sql);
 
         for (Object[] parameters : parametersList) {
-            batchBindStep.bind(parameters);
-        }
-
-        batchBindStep.execute();
-    }
-
-    @Override
-    public void executeNamedBatch(String sql, List<Map<String, Object>> parametersList) {
-        BatchBindStep batchBindStep = getDslContext().batch(sql);
-
-        for (Map<String, Object> parameters : parametersList) {
             batchBindStep.bind(parameters);
         }
 
