@@ -23,10 +23,6 @@ public class ReadQueryEndBuilder<T extends AbstractTypedReadQuery> {
         return readQueryMetadata;
     }
 
-    protected T getReadQuery() {
-        return readQuery;
-    }
-
     public T getQuery() {
         readQuery.setDomainTypeName(readQueryMetadata.getDomainTypeName());
         readQuery.setFields(readQueryMetadata.getFields());

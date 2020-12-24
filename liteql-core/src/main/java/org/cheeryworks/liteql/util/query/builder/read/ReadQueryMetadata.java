@@ -86,6 +86,7 @@ public class ReadQueryMetadata extends AbstractReadQueryMetadata {
 
         joinedReadQuery.setDomainTypeName(readQueryJoinMetadata.getDomainTypeName());
         joinedReadQuery.setFields(readQueryJoinMetadata.getFields());
+        joinedReadQuery.setJoinConditions(readQueryJoinMetadata.getJoinConditions());
         joinedReadQuery.setConditions(readQueryJoinMetadata.getConditions());
 
         if (ArrayUtils.isNotEmpty(readQueryJoinMetadata.getReadQueryJoinMetadataArray())) {

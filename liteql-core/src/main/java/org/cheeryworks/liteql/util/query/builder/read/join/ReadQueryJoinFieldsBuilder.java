@@ -11,13 +11,13 @@ public class ReadQueryJoinFieldsBuilder {
         this.readQueryJoinMetadata = readQueryJoinMetadata;
     }
 
-    public ReadQueryJoinConditionsBuilder fields(ReadQueryFieldMetadata... readQueryFieldMetadataArray) {
+    public ReadQueryJoinJoinConditionsBuilder fields(ReadQueryFieldMetadata... readQueryFieldMetadataArray) {
         for (ReadQueryFieldMetadata readQueryFieldMetadata : readQueryFieldMetadataArray) {
             this.readQueryJoinMetadata.getFields().add(
                     new FieldDefinition(readQueryFieldMetadata.getName(), readQueryFieldMetadata.getAlias()));
         }
 
-        return new ReadQueryJoinConditionsBuilder(this.readQueryJoinMetadata);
+        return new ReadQueryJoinJoinConditionsBuilder(this.readQueryJoinMetadata);
     }
 
 }

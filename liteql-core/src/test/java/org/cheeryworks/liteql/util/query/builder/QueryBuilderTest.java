@@ -22,7 +22,7 @@ import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.field;
 import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.reference;
 import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.references;
 import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.saveField;
-import static org.cheeryworks.liteql.util.query.builder.read.join.ReadQueryJoinMetadata.join;
+import static org.cheeryworks.liteql.util.query.builder.QueryBuilderUtil.join;
 
 public class QueryBuilderTest extends AbstractTest {
 
@@ -51,7 +51,7 @@ public class QueryBuilderTest extends AbstractTest {
                                 .fields(
                                         field("organizationId")
                                 )
-                                .conditions(
+                                .joinConditions(
                                         condition("userId", "id")
                                 )
                                 .build(),
@@ -60,7 +60,7 @@ public class QueryBuilderTest extends AbstractTest {
                                         field("code", "organizationCode"),
                                         field("name", "organizationName")
                                 )
-                                .conditions(
+                                .joinConditions(
                                         condition("id", "organizationId")
                                 )
                                 .build()
@@ -93,7 +93,7 @@ public class QueryBuilderTest extends AbstractTest {
                                                 .fields(
                                                         field("organizationId")
                                                 )
-                                                .conditions(
+                                                .joinConditions(
                                                         condition("userId", "id")
                                                 )
                                                 .build(),
@@ -102,7 +102,7 @@ public class QueryBuilderTest extends AbstractTest {
                                                         field("code", "organizationCode"),
                                                         field("name", "organizationName")
                                                 )
-                                                .conditions(
+                                                .joinConditions(
                                                         condition("id", "organizationId")
                                                 )
                                                 .build()

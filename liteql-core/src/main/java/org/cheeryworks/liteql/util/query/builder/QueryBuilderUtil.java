@@ -6,7 +6,12 @@ import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.enums.Direction;
 import org.cheeryworks.liteql.query.QueryCondition;
 import org.cheeryworks.liteql.query.read.sort.QuerySort;
+import org.cheeryworks.liteql.schema.TraitType;
+import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.query.builder.read.ReadQueryFieldMetadata;
+import org.cheeryworks.liteql.util.query.builder.read.join.ReadQueryJoinFieldsBuilder;
+import org.cheeryworks.liteql.util.query.builder.read.join.ReadQueryJoinMetadata;
 import org.cheeryworks.liteql.util.query.builder.save.SaveFieldMetadata;
 
 import java.util.Arrays;
@@ -52,4 +57,15 @@ public final class QueryBuilderUtil {
         return new QueryReference(source, destination);
     }
 
+    public static ReadQueryJoinFieldsBuilder join(Class<? extends TraitType> domainType) {
+        return join(LiteQL.SchemaUtils.getTypeName(domainType));
+    }
+
+    public static ReadQueryJoinFieldsBuilder join(TypeName domainTypeName) {
+        ReadQueryJoinMetadata readQueryJoinMetadata = new ReadQueryJoinMetadata();
+
+        readQueryJoinMetadata.setDomainTypeName(domainTypeName);
+
+        return new ReadQueryJoinFieldsBuilder(readQueryJoinMetadata);
+    }
 }
