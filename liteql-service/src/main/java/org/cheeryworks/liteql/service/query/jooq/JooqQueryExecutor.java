@@ -11,7 +11,6 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
-import org.jooq.ResultQuery;
 import org.jooq.Results;
 
 import java.util.ArrayList;
@@ -27,9 +26,7 @@ public class JooqQueryExecutor extends AbstractJooqExecutor implements SqlQueryE
 
     @Override
     public ReadResults read(SqlReadQuery sqlReadQuery) {
-        ResultQuery resultQuery = getDslContext().resultQuery(sqlReadQuery.getSql(), sqlReadQuery.getSqlParameters());
-
-        Results results = getDslContext().fetchMany(resultQuery);
+        Results results = getDslContext().fetchMany(sqlReadQuery.getSql(), sqlReadQuery.getSqlParameters());
 
         List<ReadResult> readResults = new ArrayList<>();
 
