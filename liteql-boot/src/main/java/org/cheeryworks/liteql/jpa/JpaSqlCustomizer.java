@@ -15,6 +15,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.lang.reflect.AccessibleObject;
@@ -41,7 +42,7 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
         ClassPathScanningCandidateComponentProvider jpaEntityScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
-        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
+        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 

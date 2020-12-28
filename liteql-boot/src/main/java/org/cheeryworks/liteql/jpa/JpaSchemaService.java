@@ -48,6 +48,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -183,7 +184,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         ClassPathScanningCandidateComponentProvider jpaEntityScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
-        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
+        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
 
         Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
 
