@@ -34,8 +34,8 @@ import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.enums.Direction;
 import org.cheeryworks.liteql.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.schema.DomainTypeDefinition;
-import org.cheeryworks.liteql.schema.field.AbstractNullableField;
 import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.schema.field.NullableField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
@@ -247,8 +247,8 @@ public class DefaultGraphQLService implements GraphQLService {
     private Type getGraphQLTypeFromField(Field field) {
         String typeName = getGraphQLTypeNameFromField(field);
 
-        if (field instanceof AbstractNullableField) {
-            AbstractNullableField nullableField = (AbstractNullableField) field;
+        if (field instanceof NullableField) {
+            NullableField nullableField = (NullableField) field;
 
             if (!nullableField.isNullable()) {
                 return new NonNullType(new TypeName(typeName));
@@ -277,8 +277,7 @@ public class DefaultGraphQLService implements GraphQLService {
             case Blob:
                 return graphql.Scalars.GraphQLByte.getName();
             case Reference:
-                ReferenceField referenceField
-                        = (ReferenceField) field;
+                ReferenceField referenceField = (ReferenceField) field;
 
                 org.cheeryworks.liteql.schema.TypeName traitImplement
                         = schemaService.getTraitImplement(referenceField.getDomainTypeName());

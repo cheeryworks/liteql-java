@@ -6,17 +6,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.cheeryworks.liteql.schema.enums.DataType;
-import org.cheeryworks.liteql.schema.field.BlobField;
-import org.cheeryworks.liteql.schema.field.BooleanField;
-import org.cheeryworks.liteql.schema.field.ClobField;
-import org.cheeryworks.liteql.schema.field.DecimalField;
-import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
-import org.cheeryworks.liteql.schema.field.IntegerField;
-import org.cheeryworks.liteql.schema.field.LongField;
-import org.cheeryworks.liteql.schema.field.ReferenceField;
-import org.cheeryworks.liteql.schema.field.StringField;
-import org.cheeryworks.liteql.schema.field.TimestampField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultBlobField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultBooleanField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultClobField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultDecimalField;
+import org.cheeryworks.liteql.schema.field.Field;
+import org.cheeryworks.liteql.schema.field.internal.DefaultIdField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultIntegerField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultLongField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultReferenceField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultStringField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultTimestampField;
 
 import java.io.IOException;
 
@@ -41,26 +42,26 @@ public class FieldDeserializer extends StdDeserializer<Field> {
                     case Id:
                     case String:
                         if (IdField.ID_FIELD_NAME.equalsIgnoreCase(node.get("name").asText())) {
-                            return jsonParser.getCodec().treeToValue(node, IdField.class);
+                            return jsonParser.getCodec().treeToValue(node, DefaultIdField.class);
                         } else {
-                            return jsonParser.getCodec().treeToValue(node, StringField.class);
+                            return jsonParser.getCodec().treeToValue(node, DefaultStringField.class);
                         }
                     case Long:
-                        return jsonParser.getCodec().treeToValue(node, LongField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultLongField.class);
                     case Integer:
-                        return jsonParser.getCodec().treeToValue(node, IntegerField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultIntegerField.class);
                     case Timestamp:
-                        return jsonParser.getCodec().treeToValue(node, TimestampField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultTimestampField.class);
                     case Boolean:
-                        return jsonParser.getCodec().treeToValue(node, BooleanField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultBooleanField.class);
                     case Decimal:
-                        return jsonParser.getCodec().treeToValue(node, DecimalField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultDecimalField.class);
                     case Clob:
-                        return jsonParser.getCodec().treeToValue(node, ClobField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultClobField.class);
                     case Blob:
-                        return jsonParser.getCodec().treeToValue(node, BlobField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultBlobField.class);
                     case Reference:
-                        return jsonParser.getCodec().treeToValue(node, ReferenceField.class);
+                        return jsonParser.getCodec().treeToValue(node, DefaultReferenceField.class);
                     default:
                         throw new IllegalArgumentException("Unsupported field type: " + dataTypeInString);
                 }

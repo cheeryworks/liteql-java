@@ -1,7 +1,8 @@
-package org.cheeryworks.liteql.schema.field;
+package org.cheeryworks.liteql.schema.field.internal;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import org.cheeryworks.liteql.schema.enums.DataType;
+import org.cheeryworks.liteql.schema.field.Field;
 
 public abstract class AbstractField implements Field {
 

@@ -19,17 +19,19 @@ import org.cheeryworks.liteql.schema.VoidTraitType;
 import org.cheeryworks.liteql.schema.annotation.LiteQLFieldPosition;
 import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
 import org.cheeryworks.liteql.schema.annotation.LiteQLTraitInstance;
-import org.cheeryworks.liteql.schema.field.AbstractField;
-import org.cheeryworks.liteql.schema.field.AbstractNullableField;
-import org.cheeryworks.liteql.schema.field.BlobField;
-import org.cheeryworks.liteql.schema.field.BooleanField;
-import org.cheeryworks.liteql.schema.field.ClobField;
-import org.cheeryworks.liteql.schema.field.DecimalField;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.IdField;
-import org.cheeryworks.liteql.schema.field.IntegerField;
-import org.cheeryworks.liteql.schema.field.StringField;
-import org.cheeryworks.liteql.schema.field.TimestampField;
+import org.cheeryworks.liteql.schema.field.internal.AbstractField;
+import org.cheeryworks.liteql.schema.field.internal.AbstractNullableField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultBlobField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultBooleanField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultClobField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultDecimalField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultIdField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultIntegerField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultReferenceField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultStringField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultTimestampField;
 import org.cheeryworks.liteql.schema.index.IndexDefinition;
 import org.cheeryworks.liteql.schema.index.UniqueDefinition;
 import org.cheeryworks.liteql.schema.migration.Migration;
@@ -76,8 +78,6 @@ import static org.cheeryworks.liteql.service.schema.SchemaMetadata.VERSION_CONCA
 public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
 
     private static final SimpleDateFormat MIGRATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS");
-
-    private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
     public JpaSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
@@ -258,8 +258,6 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         performFieldsOfDomainType(domainTypeDefinition, traitType);
 
-        performUniquesAndIndexesOfDomainType(domainTypeDefinition, traitType);
-
         performTraits(domainTypeDefinition, traitType);
 
         return domainTypeDefinition;
@@ -296,9 +294,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         Method[] referenceFieldMethods
                 = MethodUtils.getMethodsWithAnnotation(javaType, LiteQLReferenceField.class, true, true);
 
-        Map<String, String> fieldsOfType = new HashMap<>();
-
-        fieldNames.put(domainTypeDefinition.getTypeName(), fieldsOfType);
+        Map<String, String> columnNameFieldNameMapping = new HashMap<>();
 
         for (java.lang.reflect.Field javaField : javaFields) {
             if (Modifier.isFinal(javaField.getModifiers()) || Modifier.isStatic(javaField.getModifiers())) {
@@ -328,7 +324,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                     columnAnnotation, lobAnnotation, graphQLFieldAnnotation, liteQLReferenceFieldAnnotation);
 
             if (columnAnnotation != null && StringUtils.isNotBlank(columnAnnotation.name())) {
-                fieldsOfType.put(columnAnnotation.name(), field.getName());
+                columnNameFieldNameMapping.put(columnAnnotation.name(), field.getName());
             }
 
             fields.add(field);
@@ -338,6 +334,11 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             domainTypeDefinition.setFields(fields);
         } else {
             domainTypeDefinition.getFields().addAll(fields);
+        }
+
+        if (TraitType.class.isAssignableFrom(javaType)) {
+            performUniquesAndIndexesOfDomainType(
+                    domainTypeDefinition, (Class<? extends TraitType>) javaType, columnNameFieldNameMapping);
         }
     }
 
@@ -358,7 +359,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     }
 
     private void performUniquesAndIndexesOfDomainType(
-            DomainTypeDefinition domainTypeDefinition, Class<? extends TraitType> javaType) {
+            DomainTypeDefinition domainTypeDefinition, Class<? extends TraitType> javaType,
+            Map<String, String> columnNameFieldNameMapping) {
         Table table = javaType.getAnnotation(Table.class);
 
         Set<UniqueDefinition> uniqueDefinitions = new LinkedHashSet<>();
@@ -372,7 +374,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 Set<String> fieldNames = new LinkedHashSet<>();
 
                 for (String columnName : columnNames) {
-                    fieldNames.add(getFieldName(domainTypeDefinition.getTypeName(), columnName));
+                    fieldNames.add(getFieldName(columnName, columnNameFieldNameMapping));
                 }
 
                 if (jpaIndex.unique()) {
@@ -398,12 +400,8 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         }
     }
 
-    private String getFieldName(TypeName domainTypeName, String columnName) {
-        String fieldName = null;
-
-        if (fieldNames.get(domainTypeName) != null) {
-            fieldName = fieldNames.get(domainTypeName).get(columnName);
-        }
+    private String getFieldName(String columnName, Map<String, String> columnNameFieldNameMapping) {
+        String fieldName = columnNameFieldNameMapping.get(columnName);
 
         if (StringUtils.isBlank(fieldName)) {
             fieldName = columnName.toLowerCase();
@@ -505,48 +503,48 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         Boolean isGraphQLField = (graphQLFieldAnnotation != null && graphQLFieldAnnotation.ignore()) ? false : null;
 
         if (IdField.ID_FIELD_NAME.equalsIgnoreCase(name)) {
-            IdField idField = new IdField();
+            DefaultIdField idField = new DefaultIdField();
 
             field = idField;
         } else if (fieldType.equals(String.class) && lobAnnotation == null && liteQLReferenceFieldAnnotation == null) {
-            StringField stringField = new StringField(isGraphQLField);
+            DefaultStringField stringField = new DefaultStringField(isGraphQLField);
 
             stringField.setLength(length);
 
             field = stringField;
         } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
-            StringField stringField = new StringField(isGraphQLField);
+            DefaultStringField stringField = new DefaultStringField(isGraphQLField);
 
             stringField.setLength(length);
 
             field = stringField;
         } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
-            IntegerField integerField = new IntegerField(isGraphQLField);
+            DefaultIntegerField integerField = new DefaultIntegerField(isGraphQLField);
 
             field = integerField;
         } else if (Date.class.isAssignableFrom(fieldType)) {
-            TimestampField timestampField = new TimestampField(isGraphQLField);
+            DefaultTimestampField timestampField = new DefaultTimestampField(isGraphQLField);
 
             field = timestampField;
         } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
-            BooleanField booleanField = new BooleanField(isGraphQLField);
+            DefaultBooleanField booleanField = new DefaultBooleanField(isGraphQLField);
 
             field = booleanField;
         } else if (fieldType.equals(BigDecimal.class)) {
-            DecimalField decimalField = new DecimalField(isGraphQLField);
+            DefaultDecimalField decimalField = new DefaultDecimalField(isGraphQLField);
 
             field = decimalField;
         } else if (fieldType.equals(String.class) && lobAnnotation != null) {
-            ClobField clobField = new ClobField(isGraphQLField);
+            DefaultClobField clobField = new DefaultClobField(isGraphQLField);
 
             field = clobField;
         } else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
-            BlobField blobField = new BlobField(isGraphQLField);
+            DefaultBlobField blobField = new DefaultBlobField(isGraphQLField);
 
             field = blobField;
         } else if (liteQLReferenceFieldAnnotation != null) {
-            org.cheeryworks.liteql.schema.field.ReferenceField referenceField
-                    = new org.cheeryworks.liteql.schema.field.ReferenceField(isGraphQLField);
+            DefaultReferenceField referenceField
+                    = new DefaultReferenceField(isGraphQLField);
 
             if (StringUtils.isNotBlank(liteQLReferenceFieldAnnotation.name())) {
                 referenceField.setName(liteQLReferenceFieldAnnotation.name());
