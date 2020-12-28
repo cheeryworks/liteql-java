@@ -7,10 +7,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface LiteQLType {
-
-    boolean ignored() default false;
-
-    LiteQLTypeIndex[] indexes() default {};
+public @interface LiteQLTraitType {
 
 }

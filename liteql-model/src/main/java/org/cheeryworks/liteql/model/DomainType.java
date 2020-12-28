@@ -1,10 +1,9 @@
 package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.TraitType;
-import org.cheeryworks.liteql.schema.annotation.LiteQLType;
-import org.cheeryworks.liteql.util.LiteQL;
+import org.cheeryworks.liteql.schema.annotation.LiteQLTraitType;
 
-@LiteQLType(schema = LiteQL.Constants.SCHEMA, version = LiteQL.Constants.SPECIFICATION_VERSION)
+@LiteQLTraitType
 public interface DomainType extends TraitType {
 
     String getId();

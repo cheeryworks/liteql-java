@@ -2,12 +2,11 @@ package org.cheeryworks.liteql.model;
 
 import org.cheeryworks.liteql.schema.annotation.LiteQLFieldPosition;
 import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
-import org.cheeryworks.liteql.schema.annotation.LiteQLType;
-import org.cheeryworks.liteql.util.LiteQL;
+import org.cheeryworks.liteql.schema.annotation.LiteQLTraitType;
 
 import java.util.Date;
 
-@LiteQLType(schema = LiteQL.Constants.SCHEMA, version = LiteQL.Constants.SPECIFICATION_VERSION)
+@LiteQLTraitType
 public interface AuditType extends DomainType {
 
     String ENABLED_FIELD_NAME = "enabled";
