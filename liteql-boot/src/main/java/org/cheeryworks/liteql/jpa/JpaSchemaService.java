@@ -29,6 +29,7 @@ import org.cheeryworks.liteql.schema.field.internal.DefaultClobField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultDecimalField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultIdField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultIntegerField;
+import org.cheeryworks.liteql.schema.field.internal.DefaultLongField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultReferenceField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultStringField;
 import org.cheeryworks.liteql.schema.field.internal.DefaultTimestampField;
@@ -485,11 +486,9 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
             field = stringField;
         } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
-            DefaultStringField stringField = new DefaultStringField(isGraphQLField);
+            DefaultLongField longField = new DefaultLongField(isGraphQLField);
 
-            stringField.setLength(length);
-
-            field = stringField;
+            field = longField;
         } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
             DefaultIntegerField integerField = new DefaultIntegerField(isGraphQLField);
 
