@@ -3,12 +3,14 @@ package org.cheeryworks.liteql.service.schema;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.Schema;
 import org.cheeryworks.liteql.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.schema.annotation.LiteQLStaticType;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.index.AbstractIndexDefinition;
 import org.cheeryworks.liteql.schema.index.IndexDefinition;
@@ -24,6 +26,9 @@ import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperat
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQL;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,10 +61,36 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
     private Map<TypeName, TypeName> traitImplements = new HashMap<>();
 
+    private Map<TypeName, Class<?>> staticTypes = new HashMap<>();
+
     private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
 
     public AbstractSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties);
+
+        processStaticTypes();
+    }
+
+    private void processStaticTypes() {
+        ClassPathScanningCandidateComponentProvider jpaEntityScanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(LiteQLStaticType.class));
+
+        Set<BeanDefinition> staticTypeBeans = new HashSet<>();
+
+        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
+            staticTypeBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
+        }
+
+        for (BeanDefinition japEntityBean : staticTypeBeans) {
+            Class<?> staticType
+                    = LiteQL.ClassUtils.getClass(japEntityBean.getBeanClassName());
+
+            LiteQLStaticType liteQLStaticType = staticType.getAnnotation(LiteQLStaticType.class);
+
+            staticTypes.put(LiteQL.SchemaUtils.getTypeName(liteQLStaticType.value()), staticType);
+        }
     }
 
     protected void processSchemaMetadata(SchemaMetadata schemaMetadata) {
@@ -128,14 +159,34 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         if (typeDefinition instanceof DomainTypeDefinition) {
-            schema.getDomainTypeDefinitions().add((DomainTypeDefinition) typeDefinition);
+            DomainTypeDefinition domainTypeDefinition = (DomainTypeDefinition) typeDefinition;
+
+            schema.getDomainTypeDefinitions().add(domainTypeDefinition);
+
+            if (domainTypeDefinition.getImplementTrait() != null) {
+                this.traitImplements.put(domainTypeDefinition.getImplementTrait(), domainTypeDefinition.getTypeName());
+            }
         } else if (typeDefinition instanceof TraitTypeDefinition) {
             schema.getTraitTypeDefinitions().add((TraitTypeDefinition) typeDefinition);
         }
+
+        processStaticType(typeDefinition);
     }
 
-    protected void addTraitImplement(TypeName traitTypeName, TypeName domainTypeName) {
-        this.traitImplements.put(traitTypeName, domainTypeName);
+    private void processStaticType(TypeDefinition typeDefinition) {
+        Class<?> staticType = staticTypes.get(typeDefinition.getTypeName());
+
+        if (staticType != null && typeDefinition instanceof TraitTypeDefinition) {
+            ((TraitTypeDefinition) typeDefinition).getFields().stream().forEach(field -> {
+                try {
+                    if (FieldUtils.getField(staticType, field.getName()) != null) {
+                        FieldUtils.writeStaticField(staticType, field.getName(), field, true);
+                    }
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException(ex.getMessage(), ex);
+                }
+            });
+        }
     }
 
     private void addMigration(Migration migration) {

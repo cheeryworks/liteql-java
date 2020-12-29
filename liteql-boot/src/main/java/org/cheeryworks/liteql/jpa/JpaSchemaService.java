@@ -100,41 +100,6 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 addType(typeDefinition);
             }
         }
-
-        initTraitImplements();
-    }
-
-    private void initTraitImplements() {
-        ClassPathScanningCandidateComponentProvider traitInstanceScanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-
-        traitInstanceScanner.addIncludeFilter(new AnnotationTypeFilter(LiteQLTraitInstance.class));
-
-        Set<BeanDefinition> traitInstanceDefinitions = new HashSet<>();
-
-        for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
-            traitInstanceDefinitions.addAll(traitInstanceScanner.findCandidateComponents(packageToScan));
-        }
-
-        for (BeanDefinition traitInstanceDefinition : traitInstanceDefinitions) {
-            Class<? extends TraitType> domainJavaType
-                    = LiteQL.SchemaUtils.getTraitJavaType(traitInstanceDefinition.getBeanClassName());
-
-            LiteQLTraitInstance liteQLTraitInstance = domainJavaType.getAnnotation(LiteQLTraitInstance.class);
-
-            if (!liteQLTraitInstance.implement().equals(Void.class)) {
-                if (getTraitImplement(LiteQL.SchemaUtils.getTypeName(liteQLTraitInstance.implement())) != null) {
-                    throw new IllegalStateException(
-                            "Duplicated implements of"
-                                    + " [" + liteQLTraitInstance.implement().getName() + "]"
-                                    + " in different package");
-                } else {
-                    addTraitImplement(
-                            LiteQL.SchemaUtils.getTypeName(liteQLTraitInstance.implement()),
-                            LiteQL.SchemaUtils.getTypeName(domainJavaType));
-                }
-            }
-        }
     }
 
     private Map<String, Set<TypeDefinition>> getTypeDefinitionWithinSchemas() {
@@ -253,6 +218,12 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
         if (graphQLType != null && graphQLType.ignored()) {
             domainTypeDefinition.setGraphQLType(false);
+        }
+
+        LiteQLTraitInstance traitInstance = traitType.getAnnotation(LiteQLTraitInstance.class);
+
+        if (traitInstance != null) {
+            domainTypeDefinition.setImplementTrait(LiteQL.SchemaUtils.getTypeName(traitInstance.implement()));
         }
 
         domainTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(traitType));

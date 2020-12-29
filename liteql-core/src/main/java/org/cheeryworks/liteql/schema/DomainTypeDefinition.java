@@ -28,6 +28,8 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
 
     private Boolean dropped;
 
+    private TypeName implementTrait;
+
     public Set<UniqueDefinition> getUniques() {
         return this.uniques;
     }
@@ -49,11 +51,6 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
         return graphQLType;
     }
 
-    @JsonGetter
-    private Boolean dropped() {
-        return dropped;
-    }
-
     public boolean isGraphQLType() {
         if (graphQLType == null) {
             return true;
@@ -66,6 +63,11 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
         this.graphQLType = graphQLType;
     }
 
+    @JsonGetter
+    private Boolean dropped() {
+        return dropped;
+    }
+
     public boolean isDropped() {
         if (dropped == null) {
             return false;
@@ -76,6 +78,14 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
 
     public void setDropped(Boolean dropped) {
         this.dropped = dropped;
+    }
+
+    public TypeName getImplementTrait() {
+        return implementTrait;
+    }
+
+    public void setImplementTrait(TypeName implementTrait) {
+        this.implementTrait = implementTrait;
     }
 
     public DomainTypeDefinition() {
