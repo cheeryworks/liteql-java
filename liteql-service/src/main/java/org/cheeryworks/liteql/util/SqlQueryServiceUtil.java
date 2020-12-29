@@ -84,6 +84,11 @@ public abstract class SqlQueryServiceUtil {
                     continue;
                 }
 
+                //MariaDB select tinyint(1) column return Byte, convert to Boolean
+                if (fieldValue instanceof Byte) {
+                    fieldValue = Boolean.getBoolean(fieldValue.toString());
+                }
+
                 FieldUtils.writeField(typedResult, fieldName, fieldValue, true);
             }
 
