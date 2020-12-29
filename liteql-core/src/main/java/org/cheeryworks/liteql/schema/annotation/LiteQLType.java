@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LiteQLType {
 
-    boolean ignored() default false;
-
     LiteQLTypeIndex[] indexes() default {};
 
 }
