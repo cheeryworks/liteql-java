@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.util;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.cheeryworks.liteql.query.enums.QueryType;
@@ -86,7 +87,12 @@ public abstract class SqlQueryServiceUtil {
 
                 //MariaDB select tinyint(1) column return Byte, convert to Boolean
                 if (fieldValue instanceof Byte) {
-                    fieldValue = Boolean.getBoolean(fieldValue.toString());
+                    java.lang.reflect.Field field = FieldUtils.getField(type, fieldName, true);
+
+                    if (boolean.class.isAssignableFrom(field.getType())
+                            || Boolean.class.isAssignableFrom(field.getType())) {
+                        fieldValue = BooleanUtils.toBoolean(((Byte) fieldValue).intValue());
+                    }
                 }
 
                 FieldUtils.writeField(typedResult, fieldName, fieldValue, true);
