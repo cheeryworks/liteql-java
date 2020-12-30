@@ -15,7 +15,7 @@ import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
-import org.cheeryworks.liteql.service.query.json.QueryServiceController;
+import org.cheeryworks.liteql.service.query.json.LiteQLServiceController;
 import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
@@ -55,7 +55,7 @@ import org.springframework.context.annotation.Import;
         LiteQLSecurityAutoConfiguration.class
 })
 @Import({
-        QueryServiceController.class,
+        LiteQLServiceController.class,
         GraphQLServiceController.class
 })
 public class LiteQLAutoConfiguration {

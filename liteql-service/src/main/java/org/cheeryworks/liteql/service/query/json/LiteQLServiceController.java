@@ -38,7 +38,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @RestController
-public class QueryServiceController extends AbstractServiceController {
+public class LiteQLServiceController extends AbstractServiceController {
 
     private JsonSchemaGenerator schemaGen;
 
@@ -47,7 +47,7 @@ public class QueryServiceController extends AbstractServiceController {
     private QueryService queryService;
 
     @Autowired
-    public QueryServiceController(SchemaService schemaService, QueryService queryService) {
+    public LiteQLServiceController(SchemaService schemaService, QueryService queryService) {
         this.schemaGen = new JsonSchemaGenerator(LiteQL.JacksonJsonUtils.OBJECT_MAPPER);
         this.schemaService = schemaService;
         this.queryService = queryService;
