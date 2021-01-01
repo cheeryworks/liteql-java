@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.cheeryworks.liteql.util.LiteQL.Constants.DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
-import static org.cheeryworks.liteql.util.LiteQL.Constants.LITEQL_PROFILE_KEY;
+import static org.cheeryworks.liteql.util.LiteQL.Constants.LITE_QL_PROFILE_KEY;
 
 public abstract class AbstractApplication extends SpringBootServletInitializer {
 
@@ -53,7 +53,7 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
     protected static void run(Class<?> primarySource, String[] args) {
         String customizedConfigurationPath = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH;
 
-        String profile = System.getProperty(LITEQL_PROFILE_KEY);
+        String profile = System.getProperty(LITE_QL_PROFILE_KEY);
 
         if (StringUtils.isNotBlank(profile)) {
             if (new File(DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + profile).exists()) {

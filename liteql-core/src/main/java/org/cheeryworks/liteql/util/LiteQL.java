@@ -75,10 +75,7 @@ public final class LiteQL {
         public static final String DEFAULT_CUSTOMIZED_CONFIGURATION_PATH
                 = System.getProperty("user.home") + File.separator + ".liteql" + File.separator + SPECIFICATION_VERSION;
 
-        public static final String PLATFORM_VERSION_SPECIFIED_CUSTOMIZED_CONFIGURATION_PATH
-                = DEFAULT_CUSTOMIZED_CONFIGURATION_PATH + File.separator + SPECIFICATION_VERSION;
-
-        public static final String LITEQL_PROFILE_KEY = "liteql.profile";
+        public static final String LITE_QL_PROFILE_KEY = "liteql.profile";
 
         private Constants() {
 
