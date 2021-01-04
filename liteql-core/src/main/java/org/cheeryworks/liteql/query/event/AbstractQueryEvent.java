@@ -31,10 +31,4 @@ public abstract class AbstractQueryEvent<T> implements Serializable {
         return source;
     }
 
-    @Override
-    public String toString() {
-//        return LiteQLUtil.toJson(this);
-        return null;
-    }
-
 }
