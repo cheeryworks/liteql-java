@@ -5,12 +5,16 @@ import org.cheeryworks.liteql.boot.configuration.jackson.LiteQLJacksonAutoConfig
 import org.cheeryworks.liteql.boot.configuration.jooq.LiteQLJooqAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.jpa.LiteQLJpaAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.spring.security.web.LiteQLSecurityAutoConfiguration;
+import org.cheeryworks.liteql.query.PublicQuery;
+import org.cheeryworks.liteql.query.event.QueryEvent;
 import org.cheeryworks.liteql.service.graphql.DefaultGraphQLService;
 import org.cheeryworks.liteql.service.graphql.GraphQLService;
 import org.cheeryworks.liteql.service.graphql.json.GraphQLServiceController;
 import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
+import org.cheeryworks.liteql.service.query.QueryEventPublisher;
+import org.cheeryworks.liteql.service.query.QueryPublisher;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
@@ -19,12 +23,14 @@ import org.cheeryworks.liteql.service.query.json.LiteQLServiceController;
 import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
+import org.cheeryworks.liteql.service.schema.migration.MigrationEventPublisher;
 import org.cheeryworks.liteql.service.schema.migration.MigrationService;
 import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.spring.context.SpringMigrationEventPublisher;
 import org.cheeryworks.liteql.spring.context.SpringQueryEventPublisher;
+import org.cheeryworks.liteql.spring.context.SpringQueryPublisher;
 import org.cheeryworks.liteql.util.LiteQL;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -39,6 +45,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(LiteQLSpringProperties.class)
@@ -61,6 +72,60 @@ import org.springframework.context.annotation.Import;
 public class LiteQLAutoConfiguration {
 
     private static Logger logger = LoggerFactory.getLogger(LiteQLAutoConfiguration.class);
+
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    private Sinks.Many<PublicQuery> querySinksMany;
+
+    private Sinks.Many<QueryEvent> queryEventSinksMany;
+
+    public LiteQLAutoConfiguration(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.querySinksMany = Sinks.many().unicast().onBackpressureBuffer();
+        this.queryEventSinksMany = Sinks.many().unicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public SpringQueryPublisher springQueryPublisher(
+            LiteQLProperties liteQLProperties, ApplicationEventPublisher applicationEventPublisher) {
+        return new SpringQueryPublisher(liteQLProperties, applicationEventPublisher, querySinksMany);
+    }
+
+    @Bean
+    public Supplier<Flux<PublicQuery>> querySupplier() {
+        return () -> this.querySinksMany.asFlux();
+    }
+
+    @Bean
+    public SpringQueryEventPublisher springQueryEventPublisher(
+            LiteQLProperties liteQLProperties, ApplicationEventPublisher applicationEventPublisher) {
+        return new SpringQueryEventPublisher(liteQLProperties, applicationEventPublisher, queryEventSinksMany);
+    }
+
+    @Bean
+    public Supplier<Flux<QueryEvent>> queryEventSupplier() {
+        return () -> this.queryEventSinksMany.asFlux();
+    }
+
+    @Bean
+    public SpringMigrationEventPublisher springMigrationEventPublisher(
+            ApplicationEventPublisher applicationEventPublisher) {
+        return new SpringMigrationEventPublisher(applicationEventPublisher);
+    }
+
+    @Bean
+    public Consumer<PublicQuery> queryConsumer() {
+        return publicQuery -> {
+            this.applicationEventPublisher.publishEvent(publicQuery);
+        };
+    }
+
+    @Bean
+    public Consumer<QueryEvent> queryEventConsumer() {
+        return queryEvent -> {
+            this.applicationEventPublisher.publishEvent(queryEvent);
+        };
+    }
 
     @Bean
     @ConditionalOnMissingBean(SchemaService.class)
@@ -104,10 +169,9 @@ public class LiteQLAutoConfiguration {
     @Bean
     public MigrationService migrationService(
             LiteQLProperties liteQLProperties, JooqQueryParser jooqQueryParser,
-            ApplicationEventPublisher applicationEventPublisher) {
+            MigrationEventPublisher migrationEventPublisher) {
         MigrationService migrationService = new JooqMigrationService(
-                liteQLProperties, jooqQueryParser,
-                new SpringMigrationEventPublisher(applicationEventPublisher));
+                liteQLProperties, jooqQueryParser, migrationEventPublisher);
 
         logger.info("MigrationService is ready.");
 
@@ -125,12 +189,12 @@ public class LiteQLAutoConfiguration {
             LiteQLProperties liteQLProperties,
             JooqQueryParser jooqQueryParser, JooqQueryExecutor jooqQueryExecutor,
             QueryAuditingService queryAuditingService, QueryAccessDecisionService queryAccessDecisionService,
-            ApplicationEventPublisher applicationEventPublisher) {
+            QueryPublisher queryPublisher, QueryEventPublisher queryEventPublisher) {
         QueryService queryService = new JooqQueryService(
                 liteQLProperties,
                 jooqQueryParser, jooqQueryExecutor,
                 queryAuditingService, queryAccessDecisionService,
-                new SpringQueryEventPublisher(applicationEventPublisher));
+                queryPublisher, queryEventPublisher);
 
         logger.info("QueryService is ready.");
 
