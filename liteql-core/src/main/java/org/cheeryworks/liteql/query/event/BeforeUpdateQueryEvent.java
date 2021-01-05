@@ -1,5 +1,8 @@
 package org.cheeryworks.liteql.query.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cheeryworks.liteql.query.enums.QueryPhase;
 import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.schema.TypeName;
 
@@ -8,8 +11,12 @@ import java.util.Map;
 
 public class BeforeUpdateQueryEvent extends AbstractWritableQueryEvent {
 
-    public BeforeUpdateQueryEvent(List<Map<String, Object>> source, TypeName typeName, QueryType queryType) {
-        super(source, typeName, queryType);
+    @JsonCreator
+    public BeforeUpdateQueryEvent(
+            @JsonProperty("source") List<Map<String, Object>> source,
+            @JsonProperty("typeName") TypeName typeName,
+            @JsonProperty("queryType") QueryType queryType) {
+        super(source, typeName, queryType, QueryPhase.Before);
     }
 
 }

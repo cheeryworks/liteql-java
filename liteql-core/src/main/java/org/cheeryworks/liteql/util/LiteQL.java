@@ -11,7 +11,9 @@ import org.cheeryworks.liteql.query.QueryConditions;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionOperator;
 import org.cheeryworks.liteql.query.enums.ConditionType;
+import org.cheeryworks.liteql.query.enums.QueryPhase;
 import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.event.QueryEvent;
 import org.cheeryworks.liteql.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.query.save.SaveQueryAssociations;
 import org.cheeryworks.liteql.schema.SchemaDefinitionProvider;
@@ -34,6 +36,8 @@ import org.cheeryworks.liteql.util.jackson.deserializer.MigrationOperationDeseri
 import org.cheeryworks.liteql.util.jackson.deserializer.MigrationOperationTypeDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.PublicQueryDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryConditionsDeserializer;
+import org.cheeryworks.liteql.util.jackson.deserializer.QueryEventDeserializer;
+import org.cheeryworks.liteql.util.jackson.deserializer.QueryPhaseDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.QueryTypeDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.SaveQueryAssociationsDeserializer;
 import org.cheeryworks.liteql.util.jackson.deserializer.TypeDefinitionDeserializer;
@@ -43,6 +47,7 @@ import org.cheeryworks.liteql.util.jackson.serializer.ConditionOperatorSerialize
 import org.cheeryworks.liteql.util.jackson.serializer.ConditionTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.DataTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.MigrationOperationTypeSerializer;
+import org.cheeryworks.liteql.util.jackson.serializer.QueryPhaseSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.QueryTypeSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeDefinitionSerializer;
 import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
@@ -313,6 +318,7 @@ public final class LiteQL {
             module.addDeserializer(MigrationOperation.class, new MigrationOperationDeserializer());
             module.addDeserializer(MigrationOperationType.class, new MigrationOperationTypeDeserializer());
             module.addDeserializer(QueryType.class, new QueryTypeDeserializer());
+            module.addDeserializer(QueryPhase.class, new QueryPhaseDeserializer());
             module.addDeserializer(DataType.class, new DataTypeDeserializer());
             module.addDeserializer(FieldDefinitions.class, new FieldDefinitionsDeserializer());
             module.addDeserializer(QueryConditions.class, new QueryConditionsDeserializer());
@@ -321,11 +327,13 @@ public final class LiteQL {
             module.addDeserializer(ConditionType.class, new ConditionTypeDeserializer());
             module.addDeserializer(SaveQueryAssociations.class, new SaveQueryAssociationsDeserializer());
             module.addDeserializer(PublicQuery.class, new PublicQueryDeserializer());
+            module.addDeserializer(QueryEvent.class, new QueryEventDeserializer());
 
             module.addSerializer(TypeName.class, new TypeNameSerializer());
             module.addSerializer(TypeDefinition.class, new TypeDefinitionSerializer());
             module.addSerializer(MigrationOperationType.class, new MigrationOperationTypeSerializer());
             module.addSerializer(QueryType.class, new QueryTypeSerializer());
+            module.addSerializer(QueryPhase.class, new QueryPhaseSerializer());
             module.addSerializer(DataType.class, new DataTypeSerializer());
             module.addSerializer(ConditionClause.class, new ConditionClauseSerializer());
             module.addSerializer(ConditionOperator.class, new ConditionOperatorSerializer());

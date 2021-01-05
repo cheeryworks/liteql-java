@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.Queries;
 import org.cheeryworks.liteql.query.TypedQuery;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
+import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.read.PageReadQuery;
 import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
@@ -117,7 +117,7 @@ public class PublicQueryDeserializer extends StdDeserializer<PublicQuery> {
             return saveQueries;
         }
 
-        throw new UnsupportedOperationException(query.toString());
+        throw new IllegalArgumentException(query.toString());
     }
 
 }
