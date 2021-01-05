@@ -13,6 +13,7 @@ import org.cheeryworks.liteql.query.diagnostic.SaveQueryDiagnostic;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
 import org.cheeryworks.liteql.query.enums.ConditionType;
 import org.cheeryworks.liteql.query.enums.QueryType;
+import org.cheeryworks.liteql.query.event.AbstractListMapQueryEvent;
 import org.cheeryworks.liteql.query.event.AfterCreateQueryEvent;
 import org.cheeryworks.liteql.query.event.AfterDeleteQueryEvent;
 import org.cheeryworks.liteql.query.event.AfterReadQueryEvent;
@@ -42,6 +43,7 @@ import org.cheeryworks.liteql.schema.field.IdField;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryEventPublisher;
+import org.cheeryworks.liteql.service.query.QueryPublisher;
 import org.cheeryworks.liteql.service.sql.AbstractSqlService;
 import org.cheeryworks.liteql.sql.SqlDeleteQuery;
 import org.cheeryworks.liteql.sql.SqlReadQuery;
@@ -76,6 +78,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     private QueryAccessDecisionService queryAccessDecisionService = new DefaultQueryAccessDecisionService();
 
+    private QueryPublisher queryPublisher;
+
     private QueryEventPublisher queryEventPublisher;
 
     public AbstractSqlQueryService(
@@ -84,6 +88,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             SqlQueryExecutor sqlQueryExecutor,
             QueryAuditingService queryAuditingService,
             QueryAccessDecisionService queryAccessDecisionService,
+            QueryPublisher queryPublisher,
             QueryEventPublisher queryEventPublisher) {
         super(liteQLProperties);
         this.sqlQueryParser = sqlQueryParser;
@@ -94,6 +99,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             this.queryAccessDecisionService = queryAccessDecisionService;
         }
 
+        this.queryPublisher = queryPublisher;
         this.queryEventPublisher = queryEventPublisher;
     }
 
@@ -144,7 +150,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     @Override
     public <T extends DomainType> Page<T> read(
             QueryContext queryContext, PageReadQuery pageReadQuery, Class<T> domainType) {
-        PageReadResults pageReadResults = read(pageReadQuery);
+        PageReadResults pageReadResults = read(queryContext, pageReadQuery);
 
         List<T> results = new ArrayList<>();
 
@@ -206,11 +212,15 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     }
 
     private ReadResults internalRead(AbstractTypedReadQuery readQuery) {
+        if (readQuery instanceof PublicQuery) {
+            publishQuery((PublicQuery) readQuery);
+        }
+
         SqlReadQuery sqlReadQuery = sqlQueryParser.getSqlReadQuery(readQuery);
 
         ReadResults results = getResults(sqlReadQuery);
 
-        queryEventPublisher.publish(
+        publishQueryEvent(
                 new AfterReadQueryEvent(
                         results.getData().stream().collect(Collectors.toList()),
                         readQuery.getDomainTypeName(), readQuery.getQueryType()));
@@ -503,11 +513,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (Map.Entry<TypeName, List<Map<String, Object>>> dataSetEntry : persistDataSet.entrySet()) {
                 if (before) {
-                    queryEventPublisher.publish(
+                    publishQueryEvent(
                             new BeforeCreateQueryEvent(
                                     dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
                 } else {
-                    queryEventPublisher.publish(
+                    publishQueryEvent(
                             new AfterCreateQueryEvent(
                                     dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Create));
                 }
@@ -515,11 +525,11 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (Map.Entry<TypeName, List<Map<String, Object>>> dataSetEntry : updateDataSet.entrySet()) {
                 if (before) {
-                    queryEventPublisher.publish(
+                    publishQueryEvent(
                             new BeforeUpdateQueryEvent(
                                     dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
                 } else {
-                    queryEventPublisher.publish(
+                    publishQueryEvent(
                             new AfterUpdateQueryEvent(
                                     dataSetEntry.getValue(), dataSetEntry.getKey(), QueryType.Update));
                 }
@@ -573,6 +583,10 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             List<Object[]> parametersList = new ArrayList<>();
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
+                if (saveQuery instanceof  PublicQuery) {
+                    publishQuery((PublicQuery) saveQuery);
+                }
+
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
                         saveQuery,
                         this.sqlQueryParser.getSchemaService().getDomainTypeDefinition(
@@ -672,6 +686,8 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
     public int delete(QueryContext queryContext, DeleteQuery deleteQuery) {
         getQueryAccessDecisionService().decide(queryContext.getUser(), deleteQuery);
 
+        publishQuery(deleteQuery);
+
         ReadResults results = null;
 
         if (!deleteQuery.isTruncated()) {
@@ -700,7 +716,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
             }
 
             if (CollectionUtils.isNotEmpty(results)) {
-                queryEventPublisher.publish(
+                publishQueryEvent(
                         new BeforeDeleteQueryEvent(
                                 results.getData().stream().collect(Collectors.toList()),
                                 deleteQuery.getDomainTypeName(), QueryType.Delete));
@@ -714,7 +730,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
         if (!deleteQuery.isTruncated()) {
             if (CollectionUtils.isNotEmpty(results)) {
-                queryEventPublisher.publish(
+                publishQueryEvent(
                         new AfterDeleteQueryEvent(
                                 results.getData().stream().collect(Collectors.toList()),
                                 deleteQuery.getDomainTypeName(), QueryType.Delete));
@@ -766,6 +782,18 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
         }
 
         throw new UnsupportedQueryException(query);
+    }
+
+    private void publishQuery(PublicQuery publicQuery) {
+        if (this.queryPublisher != null) {
+            this.queryPublisher.publish(publicQuery);
+        }
+    }
+
+    private void publishQueryEvent(AbstractListMapQueryEvent abstractListMapQueryEvent) {
+        if (this.queryEventPublisher != null) {
+            this.queryEventPublisher.publish(abstractListMapQueryEvent);
+        }
     }
 
 }

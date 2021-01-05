@@ -5,6 +5,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.LoggingQueryEventPublisher;
+import org.cheeryworks.liteql.service.query.LoggingQueryPublisher;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
@@ -27,6 +28,7 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
                 getLiteQLProperties(),
                 getJooqQueryParser(), new JooqQueryExecutor(getLiteQLProperties(), getDslContext()),
                 new DefaultQueryAuditingService(), new DefaultQueryAccessDecisionService(),
+                new LoggingQueryPublisher(),
                 new LoggingQueryEventPublisher());
     }
 

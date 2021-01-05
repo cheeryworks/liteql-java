@@ -12,6 +12,8 @@ public class LiteQLProperties {
 
     private String dataPath = "/tmp/liteql";
 
+    private boolean messagingEnabled = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -50,6 +52,14 @@ public class LiteQLProperties {
 
     public void setDataPath(String dataPath) {
         this.dataPath = dataPath;
+    }
+
+    public boolean isMessagingEnabled() {
+        return messagingEnabled;
+    }
+
+    public void setMessagingEnabled(boolean messagingEnabled) {
+        this.messagingEnabled = messagingEnabled;
     }
 
 }
