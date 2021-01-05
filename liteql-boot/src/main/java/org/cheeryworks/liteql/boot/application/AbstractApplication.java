@@ -2,7 +2,6 @@ package org.cheeryworks.liteql.boot.application;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
@@ -114,7 +113,7 @@ public abstract class AbstractApplication extends SpringBootServletInitializer {
                     "--" + IMPORT_PROPERTY + "=" + optionalConfigurationFilePatternsInString);
         }
 
-        SpringApplication.run(primarySource, customizedArgs);
+        new LiteQLSpringApplication(primarySource).run(customizedArgs);
     }
 
 }
