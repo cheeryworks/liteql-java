@@ -14,8 +14,6 @@ public class SpringQueryPublisher implements QueryPublisher {
 
     private Sinks.Many<PublicQuery> querySinksMany;
 
-    private boolean initialized = false;
-
     public SpringQueryPublisher(
             LiteQLProperties liteQLProperties, ApplicationEventPublisher applicationEventPublisher,
             Sinks.Many<PublicQuery> querySinksMany) {
@@ -26,10 +24,10 @@ public class SpringQueryPublisher implements QueryPublisher {
 
     @Override
     public void publish(PublicQuery publicQuery) {
-        this.applicationEventPublisher.publishEvent(publicQuery);
-
         if (this.liteQLProperties.isMessagingEnabled() && this.querySinksMany != null) {
             this.querySinksMany.emitNext(publicQuery, (signalType, emitResult) -> false);
+        } else {
+            this.applicationEventPublisher.publishEvent(publicQuery);
         }
     }
 
