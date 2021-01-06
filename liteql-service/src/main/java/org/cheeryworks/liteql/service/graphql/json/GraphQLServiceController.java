@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.graphql.json;
 
 import graphql.ExecutionResult;
-import org.cheeryworks.liteql.query.QueryContext;
+import org.cheeryworks.liteql.query.AuditQueryContext;
 import org.cheeryworks.liteql.service.graphql.GraphQLService;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +105,7 @@ public class GraphQLServiceController extends AbstractServiceController {
     private GraphQLService graphQLService;
 
     @PostMapping(value = "/graphql")
-    public Object graphQL(@RequestBody Map<String, Object> body, QueryContext queryContext) {
+    public Object graphQL(@RequestBody Map<String, Object> body, AuditQueryContext auditQueryContext) {
         String query = (String) body.get("query");
         if (query == null) {
             query = "";
@@ -116,7 +116,7 @@ public class GraphQLServiceController extends AbstractServiceController {
             variables = new LinkedHashMap<>();
         }
 
-        ExecutionResult executionResult = graphQLService.graphQL(queryContext, query, operationName, variables);
+        ExecutionResult executionResult = graphQLService.graphQL(auditQueryContext, query, operationName, variables);
 
         Map<String, Object> results = executionResult.toSpecification();
 
@@ -128,8 +128,8 @@ public class GraphQLServiceController extends AbstractServiceController {
     }
 
     @GetMapping(value = "/graphql/schema")
-    public Object graphQLSchema(QueryContext queryContext) {
-        return this.graphQLService.graphQL(queryContext, INTROSPECTION_QUERY).toSpecification();
+    public Object graphQLSchema(AuditQueryContext auditQueryContext) {
+        return this.graphQLService.graphQL(auditQueryContext, INTROSPECTION_QUERY).toSpecification();
     }
 
 }

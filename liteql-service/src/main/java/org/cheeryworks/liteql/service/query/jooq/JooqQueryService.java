@@ -1,7 +1,6 @@
 package org.cheeryworks.liteql.service.query.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
-import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryEventPublisher;
 import org.cheeryworks.liteql.service.query.QueryPublisher;
@@ -14,7 +13,6 @@ public class JooqQueryService extends AbstractSqlQueryService {
             JooqQueryParser jooqQueryParser,
             JooqQueryExecutor jooqQueryExecutor,
             QueryAuditingService queryAuditingService,
-            QueryAccessDecisionService queryAccessDecisionService,
             QueryPublisher queryPublisher,
             QueryEventPublisher queryEventPublisher) {
         super(
@@ -22,7 +20,6 @@ public class JooqQueryService extends AbstractSqlQueryService {
                 jooqQueryParser,
                 jooqQueryExecutor,
                 queryAuditingService,
-                queryAccessDecisionService,
                 queryPublisher,
                 queryEventPublisher);
     }

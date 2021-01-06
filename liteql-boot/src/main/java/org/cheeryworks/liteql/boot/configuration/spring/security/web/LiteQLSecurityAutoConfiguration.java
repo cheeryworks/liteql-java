@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.boot.configuration.spring.security.web;
 
 
-import org.cheeryworks.liteql.spring.security.web.QueryContextHandlerMethodArgumentResolver;
+import org.cheeryworks.liteql.spring.security.web.AuditQueryContextHandlerMethodArgumentResolver;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -41,7 +41,7 @@ public class LiteQLSecurityAutoConfiguration {
     class QueryContextHandlerMethodArgumentResolverConfigurer implements WebMvcConfigurer {
 
         public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-            resolvers.add(new QueryContextHandlerMethodArgumentResolver());
+            resolvers.add(new AuditQueryContextHandlerMethodArgumentResolver());
         }
 
     }

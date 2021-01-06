@@ -188,12 +188,12 @@ public class LiteQLAutoConfiguration {
     public QueryService queryService(
             LiteQLProperties liteQLProperties,
             JooqQueryParser jooqQueryParser, JooqQueryExecutor jooqQueryExecutor,
-            QueryAuditingService queryAuditingService, QueryAccessDecisionService queryAccessDecisionService,
+            QueryAuditingService queryAuditingService,
             QueryPublisher queryPublisher, QueryEventPublisher queryEventPublisher) {
         QueryService queryService = new JooqQueryService(
                 liteQLProperties,
                 jooqQueryParser, jooqQueryExecutor,
-                queryAuditingService, queryAccessDecisionService,
+                queryAuditingService,
                 queryPublisher, queryEventPublisher);
 
         logger.info("QueryService is ready.");

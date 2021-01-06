@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.query;
 
 import org.cheeryworks.liteql.model.UserType;
 
-public interface QueryContext {
+public interface AuditQueryContext extends QueryContext {
 
     UserType getUser();
 

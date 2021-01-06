@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.spring.security.web;
 
-import org.cheeryworks.liteql.query.DefaultQueryContext;
-import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.model.UserType;
+import org.cheeryworks.liteql.query.AuditQueryContext;
+import org.cheeryworks.liteql.query.DefaultAuditQueryContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,10 +12,10 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-public class QueryContextHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class AuditQueryContextHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        if (QueryContext.class.equals(parameter.getParameterType())) {
+        if (AuditQueryContext.class.equals(parameter.getParameterType())) {
             return true;
         }
 
@@ -38,7 +38,7 @@ public class QueryContextHandlerMethodArgumentResolver implements HandlerMethodA
             }
         }
 
-        return new DefaultQueryContext(user);
+        return new DefaultAuditQueryContext(user);
     }
 
 }

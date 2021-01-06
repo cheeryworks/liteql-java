@@ -2,6 +2,8 @@ package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.model.AuditType;
 import org.cheeryworks.liteql.model.UserType;
+import org.cheeryworks.liteql.query.AuditQueryContext;
+import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.util.LiteQL;
 
@@ -12,7 +14,7 @@ public class DefaultQueryAuditingService implements QueryAuditingService {
 
     @Override
     public void auditingDomainObject(
-            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, UserType user) {
+            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, QueryContext queryContext) {
         if (domainTypeDefinition.implement(LiteQL.SchemaUtils.getTypeName(AuditType.class))) {
             if (domainObject.get(AuditType.INHERENT_FIELD_NAME) == null) {
                 domainObject.put(AuditType.INHERENT_FIELD_NAME, false);
@@ -38,26 +40,34 @@ public class DefaultQueryAuditingService implements QueryAuditingService {
 
             domainObject.put(AuditType.LAST_MODIFIED_TIME_FIELD_NAME, currentDate);
 
-            if (user != null) {
-                if (domainObject.get(AuditType.CREATOR_ID_FIELD_NAME) == null) {
-                    domainObject.put(AuditType.CREATOR_ID_FIELD_NAME, user.getId());
-                }
+            if (queryContext != null && queryContext instanceof AuditQueryContext) {
+                UserType user = ((AuditQueryContext) queryContext).getUser();
 
-                domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+                if (user != null) {
+                    if (domainObject.get(AuditType.CREATOR_ID_FIELD_NAME) == null) {
+                        domainObject.put(AuditType.CREATOR_ID_FIELD_NAME, user.getId());
+                    }
+
+                    domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+                }
             }
         }
     }
 
     @Override
     public void auditingExistedDomainObject(
-            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, UserType user) {
+            Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, QueryContext queryContext) {
         if (domainTypeDefinition.implement(LiteQL.SchemaUtils.getTypeName(AuditType.class))) {
             Timestamp currentDate = new Timestamp(System.currentTimeMillis());
 
             domainObject.put(AuditType.LAST_MODIFIED_TIME_FIELD_NAME, currentDate);
 
-            if (user != null) {
-                domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+            if (queryContext != null && queryContext instanceof AuditQueryContext) {
+                UserType user = ((AuditQueryContext) queryContext).getUser();
+
+                if (user != null) {
+                    domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+                }
             }
         }
     }

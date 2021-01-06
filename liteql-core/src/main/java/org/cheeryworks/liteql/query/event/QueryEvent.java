@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.query.event;
 
+import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.enums.QueryPhase;
 import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.schema.TypeName;
@@ -15,6 +16,8 @@ public interface QueryEvent extends Serializable {
     QueryType getQueryType();
 
     QueryPhase getQueryPhase();
+
+    QueryContext getQueryContext();
 
     Object getSource();
 

@@ -2,14 +2,14 @@ package org.cheeryworks.liteql.query;
 
 import org.cheeryworks.liteql.model.UserType;
 
-public class DefaultQueryContext implements QueryContext {
+public class DefaultAuditQueryContext implements AuditQueryContext {
 
     private UserType user;
 
-    public DefaultQueryContext() {
+    public DefaultAuditQueryContext() {
     }
 
-    public DefaultQueryContext(UserType user) {
+    public DefaultAuditQueryContext(UserType user) {
         this.user = user;
     }
 

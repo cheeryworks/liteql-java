@@ -9,7 +9,6 @@ import org.cheeryworks.liteql.service.query.LoggingQueryPublisher;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryService;
-import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.service.schema.jooq.JooqSchemaParser;
 import org.mockito.Mockito;
 
@@ -27,7 +26,7 @@ public class AbstractJooqQueryServiceTest extends AbstractJooqTest {
         queryService = new JooqQueryService(
                 getLiteQLProperties(),
                 getJooqQueryParser(), new JooqQueryExecutor(getLiteQLProperties(), getDslContext()),
-                new DefaultQueryAuditingService(), new DefaultQueryAccessDecisionService(),
+                new DefaultQueryAuditingService(),
                 new LoggingQueryPublisher(),
                 new LoggingQueryEventPublisher());
     }

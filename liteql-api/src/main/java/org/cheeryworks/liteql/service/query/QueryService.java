@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.service.query;
 
 import org.cheeryworks.liteql.model.DomainType;
-import org.cheeryworks.liteql.query.DefaultQueryContext;
+import org.cheeryworks.liteql.query.DefaultAuditQueryContext;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
@@ -23,7 +23,7 @@ import java.util.List;
 
 public interface QueryService {
 
-    QueryContext EMPTY_QUERY_CONTEXT = new DefaultQueryContext();
+    QueryContext EMPTY_QUERY_CONTEXT = new DefaultAuditQueryContext();
 
     default ReadResults read(ReadQuery readQuery) {
         return read(EMPTY_QUERY_CONTEXT, readQuery);

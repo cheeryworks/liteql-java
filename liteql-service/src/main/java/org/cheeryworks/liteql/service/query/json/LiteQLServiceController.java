@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.query.AuditQueryContext;
+import org.cheeryworks.liteql.query.DomainQuery;
+import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.Queries;
-import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.delete.DeleteQuery;
 import org.cheeryworks.liteql.query.enums.QueryType;
 import org.cheeryworks.liteql.query.read.PageReadQuery;
@@ -13,8 +15,10 @@ import org.cheeryworks.liteql.query.read.ReadQuery;
 import org.cheeryworks.liteql.query.read.SingleReadQuery;
 import org.cheeryworks.liteql.query.read.TreeReadQuery;
 import org.cheeryworks.liteql.query.save.AbstractSaveQuery;
+import org.cheeryworks.liteql.query.save.SaveQueries;
 import org.cheeryworks.liteql.schema.TypeDefinition;
 import org.cheeryworks.liteql.service.json.AbstractServiceController;
+import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.LiteQL;
@@ -46,11 +50,16 @@ public class LiteQLServiceController extends AbstractServiceController {
 
     private QueryService queryService;
 
+    private QueryAccessDecisionService queryAccessDecisionService;
+
     @Autowired
-    public LiteQLServiceController(SchemaService schemaService, QueryService queryService) {
+    public LiteQLServiceController(
+            SchemaService schemaService, QueryService queryService,
+            QueryAccessDecisionService queryAccessDecisionService) {
         this.schemaGen = new JsonSchemaGenerator(LiteQL.JacksonJsonUtils.OBJECT_MAPPER);
         this.schemaService = schemaService;
         this.queryService = queryService;
+        this.queryAccessDecisionService = queryAccessDecisionService;
     }
 
     @GetMapping(value = "/liteql/schema")
@@ -175,15 +184,33 @@ public class LiteQLServiceController extends AbstractServiceController {
     }
 
     @PostMapping(value = "/liteql")
-    public Object query(@RequestBody JsonNode liteQL, QueryContext queryContext) {
+    public Object query(@RequestBody JsonNode liteQL, AuditQueryContext auditQueryContext) {
         try {
-            return queryService.execute(
-                    queryContext,
-                    LiteQL.JacksonJsonUtils.toBean(liteQL.toString(), Queries.class));
+            PublicQuery query = LiteQL.JacksonJsonUtils.toBean(liteQL.toString(), PublicQuery.class);
+
+            decide(query, auditQueryContext);
+
+            return queryService.execute(auditQueryContext, query);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
 
             return getErrorResponseEntity(ex);
+        }
+    }
+
+    private void decide(PublicQuery query, AuditQueryContext auditQueryContext) {
+        if (query instanceof DomainQuery) {
+            queryAccessDecisionService.decide(auditQueryContext.getUser(), (DomainQuery) query);
+        } else if (query instanceof Queries) {
+            for (PublicQuery subQuery : ((Queries) query).values()) {
+                decide(subQuery, auditQueryContext);
+            }
+        } else if (query instanceof SaveQueries) {
+            for (AbstractSaveQuery saveQuery : (SaveQueries) query) {
+                decide(saveQuery, auditQueryContext);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported query " + query.getClass().getSimpleName());
         }
     }
 

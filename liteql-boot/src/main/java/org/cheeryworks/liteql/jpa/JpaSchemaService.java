@@ -95,7 +95,9 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
                 if (existTypeDefinition != null && !typeDefinition.equals(existTypeDefinition)) {
                     throw new IllegalStateException(
                             "Definition of type [" + typeDefinition.getTypeName() + "]" +
-                                    " not matched with it's JPA entity");
+                                    " not matched with it's JPA entity, expected " +
+                                    LiteQL.JacksonJsonUtils.toJson(typeDefinition) + ", actual " +
+                                    LiteQL.JacksonJsonUtils.toJson(existTypeDefinition));
                 }
 
                 addType(typeDefinition);
