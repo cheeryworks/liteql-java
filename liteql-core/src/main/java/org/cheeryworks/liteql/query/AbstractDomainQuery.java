@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cheeryworks.liteql.schema.TypeName;
 
-public abstract class AbstractDomainQuery implements Query {
+public abstract class AbstractDomainQuery implements DomainQuery {
 
     @JsonProperty(required = true)
     private TypeName domainTypeName;
@@ -12,6 +12,7 @@ public abstract class AbstractDomainQuery implements Query {
     @JsonIgnore
     private QueryConditions accessDecisionConditions;
 
+    @Override
     public TypeName getDomainTypeName() {
         return domainTypeName;
     }
@@ -20,10 +21,12 @@ public abstract class AbstractDomainQuery implements Query {
         this.domainTypeName = domainTypeName;
     }
 
+    @Override
     public QueryConditions getAccessDecisionConditions() {
         return accessDecisionConditions;
     }
 
+    @Override
     public void setAccessDecisionConditions(QueryConditions accessDecisionConditions) {
         this.accessDecisionConditions = accessDecisionConditions;
     }
