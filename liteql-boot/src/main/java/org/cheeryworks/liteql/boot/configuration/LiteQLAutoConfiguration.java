@@ -202,8 +202,11 @@ public class LiteQLAutoConfiguration {
     }
 
     @Bean
-    public GraphQLService graphQLService(SchemaService schemaService, QueryService queryService) {
-        GraphQLService graphQLService = new DefaultGraphQLService(schemaService, queryService);
+    public GraphQLService graphQLService(
+            SchemaService schemaService, QueryService queryService,
+            QueryAccessDecisionService queryAccessDecisionService) {
+        GraphQLService graphQLService = new DefaultGraphQLService(
+                schemaService, queryService, queryAccessDecisionService);
 
         logger.info("GraphQLService is ready.");
 

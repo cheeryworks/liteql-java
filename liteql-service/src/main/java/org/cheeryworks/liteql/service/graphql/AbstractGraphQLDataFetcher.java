@@ -7,6 +7,8 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import org.cheeryworks.liteql.graphql.exception.UnsupportedGraphQLOutputTypeException;
+import org.cheeryworks.liteql.query.AuditQueryContext;
+import org.cheeryworks.liteql.query.DomainQuery;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.QueryContext;
 import org.cheeryworks.liteql.query.enums.ConditionClause;
@@ -19,6 +21,7 @@ import org.cheeryworks.liteql.query.read.result.ReadResult;
 import org.cheeryworks.liteql.query.read.result.ReadResults;
 import org.cheeryworks.liteql.query.read.result.ReadResultsData;
 import org.cheeryworks.liteql.schema.TypeName;
+import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
@@ -41,9 +44,14 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
     private QueryService queryService;
 
-    public AbstractGraphQLDataFetcher(SchemaService schemaService, QueryService queryService) {
+    private QueryAccessDecisionService queryAccessDecisionService;
+
+    public AbstractGraphQLDataFetcher(
+            SchemaService schemaService, QueryService queryService,
+            QueryAccessDecisionService queryAccessDecisionService) {
         this.schemaService = schemaService;
         this.queryService = queryService;
+        this.queryAccessDecisionService = queryAccessDecisionService;
     }
 
     protected SchemaService getSchemaService() {
@@ -52,6 +60,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
     protected QueryService getQueryService() {
         return this.queryService;
+    }
+
+    protected QueryAccessDecisionService getQueryAccessDecisionService() {
+        return this.queryAccessDecisionService;
     }
 
     @Override
@@ -136,6 +148,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
 
         singleReadQuery.setFields(fields);
 
+        if (queryContext instanceof AuditQueryContext) {
+            getQueryAccessDecisionService().decide(((AuditQueryContext) queryContext).getUser(), singleReadQuery);
+        }
+
         return queryService.read(queryContext, singleReadQuery);
     }
 
@@ -174,6 +190,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
             query = new PageReadQuery(readQuery, offset / first, first);
         }
 
+        if (queryContext instanceof AuditQueryContext) {
+            getQueryAccessDecisionService().decide(((AuditQueryContext) queryContext).getUser(), (DomainQuery) query);
+        }
+
         return ((ReadResultsData<ReadResult>) queryService.execute(queryContext, query)).getData();
     }
 
@@ -210,6 +230,10 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
         GraphQLServiceUtil.parseSorts(readQuery, fields, dataFetchingEnvironment);
 
         readQuery.setFields(fields);
+
+        if (queryContext instanceof AuditQueryContext) {
+            getQueryAccessDecisionService().decide(((AuditQueryContext) queryContext).getUser(), readQuery);
+        }
 
         ReadResults dataSet = queryService.read(queryContext, readQuery);
 

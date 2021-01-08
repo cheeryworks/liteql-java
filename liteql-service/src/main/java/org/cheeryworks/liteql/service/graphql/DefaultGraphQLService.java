@@ -37,6 +37,7 @@ import org.cheeryworks.liteql.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.schema.field.Field;
 import org.cheeryworks.liteql.schema.field.NullableField;
 import org.cheeryworks.liteql.schema.field.ReferenceField;
+import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
@@ -75,11 +76,15 @@ public class DefaultGraphQLService implements GraphQLService {
 
     private GraphQL graphQL;
 
-    public DefaultGraphQLService(SchemaService schemaService, QueryService queryService) {
+    public DefaultGraphQLService(
+            SchemaService schemaService, QueryService queryService,
+            QueryAccessDecisionService queryAccessDecisionService) {
         this.schemaService = schemaService;
 
-        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(schemaService, queryService);
-        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(schemaService, queryService);
+        this.graphQLQueryDataFetcher = new GraphQLQueryDataFetcher(
+                schemaService, queryService, queryAccessDecisionService);
+        this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(
+                schemaService, queryService, queryAccessDecisionService);
 
         DataLoader<String, Map<String, Object>> defaultDataLoader
                 = DataLoader.newDataLoader(new GraphQLBatchLoader(queryService));

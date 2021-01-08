@@ -3,6 +3,7 @@ package org.cheeryworks.liteql.service.graphql;
 import graphql.ExecutionResult;
 import org.cheeryworks.liteql.service.jooq.AbstractJooqQueryServiceTest;
 import org.cheeryworks.liteql.service.jooq.JooqSchemaParserTest;
+import org.cheeryworks.liteql.service.query.sql.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.util.LiteQL;
 import org.cheeryworks.liteql.util.graphql.builder.GraphQLBuilder;
 import org.cheeryworks.liteql.util.graphql.builder.GraphQLChildFieldQueryBuilder;
@@ -20,7 +21,8 @@ public class DefaultGraphQLServiceTest extends AbstractJooqQueryServiceTest {
     private GraphQLService graphQLService;
 
     public DefaultGraphQLServiceTest() {
-        this.graphQLService = new DefaultGraphQLService(getSchemaService(), getQueryService());
+        this.graphQLService = new DefaultGraphQLService(
+                getSchemaService(), getQueryService(), new DefaultQueryAccessDecisionService());
     }
 
     @Test
