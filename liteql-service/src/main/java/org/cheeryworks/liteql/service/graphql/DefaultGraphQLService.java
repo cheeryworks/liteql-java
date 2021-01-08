@@ -43,6 +43,7 @@ import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.util.GraphQLServiceUtil;
 import org.cheeryworks.liteql.util.LiteQL;
 import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
 
 import java.util.ArrayList;
@@ -86,8 +87,9 @@ public class DefaultGraphQLService implements GraphQLService {
         this.graphQLMutationDataFetcher = new GraphQLMutationDataFetcher(
                 schemaService, queryService, queryAccessDecisionService);
 
-        DataLoader<String, Map<String, Object>> defaultDataLoader
-                = DataLoader.newDataLoader(new GraphQLBatchLoader(queryService));
+        DataLoader<String, Map<String, Object>> defaultDataLoader = DataLoader.newDataLoader(
+                new GraphQLBatchLoader(queryService),
+                DataLoaderOptions.newOptions().setCachingEnabled(false));
 
         DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
         dataLoaderRegistry.register(QUERY_DEFAULT_DATA_LOADER_KEY, defaultDataLoader);
@@ -319,8 +321,7 @@ public class DefaultGraphQLService implements GraphQLService {
         return arguments;
     }
 
-    private void buildDefaultInputTypes(
-            TypeDefinitionRegistry typeDefinitionRegistry) {
+    private void buildDefaultInputTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
         List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
         java.lang.reflect.Field[] fields = QueryCondition.class.getDeclaredFields();
@@ -463,8 +464,7 @@ public class DefaultGraphQLService implements GraphQLService {
                 .build());
     }
 
-    private void buildDefaultQueries(
-            TypeDefinitionRegistry typeDefinitionRegistry) {
+    private void buildDefaultQueries(TypeDefinitionRegistry typeDefinitionRegistry) {
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
                 ObjectTypeExtensionDefinition objectTypeExtensionDefinition = ObjectTypeExtensionDefinition
