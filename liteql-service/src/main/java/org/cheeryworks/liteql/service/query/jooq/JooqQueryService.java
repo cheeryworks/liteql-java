@@ -2,8 +2,8 @@ package org.cheeryworks.liteql.service.query.jooq;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
-import org.cheeryworks.liteql.service.query.QueryEventPublisher;
-import org.cheeryworks.liteql.service.query.QueryPublisher;
+import org.cheeryworks.liteql.query.event.publisher.QueryEventPublisher;
+import org.cheeryworks.liteql.query.event.publisher.QueryPublisher;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlQueryService;
 
 public class JooqQueryService extends AbstractSqlQueryService {

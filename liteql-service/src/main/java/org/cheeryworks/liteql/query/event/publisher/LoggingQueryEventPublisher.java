@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.service.query;
+package org.cheeryworks.liteql.query.event.publisher;
 
 import org.cheeryworks.liteql.query.event.QueryEvent;
 import org.cheeryworks.liteql.util.LiteQL;

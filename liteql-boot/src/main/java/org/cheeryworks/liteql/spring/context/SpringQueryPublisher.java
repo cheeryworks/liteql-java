@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.spring.context;
 
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.query.PublicQuery;
-import org.cheeryworks.liteql.service.query.QueryPublisher;
+import org.cheeryworks.liteql.query.event.publisher.QueryPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import reactor.core.publisher.Sinks;
 
