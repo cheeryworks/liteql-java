@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.boot.application;
 
-import org.cheeryworks.liteql.event.ApplicationStartedEvent;
+import org.cheeryworks.liteql.event.SpringApplicationStartedEvent;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,7 +14,7 @@ public class LiteQLSpringApplication extends SpringApplication {
     @Override
     protected void afterRefresh(ConfigurableApplicationContext context, ApplicationArguments args) {
 
-        context.publishEvent(new ApplicationStartedEvent(context));
+        context.publishEvent(new SpringApplicationStartedEvent(context));
 
     }
 
