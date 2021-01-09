@@ -1,3 +1,1 @@
-## LiteQL
-
-Lite data modeling and processing toolkit.
+## [LiteQL](https://github.com/cheeryworks/liteql) Java
