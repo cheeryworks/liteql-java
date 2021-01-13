@@ -214,7 +214,11 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             DomainTypeDefinition migratedDomainTypeDefinition =
                     new DomainTypeDefinition(domainTypeDefinition.getTypeName());
 
+            migratedDomainTypeDefinition.setVersion(domainTypeDefinition.getVersion());
+
             migratedDomainTypeDefinition.setTraits(domainTypeDefinition.getTraits());
+
+            migratedDomainTypeDefinition.setImplementTrait(domainTypeDefinition.getImplementTrait());
 
             if (!domainTypeDefinition.isGraphQLType()) {
                 migratedDomainTypeDefinition.setGraphQLType(false);

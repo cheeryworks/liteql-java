@@ -170,7 +170,7 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
             return true;
         }
 
-        if (!(o instanceof DomainTypeDefinition)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
@@ -178,16 +178,18 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
             return false;
         }
 
-        DomainTypeDefinition domainTypeDefinition = (DomainTypeDefinition) o;
+        DomainTypeDefinition that = (DomainTypeDefinition) o;
 
-        return Objects.equals(uniques, domainTypeDefinition.uniques) &&
-                Objects.equals(indexes, domainTypeDefinition.indexes) &&
-                Objects.equals(graphQLType, domainTypeDefinition.graphQLType);
+        return Objects.equals(uniques, that.uniques) &&
+                Objects.equals(indexes, that.indexes) &&
+                Objects.equals(graphQLType, that.graphQLType) &&
+                Objects.equals(dropped, that.dropped) &&
+                Objects.equals(implementTrait, that.implementTrait);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), uniques, indexes, graphQLType);
+        return Objects.hash(super.hashCode(), uniques, indexes, graphQLType, dropped, implementTrait);
     }
 
 }

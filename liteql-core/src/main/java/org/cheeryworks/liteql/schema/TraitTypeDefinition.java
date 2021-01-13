@@ -97,13 +97,14 @@ public class TraitTypeDefinition implements TypeDefinition {
         TraitTypeDefinition traitTypeDefinition = (TraitTypeDefinition) o;
 
         return Objects.equals(typeName, traitTypeDefinition.typeName) &&
+                Objects.equals(version, traitTypeDefinition.version) &&
                 Objects.equals(fields, traitTypeDefinition.fields) &&
                 Objects.equals(traits, traitTypeDefinition.traits);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(typeName, fields, traits);
+        return Objects.hash(typeName, version, fields, traits);
     }
 
 }
