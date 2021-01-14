@@ -72,20 +72,20 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     private void processStaticTypes() {
-        ClassPathScanningCandidateComponentProvider jpaEntityScanner =
+        ClassPathScanningCandidateComponentProvider liteQLStaticTypeScanner =
                 new ClassPathScanningCandidateComponentProvider(false);
 
-        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(LiteQLStaticType.class));
+        liteQLStaticTypeScanner.addIncludeFilter(new AnnotationTypeFilter(LiteQLStaticType.class));
 
         Set<BeanDefinition> staticTypeBeans = new HashSet<>();
 
         for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
-            staticTypeBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
+            staticTypeBeans.addAll(liteQLStaticTypeScanner.findCandidateComponents(packageToScan));
         }
 
-        for (BeanDefinition japEntityBean : staticTypeBeans) {
+        for (BeanDefinition staticTypeBean : staticTypeBeans) {
             Class<?> staticType
-                    = LiteQL.ClassUtils.getClass(japEntityBean.getBeanClassName());
+                    = LiteQL.ClassUtils.getClass(staticTypeBean.getBeanClassName());
 
             LiteQLStaticType liteQLStaticType = staticType.getAnnotation(LiteQLStaticType.class);
 
