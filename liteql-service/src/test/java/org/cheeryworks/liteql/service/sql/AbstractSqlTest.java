@@ -6,7 +6,6 @@ import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
 import org.cheeryworks.liteql.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.util.LiteQL;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Script;
 
@@ -67,8 +66,7 @@ public abstract class AbstractSqlTest extends AbstractTest {
 
         liteQLProperties.setDiagnosticEnabled(true);
 
-        schemaService = new DefaultSchemaService(
-                liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
+        schemaService = new DefaultSchemaService(liteQLProperties);
 
         sqlCustomizer = new DefaultSqlCustomizer(schemaService);
     }

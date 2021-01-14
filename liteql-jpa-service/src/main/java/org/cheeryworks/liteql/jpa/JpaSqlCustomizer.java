@@ -9,10 +9,7 @@ import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
 import org.cheeryworks.liteql.service.schema.SchemaService;
 import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
 import org.cheeryworks.liteql.util.LiteQL;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.reflections.Reflections;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,29 +27,29 @@ import java.util.Set;
 
 public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
-    private Map<TypeName, String> tableNames = new HashMap<>();
+    private final Map<TypeName, String> tableNames = new HashMap<>();
 
-    private Map<TypeName, Map<String, String>> columnNames = new HashMap<>();
+    private final Map<TypeName, Map<String, String>> columnNames = new HashMap<>();
 
-    private Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
+    private final Map<TypeName, Map<String, String>> fieldNames = new HashMap<>();
 
     public JpaSqlCustomizer(SchemaService schemaService) {
         super(schemaService);
 
-        ClassPathScanningCandidateComponentProvider jpaEntityScanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-
-        jpaEntityScanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
-
-        Set<BeanDefinition> jpaEntityBeans = new HashSet<>();
+        Set<Class<?>> jpaEntityJavaTypes = new HashSet<>();
 
         for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
-            jpaEntityBeans.addAll(jpaEntityScanner.findCandidateComponents(packageToScan));
+            Reflections reflections = new Reflections(packageToScan);
+
+            jpaEntityJavaTypes.addAll(reflections.getTypesAnnotatedWith(Entity.class));
         }
 
-        for (BeanDefinition japEntityBean : jpaEntityBeans) {
-            Class<? extends TraitType> traitType
-                    = LiteQL.SchemaUtils.getTraitJavaType(japEntityBean.getBeanClassName());
+        for (Class<?> jpaEntityJavaType : jpaEntityJavaTypes) {
+            if (!TraitType.class.isAssignableFrom(jpaEntityJavaType)) {
+                continue;
+            }
+
+            Class<? extends TraitType> traitType = (Class<? extends TraitType>) jpaEntityJavaType;
 
             Table table = traitType.getAnnotation(Table.class);
 
@@ -92,7 +89,7 @@ public class JpaSqlCustomizer extends DefaultSqlCustomizer {
 
                 for (Method method : columnMethods) {
                     processAttribute(
-                            BeanUtils.findPropertyForMethod(method).getName(), method, columnsOfType, fieldsOfType);
+                            LiteQL.ClassUtils.findFieldNameForMethod(method), method, columnsOfType, fieldsOfType);
                 }
             }
         }

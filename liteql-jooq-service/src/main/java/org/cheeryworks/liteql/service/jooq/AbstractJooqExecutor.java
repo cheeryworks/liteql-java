@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.service.jooq;
 import org.cheeryworks.liteql.LiteQLProperties;
 import org.cheeryworks.liteql.enums.Database;
 import org.cheeryworks.liteql.service.query.sql.AbstractSqlExecutor;
-import org.cheeryworks.liteql.service.schema.migration.jooq.JooqMigrationExecutor;
 import org.cheeryworks.liteql.util.DatabaseUtil;
 import org.cheeryworks.liteql.util.JooqUtil;
 import org.jooq.BatchBindStep;
@@ -16,7 +15,7 @@ import java.util.List;
 
 public abstract class AbstractJooqExecutor extends AbstractSqlExecutor {
 
-    private static Logger logger = LoggerFactory.getLogger(JooqMigrationExecutor.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractJooqExecutor.class);
 
     private DSLContext dslContext;
 

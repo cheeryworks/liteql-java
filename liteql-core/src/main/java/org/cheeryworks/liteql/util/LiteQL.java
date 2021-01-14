@@ -54,6 +54,8 @@ import org.cheeryworks.liteql.util.jackson.serializer.TypeNameSerializer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -287,6 +289,26 @@ public final class LiteQL {
             } catch (Exception ex) {
                 throw new IllegalArgumentException(ex.getMessage(), ex);
             }
+        }
+
+        public static boolean isGetMethod(Method method) {
+            return Modifier.isPublic(method.getModifiers())
+                    && method.getParameterCount() == 0
+                    && (method.getName().startsWith("get") || method.getName().startsWith("is"));
+        }
+
+        public static String findFieldNameForMethod(Method method) {
+            return findFieldNameForMethod(method.getName());
+        }
+
+        public static String findFieldNameForMethod(String methodName) {
+            if (methodName.startsWith("get") || methodName.startsWith("set")) {
+                return org.apache.commons.lang3.StringUtils.uncapitalize(methodName.substring(3));
+            } else if (methodName.startsWith("is")) {
+                return org.apache.commons.lang3.StringUtils.uncapitalize(methodName.substring(2));
+            }
+
+            throw new IllegalArgumentException("Unsupported method name " + methodName);
         }
 
     }

@@ -26,9 +26,7 @@ import org.cheeryworks.liteql.schema.migration.operation.DropTypeMigrationOperat
 import org.cheeryworks.liteql.schema.migration.operation.MigrationOperation;
 import org.cheeryworks.liteql.service.AbstractLiteQLService;
 import org.cheeryworks.liteql.util.LiteQL;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.reflections.Reflections;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +59,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
     private Map<TypeName, TypeName> traitImplements = new HashMap<>();
 
-    private Map<TypeName, Class<?>> staticTypes = new HashMap<>();
+    private Map<TypeName, Class<?>> staticTypeMapping = new HashMap<>();
 
     private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
 
@@ -72,24 +70,18 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     private void processStaticTypes() {
-        ClassPathScanningCandidateComponentProvider liteQLStaticTypeScanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-
-        liteQLStaticTypeScanner.addIncludeFilter(new AnnotationTypeFilter(LiteQLStaticType.class));
-
-        Set<BeanDefinition> staticTypeBeans = new HashSet<>();
+        Set<Class<?>> staticTypes = new HashSet<>();
 
         for (String packageToScan : LiteQL.SchemaUtils.getSchemaDefinitionPackages()) {
-            staticTypeBeans.addAll(liteQLStaticTypeScanner.findCandidateComponents(packageToScan));
+            Reflections reflections = new Reflections(packageToScan);
+
+            staticTypes.addAll(reflections.getTypesAnnotatedWith(LiteQLStaticType.class));
         }
 
-        for (BeanDefinition staticTypeBean : staticTypeBeans) {
-            Class<?> staticType
-                    = LiteQL.ClassUtils.getClass(staticTypeBean.getBeanClassName());
-
+        for (Class<?> staticType : staticTypes) {
             LiteQLStaticType liteQLStaticType = staticType.getAnnotation(LiteQLStaticType.class);
 
-            staticTypes.put(LiteQL.SchemaUtils.getTypeName(liteQLStaticType.value()), staticType);
+            staticTypeMapping.put(LiteQL.SchemaUtils.getTypeName(liteQLStaticType.value()), staticType);
         }
     }
 
@@ -174,7 +166,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     private void processStaticType(TypeDefinition typeDefinition) {
-        Class<?> staticType = staticTypes.get(typeDefinition.getTypeName());
+        Class<?> staticType = staticTypeMapping.get(typeDefinition.getTypeName());
 
         if (staticType != null && typeDefinition instanceof TraitTypeDefinition) {
             ((TraitTypeDefinition) typeDefinition).getFields().stream().forEach(field -> {

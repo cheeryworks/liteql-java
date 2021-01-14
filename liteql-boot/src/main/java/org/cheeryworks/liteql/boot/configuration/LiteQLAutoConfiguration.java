@@ -7,14 +7,14 @@ import org.cheeryworks.liteql.boot.configuration.jpa.LiteQLJpaAutoConfiguration;
 import org.cheeryworks.liteql.boot.configuration.spring.security.web.LiteQLSecurityAutoConfiguration;
 import org.cheeryworks.liteql.query.PublicQuery;
 import org.cheeryworks.liteql.query.event.QueryEvent;
+import org.cheeryworks.liteql.query.event.publisher.QueryEventPublisher;
+import org.cheeryworks.liteql.query.event.publisher.QueryPublisher;
 import org.cheeryworks.liteql.service.graphql.DefaultGraphQLService;
 import org.cheeryworks.liteql.service.graphql.GraphQLService;
 import org.cheeryworks.liteql.service.graphql.json.GraphQLServiceController;
 import org.cheeryworks.liteql.service.query.DefaultQueryAuditingService;
 import org.cheeryworks.liteql.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.service.query.QueryAuditingService;
-import org.cheeryworks.liteql.query.event.publisher.QueryEventPublisher;
-import org.cheeryworks.liteql.query.event.publisher.QueryPublisher;
 import org.cheeryworks.liteql.service.query.QueryService;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryExecutor;
 import org.cheeryworks.liteql.service.query.jooq.JooqQueryParser;
@@ -31,7 +31,6 @@ import org.cheeryworks.liteql.service.sql.SqlCustomizer;
 import org.cheeryworks.liteql.spring.context.SpringMigrationEventPublisher;
 import org.cheeryworks.liteql.spring.context.SpringQueryEventPublisher;
 import org.cheeryworks.liteql.spring.context.SpringQueryPublisher;
-import org.cheeryworks.liteql.util.LiteQL;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,8 +129,7 @@ public class LiteQLAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(SchemaService.class)
     public SchemaService schemaService(LiteQLProperties liteQLProperties) {
-        return new DefaultSchemaService(
-                liteQLProperties, "classpath*:/" + LiteQL.Constants.SCHEMA_DEFINITION_CLASSPATH_ROOT);
+        return new DefaultSchemaService(liteQLProperties);
     }
 
     @Bean

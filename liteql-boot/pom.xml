@@ -14,12 +14,23 @@
     <dependencies>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-service</artifactId>
+            <artifactId>liteql-jooq-service</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
+            <groupId>org.cheeryworks.liteql</groupId>
+            <artifactId>liteql-jpa-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cheeryworks.liteql</groupId>
+            <artifactId>liteql-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -30,30 +41,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-messaging</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
             <optional>true</optional>
         </dependency>
 
