@@ -1,11 +1,15 @@
 package org.cheeryworks.liteql.boot.application;
 
+import org.cheeryworks.liteql.event.SpringApplicationStartedEvent;
 import org.cheeryworks.liteql.service.schema.migration.MigrationService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,8 +17,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 public class LiteQLApplicationTest {
+
+    @BeforeAll
+    public static void init(@Autowired ConfigurableApplicationContext applicationContext) {
+        applicationContext.publishEvent(new SpringApplicationStartedEvent(applicationContext));
+    }
 
     @Test
     public void testingMigrationService(@Autowired MigrationService migrationService) {
