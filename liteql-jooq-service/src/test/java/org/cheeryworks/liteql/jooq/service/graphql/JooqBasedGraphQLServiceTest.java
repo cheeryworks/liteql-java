@@ -5,7 +5,7 @@ import org.cheeryworks.liteql.jooq.service.query.AbstractJooqQueryServiceTest;
 import org.cheeryworks.liteql.jooq.service.schema.JooqSchemaParserTest;
 import org.cheeryworks.liteql.skeleton.service.graphql.DefaultGraphQLService;
 import org.cheeryworks.liteql.skeleton.service.graphql.GraphQLService;
-import org.cheeryworks.liteql.skeleton.service.query.sql.DefaultQueryAccessDecisionService;
+import org.cheeryworks.liteql.skeleton.service.query.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.skeleton.util.LiteQL;
 import org.cheeryworks.liteql.skeleton.util.graphql.builder.GraphQLBuilder;
 import org.cheeryworks.liteql.skeleton.util.graphql.builder.GraphQLChildFieldQueryBuilder;

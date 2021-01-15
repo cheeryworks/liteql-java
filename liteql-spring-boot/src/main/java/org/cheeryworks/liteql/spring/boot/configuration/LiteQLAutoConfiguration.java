@@ -15,7 +15,7 @@ import org.cheeryworks.liteql.skeleton.service.query.DefaultQueryAuditingService
 import org.cheeryworks.liteql.skeleton.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.skeleton.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.skeleton.service.query.QueryService;
-import org.cheeryworks.liteql.skeleton.service.query.sql.DefaultQueryAccessDecisionService;
+import org.cheeryworks.liteql.skeleton.service.query.DefaultQueryAccessDecisionService;
 import org.cheeryworks.liteql.skeleton.service.schema.DefaultSchemaService;
 import org.cheeryworks.liteql.skeleton.service.schema.SchemaService;
 import org.cheeryworks.liteql.skeleton.event.publisher.schema.migration.MigrationEventPublisher;
