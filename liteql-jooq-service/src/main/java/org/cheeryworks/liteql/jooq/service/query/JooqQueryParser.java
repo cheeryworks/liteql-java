@@ -453,4 +453,58 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         return sqlDeleteQuery;
     }
 
+    private static class JooqJoinedTable {
+
+        private String tableName;
+
+        private String tableAlias;
+
+        private List<org.jooq.Field<Object>> fields;
+
+        private Condition joinCondition;
+
+        private Condition condition;
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public void setTableName(String tableName) {
+            this.tableName = tableName;
+        }
+
+        public String getTableAlias() {
+            return tableAlias;
+        }
+
+        public void setTableAlias(String tableAlias) {
+            this.tableAlias = tableAlias;
+        }
+
+        public List<org.jooq.Field<Object>> getFields() {
+            return fields;
+        }
+
+        public void setFields(List<org.jooq.Field<Object>> fields) {
+            this.fields = fields;
+        }
+
+        public Condition getJoinCondition() {
+            return joinCondition;
+        }
+
+        public void setJoinCondition(Condition joinCondition) {
+            this.joinCondition = joinCondition;
+        }
+
+        public Condition getCondition() {
+            return condition;
+        }
+
+        public void setCondition(Condition condition) {
+            this.condition = condition;
+        }
+
+    }
+
 }
