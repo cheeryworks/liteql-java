@@ -1,21 +1,23 @@
 package org.cheeryworks.liteql.boot.application;
 
-import org.cheeryworks.liteql.event.SpringApplicationStartedEvent;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class LiteQLSpringApplication extends SpringApplication {
+public class LiteQLSpringApplication extends AbstractSpringApplication {
 
-    public LiteQLSpringApplication(Class<?>... primarySources) {
-        super(primarySources);
+    private static final String[] DEFAULT_OPTIONAL_CONFIGURATION_PATHS = new String[]{
+            "/etc/liteql/",
+            "/etc/liteql/*/"
+    };
+
+    public LiteQLSpringApplication(Class<?> primarySource) {
+        super(primarySource);
     }
 
     @Override
-    protected void afterRefresh(ConfigurableApplicationContext context, ApplicationArguments args) {
-
-        context.publishEvent(new SpringApplicationStartedEvent(context));
-
+    protected Set<String> getDefaultOptionalConfigurationPaths() {
+        return Arrays.stream(DEFAULT_OPTIONAL_CONFIGURATION_PATHS).collect(Collectors.toSet());
     }
 
 }

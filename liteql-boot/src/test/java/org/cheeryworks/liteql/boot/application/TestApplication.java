@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TestApplication extends AbstractApplication {
 
     public static void main(String[] args) {
-        run(TestApplication.class, args);
+        new LiteQLSpringApplication(TestApplication.class).run(args);
     }
 
 }
