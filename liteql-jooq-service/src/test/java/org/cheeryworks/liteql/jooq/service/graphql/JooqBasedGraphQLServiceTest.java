@@ -16,13 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import static org.cheeryworks.liteql.skeleton.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
 
-public class DefaultGraphQLServiceTest extends AbstractJooqQueryServiceTest {
+public class JooqBasedGraphQLServiceTest extends AbstractJooqQueryServiceTest {
 
     private static Logger logger = LoggerFactory.getLogger(JooqSchemaParserTest.class);
 
     private GraphQLService graphQLService;
 
-    public DefaultGraphQLServiceTest() {
+    public JooqBasedGraphQLServiceTest() {
         this.graphQLService = new DefaultGraphQLService(
                 getSchemaService(), getQueryService(), new DefaultQueryAccessDecisionService());
     }
