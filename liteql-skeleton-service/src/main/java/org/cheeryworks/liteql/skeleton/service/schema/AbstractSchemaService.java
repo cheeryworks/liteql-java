@@ -48,8 +48,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static org.cheeryworks.liteql.skeleton.service.schema.SchemaMetadata.VERSION_BASELINE_SUFFIX;
-import static org.cheeryworks.liteql.skeleton.service.schema.SchemaMetadata.VERSION_CONCAT;
+import static org.cheeryworks.liteql.skeleton.schema.Schema.VERSION_BASELINE_SUFFIX;
+import static org.cheeryworks.liteql.skeleton.schema.Schema.VERSION_CONCAT;
 
 public abstract class AbstractSchemaService extends AbstractLiteQLService implements SchemaService {
 
@@ -544,6 +544,76 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
                         StandardCharsets.UTF_8);
             }
         }
+    }
+
+    protected static class SchemaMetadata {
+
+        private String name;
+
+        private Map<String, TypeMetadata> typeMetadataSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        public String getName() {
+            return name;
+        }
+
+        public Map<String, TypeMetadata> getTypeMetadataSet() {
+            return typeMetadataSet;
+        }
+
+        public SchemaMetadata(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+
+            if (!(o instanceof SchemaMetadata)) {
+                return false;
+            }
+
+            SchemaMetadata that = (SchemaMetadata) o;
+
+            return name.equals(that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+    }
+
+    protected static class TypeMetadata {
+
+        private String name;
+
+        private Map<String, String> contents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        private Map<String, String> migrationContents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        public String getName() {
+            return name;
+        }
+
+        public Map<String, String> getContents() {
+            return contents;
+        }
+
+        public void setContents(Map<String, String> contents) {
+            this.contents = contents;
+        }
+
+        public Map<String, String> getMigrationContents() {
+            return migrationContents;
+        }
+
+        public TypeMetadata(String name) {
+            this.name = name;
+        }
+
     }
 
 }

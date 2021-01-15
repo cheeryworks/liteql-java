@@ -20,6 +20,10 @@ public class Schema implements Serializable {
 
     public static final String SUFFIX_OF_TYPE_DEFINITION = "definition" + SUFFIX_OF_CONFIGURATION_FILE;
 
+    public static final String VERSION_CONCAT = "__";
+
+    public static final String VERSION_BASELINE_SUFFIX = ".0";
+
     private String name;
 
     private Set<DomainTypeDefinition> domainTypeDefinitions = new TreeSet<>(

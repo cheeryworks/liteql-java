@@ -68,8 +68,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.cheeryworks.liteql.skeleton.service.schema.SchemaMetadata.VERSION_BASELINE_SUFFIX;
-import static org.cheeryworks.liteql.skeleton.service.schema.SchemaMetadata.VERSION_CONCAT;
+import static org.cheeryworks.liteql.skeleton.schema.Schema.VERSION_BASELINE_SUFFIX;
+import static org.cheeryworks.liteql.skeleton.schema.Schema.VERSION_CONCAT;
 
 public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
 
