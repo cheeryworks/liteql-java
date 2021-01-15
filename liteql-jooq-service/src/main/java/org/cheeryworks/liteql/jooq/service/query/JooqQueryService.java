@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.jooq.service.query;
 
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
-import org.cheeryworks.liteql.skeleton.query.event.publisher.QueryEventPublisher;
-import org.cheeryworks.liteql.skeleton.query.event.publisher.QueryPublisher;
+import org.cheeryworks.liteql.skeleton.event.publisher.query.QueryEventPublisher;
+import org.cheeryworks.liteql.skeleton.event.publisher.query.QueryPublisher;
 import org.cheeryworks.liteql.skeleton.service.query.QueryAuditingService;
 import org.cheeryworks.liteql.skeleton.service.query.sql.AbstractSqlQueryService;
 

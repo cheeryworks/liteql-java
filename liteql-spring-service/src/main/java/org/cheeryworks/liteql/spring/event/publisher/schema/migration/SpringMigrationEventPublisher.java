@@ -1,7 +1,7 @@
-package org.cheeryworks.liteql.spring.context;
+package org.cheeryworks.liteql.spring.event.publisher.schema.migration;
 
 import org.cheeryworks.liteql.skeleton.schema.migration.event.AbstractMigrationEvent;
-import org.cheeryworks.liteql.skeleton.service.schema.migration.MigrationEventPublisher;
+import org.cheeryworks.liteql.skeleton.event.publisher.schema.migration.MigrationEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 
 public class SpringMigrationEventPublisher implements MigrationEventPublisher {

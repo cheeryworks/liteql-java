@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration;
 
 import org.cheeryworks.liteql.jooq.service.AbstractJooqTest;
-import org.cheeryworks.liteql.skeleton.service.schema.migration.LoggingMigrationEventPublisher;
+import org.cheeryworks.liteql.skeleton.event.publisher.schema.migration.LoggingMigrationEventPublisher;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

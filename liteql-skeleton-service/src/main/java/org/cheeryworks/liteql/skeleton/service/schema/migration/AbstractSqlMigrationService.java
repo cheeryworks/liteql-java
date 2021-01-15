@@ -2,6 +2,7 @@ package org.cheeryworks.liteql.skeleton.service.schema.migration;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.skeleton.event.publisher.schema.migration.MigrationEventPublisher;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
 import org.cheeryworks.liteql.skeleton.schema.migration.Migration;
 import org.cheeryworks.liteql.skeleton.schema.migration.event.MigrationCompletedEvent;

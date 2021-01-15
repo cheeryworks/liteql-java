@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.skeleton.service.schema.migration;
+package org.cheeryworks.liteql.skeleton.event.publisher.schema.migration;
 
 import org.cheeryworks.liteql.skeleton.schema.migration.event.AbstractMigrationEvent;
 import org.slf4j.Logger;
