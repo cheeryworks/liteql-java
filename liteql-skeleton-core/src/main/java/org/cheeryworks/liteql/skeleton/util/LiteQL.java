@@ -248,7 +248,7 @@ public final class LiteQL {
         }
 
         public static String plural(String word) {
-            return English.plural(word);
+            return WordPlural.get(word);
         }
 
         public static Set<String> convertDelimitedParameterToSetOfString(String ids) {

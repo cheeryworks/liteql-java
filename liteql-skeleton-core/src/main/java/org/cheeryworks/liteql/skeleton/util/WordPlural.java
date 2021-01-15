@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class English {
+final class WordPlural {
 
     enum MODE {
         ENGLISH_ANGLICIZED, ENGLISH_CLASSICAL
@@ -97,14 +97,14 @@ final class English {
             "Panaman", "Selman", "Sonaman", "Tacoman", "Yakiman", "Yokohaman", "Yuman"
     };
 
-    private static English instance = new English();
+    private static WordPlural instance = new WordPlural();
 
 
-    private English() {
+    private WordPlural() {
         this(MODE.ENGLISH_ANGLICIZED);
     }
 
-    private English(MODE mode) {
+    private WordPlural(MODE mode) {
 
         uncountable(new String[]{
                 "fish", "ois", "sheep", "deer", "pox", "itis",
@@ -234,24 +234,6 @@ final class English {
         rule("$", "s");
     }
 
-    /**
-     * Returns plural form of the given word.
-     * <p>
-     * For instance:
-     * <pre>
-     * {@code
-     * English.plural("cat") == "cats";
-     * }
-     * </pre>
-     * </p>
-     *
-     * @param word word in singular form
-     * @return plural form of given word
-     */
-    public static String plural(String word) {
-        return instance.getPlural(word);
-    }
-
     private interface Rule {
         String getPlural(String singular);
     }
@@ -306,7 +288,7 @@ final class English {
 
     private final List<Rule> rules = new ArrayList<>();
 
-    private String getPlural(String word) {
+    public String getPlural(String word) {
         for (Rule rule : rules) {
             String result = rule.getPlural(word);
             if (result != null) {
@@ -316,11 +298,15 @@ final class English {
         return null;
     }
 
-    protected void uncountable(String[] list) {
+    public static String get(String word) {
+        return instance.getPlural(word);
+    }
+
+    private void uncountable(String[] list) {
         rules.add(new CategoryRule(list, "", ""));
     }
 
-    protected void irregular(String singular, String plural) {
+    private void irregular(String singular, String plural) {
         if (singular.charAt(0) == plural.charAt(0)) {
             rules.add(new RegExpRule(Pattern.compile("(?i)(" + singular.charAt(0) + ")" + singular.substring(1)
                     + "$"), "$1" + plural.substring(1)));
@@ -334,23 +320,23 @@ final class English {
         }
     }
 
-    protected void irregular(String[][] list) {
+    private void irregular(String[][] list) {
         for (String[] pair : list) {
             irregular(pair[0], pair[1]);
         }
     }
 
-    protected void rule(String singular, String plural) {
+    private void rule(String singular, String plural) {
         rules.add(new RegExpRule(Pattern.compile(singular, Pattern.CASE_INSENSITIVE), plural));
     }
 
-    protected void rule(String[][] list) {
+    private void rule(String[][] list) {
         for (String[] pair : list) {
             rules.add(new RegExpRule(Pattern.compile(pair[0], Pattern.CASE_INSENSITIVE), pair[1]));
         }
     }
 
-    protected void categoryRule(String[] list, String singular, String plural) {
+    private void categoryRule(String[] list, String singular, String plural) {
         rules.add(new CategoryRule(list, singular, plural));
     }
 
