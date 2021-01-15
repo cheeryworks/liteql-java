@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-service</artifactId>
+            <artifactId>liteql-skeleton-service</artifactId>
         </dependency>
 
         <dependency>
@@ -24,19 +24,19 @@
 
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-core</artifactId>
+            <artifactId>liteql-skeleton-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-model</artifactId>
+            <artifactId>liteql-skeleton-model</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-service</artifactId>
+            <artifactId>liteql-skeleton-service</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

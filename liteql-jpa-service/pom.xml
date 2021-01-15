@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
-            <artifactId>liteql-service</artifactId>
+            <artifactId>liteql-skeleton-service</artifactId>
         </dependency>
     </dependencies>
 </project>

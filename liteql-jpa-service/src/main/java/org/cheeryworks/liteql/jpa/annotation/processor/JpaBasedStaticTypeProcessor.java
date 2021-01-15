@@ -1,9 +1,9 @@
 package org.cheeryworks.liteql.jpa.annotation.processor;
 
-import org.cheeryworks.liteql.schema.annotation.processor.AbstractStaticTypeProcessor;
-import org.cheeryworks.liteql.schema.field.ClobField;
-import org.cheeryworks.liteql.schema.field.Field;
-import org.cheeryworks.liteql.schema.field.IdField;
+import org.cheeryworks.liteql.skeleton.schema.annotation.processor.AbstractStaticTypeProcessor;
+import org.cheeryworks.liteql.skeleton.schema.field.ClobField;
+import org.cheeryworks.liteql.skeleton.schema.field.Field;
+import org.cheeryworks.liteql.skeleton.schema.field.IdField;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;

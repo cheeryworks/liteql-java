@@ -3,12 +3,12 @@ package org.cheeryworks.liteql.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.cheeryworks.liteql.schema.TraitType;
-import org.cheeryworks.liteql.schema.TypeName;
-import org.cheeryworks.liteql.schema.annotation.LiteQLReferenceField;
-import org.cheeryworks.liteql.service.schema.SchemaService;
-import org.cheeryworks.liteql.service.sql.DefaultSqlCustomizer;
-import org.cheeryworks.liteql.util.LiteQL;
+import org.cheeryworks.liteql.skeleton.schema.TraitType;
+import org.cheeryworks.liteql.skeleton.schema.TypeName;
+import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLReferenceField;
+import org.cheeryworks.liteql.skeleton.service.schema.SchemaService;
+import org.cheeryworks.liteql.skeleton.service.sql.DefaultSqlCustomizer;
+import org.cheeryworks.liteql.skeleton.util.LiteQL;
 import org.reflections.Reflections;
 
 import javax.persistence.Column;
