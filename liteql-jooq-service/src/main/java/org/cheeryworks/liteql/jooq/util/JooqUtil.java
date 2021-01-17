@@ -135,21 +135,21 @@ public class JooqUtil {
         return getBlobDataType().nullable(nullable);
     }
 
-    public static DataType<?> getDataType(Class<?> type) {
+    public static <T> DataType<T> getDataType(Class<T> type) {
         if (String.class.isAssignableFrom(type)) {
-            return getStringDataType();
+            return (DataType<T>) getStringDataType();
         } else if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type)) {
-            return getLongDataType();
+            return (DataType<T>) getLongDataType();
         } else if (int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)) {
-            return getIntegerDataType();
+            return (DataType<T>) getIntegerDataType();
         } else if (boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type)) {
-            return getBooleanDataType();
+            return (DataType<T>) getBooleanDataType();
         } else if (BigDecimal.class.isAssignableFrom(type)) {
-            return getBigDecimalDataType();
+            return (DataType<T>) getBigDecimalDataType();
         } else if (Date.class.isAssignableFrom(type)) {
-            return getTimestampDataType();
+            return (DataType<T>) getTimestampDataType();
         } else if (byte[].class.isAssignableFrom(type)) {
-            return getBlobDataType();
+            return (DataType<T>) getBlobDataType();
         }
 
         throw new IllegalArgumentException(type.getName() + " not supported");
