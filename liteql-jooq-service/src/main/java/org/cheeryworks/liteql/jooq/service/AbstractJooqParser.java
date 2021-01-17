@@ -3,7 +3,6 @@ package org.cheeryworks.liteql.jooq.service;
 import org.apache.commons.collections4.CollectionUtils;
 import org.cheeryworks.liteql.jooq.util.JooqUtil;
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
-import org.cheeryworks.liteql.skeleton.enums.Database;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
 import org.cheeryworks.liteql.skeleton.schema.enums.IndexType;
@@ -48,8 +47,6 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
 
     private DSLContext dslContext;
 
-    private Database database;
-
     public AbstractJooqParser(
             LiteQLProperties liteQLProperties,
             SchemaService schemaService, SqlCustomizer sqlCustomizer,
@@ -57,15 +54,10 @@ public abstract class AbstractJooqParser extends AbstractSqlParser {
         super(liteQLProperties, schemaService, sqlCustomizer);
 
         this.dslContext = dslContext;
-        this.database = JooqUtil.getDatabase(dslContext.dialect());
     }
 
     public DSLContext getDslContext() {
         return dslContext;
-    }
-
-    protected Database getDatabase() {
-        return database;
     }
 
     protected String parsingAddPrimaryKey(String tableName) {

@@ -34,17 +34,9 @@ public class JooqUtil {
 
     public static final int STRING_DEFAULT_LENGTH = 255;
 
-    public static final int STRING_MAX_LENGTH = 4000;
-
-    public static final int LONG_LENGTH = 19;
-
-    public static final int INTEGER_MAX_LENGTH = 10;
-
     public static final int BIG_DECIMAL_PRECISION = 19;
 
     public static final int BIG_DECIMAL_MIN_SCALE = 2;
-
-    public static final int BIG_DECIMAL_MAX_SCALE = 6;
 
     public static final Map<Integer, Class> SUPPORTED_DATA_TYPES = new HashMap<>();
 
@@ -60,7 +52,7 @@ public class JooqUtil {
     }
 
     public static DataType<String> getStringDataType() {
-        return SQLDataType.VARCHAR;
+        return SQLDataType.VARCHAR(STRING_DEFAULT_LENGTH);
     }
 
     public static DataType<String> getStringDataType(boolean nullable) {
@@ -79,20 +71,12 @@ public class JooqUtil {
         return getLongDataType().nullable(nullable);
     }
 
-    public static DataType<Long> getLongDataType(boolean nullable, int length) {
-        return getLongDataType(nullable).length(length);
-    }
-
     public static DataType<Integer> getIntegerDataType() {
         return SQLDataType.INTEGER;
     }
 
     public static DataType<Integer> getIntegerDataType(boolean nullable) {
         return getIntegerDataType().nullable(nullable);
-    }
-
-    public static DataType<Integer> getIntegerDataType(boolean nullable, int length) {
-        return getIntegerDataType(nullable).length(length);
     }
 
     public static DataType<Boolean> getBooleanDataType() {
@@ -105,10 +89,6 @@ public class JooqUtil {
 
     public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable) {
         return getBigDecimalDataType().nullable(nullable);
-    }
-
-    public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable, int precision, int scale) {
-        return getBigDecimalDataType(nullable).precision(precision).scale(scale);
     }
 
     public static DataType<Timestamp> getTimestampDataType() {
@@ -176,12 +156,6 @@ public class JooqUtil {
                 "Condition type " + conditionType.name() + " not mapping with Jooq DataType");
     }
 
-    public static SQLDialect getSqlDialect(String databaseType) {
-        Database database = Database.valueOf(databaseType);
-
-        return getSqlDialect(database);
-    }
-
     public static SQLDialect getSqlDialect(Database database) {
         if (database.equals(Database.H2)) {
             return SQLDialect.H2;
@@ -230,12 +204,11 @@ public class JooqUtil {
         return null;
     }
 
-    public static String getPageSql(
-            Database database, SelectConditionStep selectConditionStep, Pageable pageable) {
-        return getPageSql(database, selectConditionStep, pageable.getPage() * pageable.getSize(), pageable.getSize());
+    public static String getPageSql(SelectConditionStep selectConditionStep, Pageable pageable) {
+        return getPageSql(selectConditionStep, pageable.getPage() * pageable.getSize(), pageable.getSize());
     }
 
-    public static String getPageSql(Database database, SelectLimitStep selectLimitStep, int start, int limit) {
+    public static String getPageSql(SelectLimitStep selectLimitStep, int start, int limit) {
         selectLimitStep.limit(start, limit);
 
         return selectLimitStep.getSQL();

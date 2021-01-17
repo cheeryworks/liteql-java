@@ -161,7 +161,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     ((PageReadQuery) readQuery).getPage(),
                     ((PageReadQuery) readQuery).getSize());
 
-            sqlReadQuery.setSql(JooqUtil.getPageSql(getDatabase(), selectConditionStep, pageable));
+            sqlReadQuery.setSql(JooqUtil.getPageSql(selectConditionStep, pageable));
         } else {
             sqlReadQuery.setSql(selectConditionStep.getSQL());
         }
