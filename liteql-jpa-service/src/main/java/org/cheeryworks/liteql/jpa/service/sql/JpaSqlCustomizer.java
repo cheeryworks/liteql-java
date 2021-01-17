@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.jpa;
+package org.cheeryworks.liteql.jpa.service.sql;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;

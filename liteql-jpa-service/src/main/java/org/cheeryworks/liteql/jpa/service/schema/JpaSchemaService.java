@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.jpa;
+package org.cheeryworks.liteql.jpa.service.schema;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
