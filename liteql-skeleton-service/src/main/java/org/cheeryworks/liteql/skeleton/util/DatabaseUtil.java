@@ -20,7 +20,7 @@ public final class DatabaseUtil {
             Database.H2,
             Database.HSQL,
             Database.MYSQL,
-            Database.MARIA_DB,
+            Database.MARIADB,
             Database.POSTGRESQL
     };
 
@@ -41,7 +41,7 @@ public final class DatabaseUtil {
             return hsqlDatabase;
         } else if (Database.MYSQL.equals(database)) {
             return mysqlDatabase;
-        } else if (Database.MARIA_DB.equals(database)) {
+        } else if (Database.MARIADB.equals(database)) {
             return mariaDBDatabase;
         } else if (Database.POSTGRESQL.equals(database)) {
             return postgresqlDatabase;
@@ -75,7 +75,7 @@ public final class DatabaseUtil {
     }
 
     public static boolean isMariaDB(Database database) {
-        if (Database.MARIA_DB.equals(database)) {
+        if (Database.MARIADB.equals(database)) {
             return true;
         }
 

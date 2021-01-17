@@ -195,7 +195,7 @@ public class JooqUtil {
             return SQLDialect.MYSQL;
         }
 
-        if (database.equals(Database.MARIA_DB)) {
+        if (database.equals(Database.MARIADB)) {
             return SQLDialect.MARIADB;
         }
 
@@ -220,7 +220,7 @@ public class JooqUtil {
         }
 
         if (dialect.equals(SQLDialect.MARIADB)) {
-            return Database.MARIA_DB;
+            return Database.MARIADB;
         }
 
         if (dialect.equals(SQLDialect.POSTGRES)) {
