@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.jooq.boot.configuration;
 
-import org.cheeryworks.liteql.spring.boot.configuration.LiteQLSpringProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = LiteQLJooqFlywayMigrationProperties.PREFIX)
