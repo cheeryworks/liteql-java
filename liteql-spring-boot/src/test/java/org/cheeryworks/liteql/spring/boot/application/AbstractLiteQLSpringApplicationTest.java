@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.spring.boot.application;
 
+import org.cheeryworks.liteql.skeleton.event.ApplicationStartedEvent;
 import org.cheeryworks.liteql.skeleton.service.schema.migration.MigrationService;
-import org.cheeryworks.liteql.spring.event.SpringApplicationStartedEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public abstract class AbstractLiteQLSpringApplicationTest {
 
     @BeforeAll
     public static void init(@Autowired ConfigurableApplicationContext applicationContext) {
-        applicationContext.publishEvent(new SpringApplicationStartedEvent(applicationContext));
+        applicationContext.publishEvent(new ApplicationStartedEvent());
     }
 
     @Test

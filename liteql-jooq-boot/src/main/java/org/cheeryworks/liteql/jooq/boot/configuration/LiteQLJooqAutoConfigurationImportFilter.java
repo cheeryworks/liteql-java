@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.jooq.boot.configuration;
 
 import org.cheeryworks.liteql.spring.boot.configuration.AbstractAutoConfigurationImportFilter;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration;
 
 import java.util.Arrays;
@@ -13,7 +14,8 @@ public class LiteQLJooqAutoConfigurationImportFilter extends AbstractAutoConfigu
     protected Set<String> getShouldSkippedAutoConfigurations() {
         return new HashSet<>(
                 Arrays.asList(
-                        JooqAutoConfiguration.class.getName()
+                        JooqAutoConfiguration.class.getName(),
+                        FlywayAutoConfiguration.class.getName()
                 )
         );
     }

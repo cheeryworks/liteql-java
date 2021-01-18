@@ -23,6 +23,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-skeleton-core</artifactId>
             <type>test-jar</type>

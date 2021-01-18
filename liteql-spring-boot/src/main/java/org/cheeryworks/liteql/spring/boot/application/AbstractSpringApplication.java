@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.spring.boot.application;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.spring.event.SpringApplicationStartedEvent;
+import org.cheeryworks.liteql.skeleton.event.ApplicationStartedEvent;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -104,7 +104,7 @@ public abstract class AbstractSpringApplication extends SpringApplication {
     @Override
     protected void afterRefresh(ConfigurableApplicationContext context, ApplicationArguments args) {
 
-        context.publishEvent(new SpringApplicationStartedEvent(context));
+        context.publishEvent(new ApplicationStartedEvent());
 
     }
 
