@@ -1,5 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqAutoConfiguration
+  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqAutoConfiguration,\
+  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqFlywayMigrationAutoConfiguration
 
 org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
-  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqAutoConfigurationImportFilter
+  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqAutoConfigurationImportFilter,\
+  org.cheeryworks.liteql.jooq.boot.configuration.LiteQLJooqFlywayMigrationAutoConfigurationImportFilter

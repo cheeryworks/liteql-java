@@ -1,16 +1,11 @@
 package org.cheeryworks.liteql.jooq.boot.configuration;
 
 
-import org.cheeryworks.liteql.jooq.component.SpringJooqMigrationTransactionController;
 import org.cheeryworks.liteql.jooq.event.listener.ApplicationStartedEventListenerForMigration;
-import org.cheeryworks.liteql.jooq.event.listener.BeforeMigrationEventListenerForFlywayMigration;
 import org.cheeryworks.liteql.jooq.service.query.JooqQueryExecutor;
 import org.cheeryworks.liteql.jooq.service.query.JooqQueryParser;
 import org.cheeryworks.liteql.jooq.service.query.JooqQueryService;
 import org.cheeryworks.liteql.jooq.service.schema.migration.JooqMigrationService;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqDatabaseMigrator;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationTransactionController;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal.DefaultJooqDatabaseMigrator;
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
 import org.cheeryworks.liteql.skeleton.event.publisher.query.QueryEventPublisher;
 import org.cheeryworks.liteql.skeleton.event.publisher.query.QueryPublisher;
@@ -150,26 +145,6 @@ public class LiteQLJooqAutoConfiguration extends JooqAutoConfiguration {
     public ApplicationStartedEventListenerForMigration applicationStartedEventListenerForMigration(
             LiteQLProperties liteQLProperties, MigrationService migrationService) {
         return new ApplicationStartedEventListenerForMigration(liteQLProperties, migrationService);
-    }
-
-    @Bean
-    public JooqMigrationTransactionController springJdbcWithJOOQMigrationTransactionController() {
-        return new SpringJooqMigrationTransactionController();
-    }
-
-    @Bean
-    public JooqDatabaseMigrator databaseMigrator(
-            DataSource dataSource, DSLContext dslContext, JooqMigrationTransactionController transactionController) {
-        JooqDatabaseMigrator jooqDatabaseMigrator = new DefaultJooqDatabaseMigrator(
-                dataSource, dslContext, transactionController);
-
-        return jooqDatabaseMigrator;
-    }
-
-    @Bean
-    public BeforeMigrationEventListenerForFlywayMigration liteQLBeforeMigrationEventListenerForJooqMigration(
-            LiteQLJooqProperties liteQLJooqProperties, JooqDatabaseMigrator jooqDatabaseMigrator) {
-        return new BeforeMigrationEventListenerForFlywayMigration(liteQLJooqProperties, jooqDatabaseMigrator);
     }
 
 }
