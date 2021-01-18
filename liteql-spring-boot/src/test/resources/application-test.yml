@@ -1,0 +1,9 @@
+spring:
+  main:
+    banner-mode: "off"
+  application:
+    name: LiteQL Application (Test)
+  security:
+    user:
+      name: "admin"
+      password: "admin"

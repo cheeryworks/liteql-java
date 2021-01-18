@@ -15,11 +15,13 @@
         <module>liteql-skeleton-model</module>
         <module>liteql-skeleton-api</module>
         <module>liteql-skeleton-service</module>
-        <module>liteql-jooq-service</module>
-        <module>liteql-jpa-model</module>
-        <module>liteql-jpa-service</module>
         <module>liteql-spring-service</module>
         <module>liteql-spring-boot</module>
+        <module>liteql-jooq-service</module>
+        <module>liteql-jooq-boot</module>
+        <module>liteql-jpa-model</module>
+        <module>liteql-jpa-service</module>
+        <module>liteql-jpa-boot</module>
     </modules>
     <packaging>pom</packaging>
     <name>LiteQL</name>
@@ -75,7 +77,28 @@
             </dependency>
             <dependency>
                 <groupId>org.cheeryworks.liteql</groupId>
+                <artifactId>liteql-spring-service</artifactId>
+                <version>${liteql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cheeryworks.liteql</groupId>
+                <artifactId>liteql-spring-boot</artifactId>
+                <version>${liteql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cheeryworks.liteql</groupId>
+                <artifactId>liteql-spring-boot</artifactId>
+                <type>test-jar</type>
+                <version>${liteql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cheeryworks.liteql</groupId>
                 <artifactId>liteql-jooq-service</artifactId>
+                <version>${liteql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cheeryworks.liteql</groupId>
+                <artifactId>liteql-jooq-boot</artifactId>
                 <version>${liteql.version}</version>
             </dependency>
             <dependency>
@@ -90,12 +113,7 @@
             </dependency>
             <dependency>
                 <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-spring-service</artifactId>
-                <version>${liteql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cheeryworks.liteql</groupId>
-                <artifactId>liteql-spring-boot</artifactId>
+                <artifactId>liteql-jpa-boot</artifactId>
                 <version>${liteql.version}</version>
             </dependency>
         </dependencies>

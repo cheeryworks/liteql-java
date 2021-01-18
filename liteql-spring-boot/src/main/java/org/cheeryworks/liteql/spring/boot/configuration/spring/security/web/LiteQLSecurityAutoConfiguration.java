@@ -2,7 +2,6 @@ package org.cheeryworks.liteql.spring.boot.configuration.spring.security.web;
 
 
 import org.cheeryworks.liteql.spring.security.web.AuditQueryContextHandlerMethodArgumentResolver;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -16,8 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureBefore(SecurityAutoConfiguration.class)
-public class LiteQLSecurityAutoConfiguration {
+public class LiteQLSecurityAutoConfiguration extends SecurityAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(WebSecurityConfigurerAdapter.class)

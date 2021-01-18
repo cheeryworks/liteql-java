@@ -16,10 +16,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class LiteQLApplicationTest {
+public abstract class AbstractLiteQLSpringApplicationTest {
 
     @BeforeAll
     public static void init(@Autowired ConfigurableApplicationContext applicationContext) {

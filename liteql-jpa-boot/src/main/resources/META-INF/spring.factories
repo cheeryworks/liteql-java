@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.cheeryworks.liteql.jpa.boot.configuration.LiteQLJpaAutoConfiguration
