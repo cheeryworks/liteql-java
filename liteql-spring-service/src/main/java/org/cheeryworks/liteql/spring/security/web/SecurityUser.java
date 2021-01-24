@@ -36,16 +36,6 @@ public class SecurityUser implements UserDetails, UserType {
     }
 
     @Override
-    public String getEmail() {
-        return this.user.getEmail();
-    }
-
-    @Override
-    public String getPhone() {
-        return this.user.getPhone();
-    }
-
-    @Override
     public String getAvatarUrl() {
         return this.user.getAvatarUrl();
     }
