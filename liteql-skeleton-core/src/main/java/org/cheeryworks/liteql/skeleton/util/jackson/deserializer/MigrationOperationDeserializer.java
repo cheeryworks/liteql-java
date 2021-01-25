@@ -9,6 +9,7 @@ import org.cheeryworks.liteql.skeleton.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.CreateFieldMigrationOperation;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.CreateTypeMigrationOperation;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.CreateUniqueMigrationOperation;
+import org.cheeryworks.liteql.skeleton.schema.migration.operation.DataMigrationOperation;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.DropFieldMigrationOperation;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.DropTypeMigrationOperation;
 import org.cheeryworks.liteql.skeleton.schema.migration.operation.DropUniqueMigrationOperation;
@@ -47,6 +48,8 @@ public class MigrationOperationDeserializer extends StdDeserializer<MigrationOpe
                         return jsonParser.getCodec().treeToValue(node, CreateUniqueMigrationOperation.class);
                     case DROP_UNIQUE:
                         return jsonParser.getCodec().treeToValue(node, DropUniqueMigrationOperation.class);
+                    case DATA_MIGRATION:
+                        return jsonParser.getCodec().treeToValue(node, DataMigrationOperation.class);
                     default:
                         throw new IllegalArgumentException(
                                 "Unsupported migration operation: " + migrationOperationTypeInString);
