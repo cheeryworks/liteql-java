@@ -198,7 +198,7 @@
     </pluginRepositories>
     <scm>
         <url>https://github.com/cheeryworks/liteql-java</url>
-        <connection>scm:git:https://github.com/cheeryworks/liteql-java</connection>
-        <developerConnection>scm:git:https://github.com/cheeryworks/liteql-java</developerConnection>
+        <connection>scm:git:git@github.com:cheeryworks/liteql-java.git</connection>
+        <developerConnection>scm:git:git@github.com:cheeryworks/liteql-java.git</developerConnection>
     </scm>
 </project>
