@@ -303,7 +303,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             InsertSetStep insertSetStep = getDslContext()
                     .insertInto(table(getSqlCustomizer().getTableName(saveQuery.getDomainTypeName())));
 
-            DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(IdField.ID_FIELD_NAME));
+            DataType dataType = getDataType(
+                    domainTypeDefinition.getTypeName(), fieldDefinitions, IdField.ID_FIELD_NAME);
 
             if (!data.containsKey(IdField.ID_FIELD_NAME)) {
                 insertSetStep.set(
@@ -318,7 +319,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     continue;
                 }
 
-                dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                dataType = getDataType(domainTypeDefinition.getTypeName(), fieldDefinitions, dataEntry.getKey());
 
                 String fieldName = getSqlCustomizer().getColumnName(
                         domainTypeDefinition.getTypeName(), dataEntry.getKey());
@@ -357,23 +358,24 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
-                DataType dataType = JooqUtil.getDataType(fieldDefinitions.get(dataEntry.getKey()));
+                DataType dataType = getDataType(
+                        domainTypeDefinition.getTypeName(), fieldDefinitions, dataEntry.getKey());
 
-                String fieldName = getSqlCustomizer().getColumnName(
+                String columnName = getSqlCustomizer().getColumnName(
                         domainTypeDefinition.getTypeName(), dataEntry.getKey());
 
                 if (dataEntry.getKey().equals(IdField.ID_FIELD_NAME)
                         || (uniqueDefinition != null && uniqueDefinition.getFields().contains(dataEntry.getKey()))) {
-                    condition = condition.and(field(fieldName, dataType).eq(dataEntry.getValue()));
+                    condition = condition.and(field(columnName, dataType).eq(dataEntry.getValue()));
                 } else {
                     if (domainTypeDefinition.isReferenceField(dataEntry.getKey())
                             && dataEntry.getValue() instanceof Map) {
                         updateSetStep.set(
-                                field(fieldName, dataType),
+                                field(columnName, dataType),
                                 getReferenceIdSelect(
                                         dataEntry.getKey(), dataEntry.getValue(), domainTypeDefinition));
                     } else {
-                        updateSetStep.set(field(fieldName, dataType), dataEntry.getValue());
+                        updateSetStep.set(field(columnName, dataType), dataEntry.getValue());
                     }
                 }
             }
@@ -388,6 +390,17 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         }
 
         return sqlSaveQuery;
+    }
+
+    private DataType getDataType(TypeName typeName, Map<String, Class> fieldDefinitions, String fieldName) {
+        Class fieldType = fieldDefinitions.get(fieldName);
+
+        if (fieldType == null) {
+            throw new IllegalArgumentException(
+                    "Field " + fieldName + " not defined in domain type " + typeName.getFullname());
+        }
+
+        return JooqUtil.getDataType(fieldType);
     }
 
     private Object getReferenceIdSelect(
