@@ -23,6 +23,8 @@ public interface AuditType extends DomainType {
 
     String CREATE_TIME_FIELD_NAME = "createTime";
 
+    String LAST_MODIFIER_REFERENCE_FIELD_NAME = "lastModifier";
+
     String LAST_MODIFIER_ID_FIELD_NAME = "lastModifierId";
 
     String LAST_MODIFIED_TIME_FIELD_NAME = "lastModifiedTime";

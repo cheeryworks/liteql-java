@@ -44,11 +44,11 @@ public class DefaultQueryAuditingService implements QueryAuditingService {
                 UserType user = ((AuditQueryContext) queryContext).getUser();
 
                 if (user != null) {
-                    if (domainObject.get(AuditType.CREATOR_ID_FIELD_NAME) == null) {
-                        domainObject.put(AuditType.CREATOR_ID_FIELD_NAME, user.getId());
+                    if (domainObject.get(AuditType.CREATOR_REFERENCE_FIELD_NAME) == null) {
+                        domainObject.put(AuditType.CREATOR_REFERENCE_FIELD_NAME, user.getId());
                     }
 
-                    domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+                    domainObject.put(AuditType.LAST_MODIFIER_REFERENCE_FIELD_NAME, user.getId());
                 }
             }
         }
@@ -66,7 +66,7 @@ public class DefaultQueryAuditingService implements QueryAuditingService {
                 UserType user = ((AuditQueryContext) queryContext).getUser();
 
                 if (user != null) {
-                    domainObject.put(AuditType.LAST_MODIFIER_ID_FIELD_NAME, user.getId());
+                    domainObject.put(AuditType.LAST_MODIFIER_REFERENCE_FIELD_NAME, user.getId());
                 }
             }
         }
