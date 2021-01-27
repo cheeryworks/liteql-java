@@ -6,7 +6,9 @@ import org.cheeryworks.liteql.skeleton.query.QueryCondition;
 import org.cheeryworks.liteql.skeleton.query.QueryConditions;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.page.Pageable;
+import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
+import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.service.sql.SqlCustomizer;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -215,22 +217,29 @@ public class JooqUtil {
     }
 
     public static Condition getCondition(
-            TypeName domainTypeName, String tableAlias, QueryConditions queryConditions, SqlCustomizer sqlCustomizer) {
-        return getCondition(null, null, domainTypeName, tableAlias, queryConditions, sqlCustomizer);
+            DomainTypeDefinition domainTypeDefinition, String tableAlias,
+            QueryConditions queryConditions, SqlCustomizer sqlCustomizer) {
+        return getCondition(null, null, domainTypeDefinition, tableAlias, queryConditions, sqlCustomizer);
     }
 
     public static Condition getCondition(
-            TypeName parentDomainTypeName, String parentTableAlias, TypeName domainTypeName, String tableAlias,
+            DomainTypeDefinition parentDomainTypeDefinition, String parentTableAlias,
+            DomainTypeDefinition domainTypeDefinition, String tableAlias,
             QueryConditions queryConditions, SqlCustomizer sqlCustomizer) {
         Condition condition = null;
+
+        TypeName domainTypeName = domainTypeDefinition.getTypeName();
 
         if (queryConditions != null && queryConditions.size() > 0) {
             for (QueryCondition queryCondition : queryConditions) {
                 Condition currentCondition;
 
                 if (queryCondition.getField() != null) {
+                    checkField(domainTypeDefinition, queryCondition.getField());
+
                     if (!NULL.equals(queryCondition.getCondition())
                             && !NOT_NULL.equals(queryCondition.getCondition())
+                            && !ConditionType.String.equals(queryCondition.getType())
                             && queryCondition.getValue() == null) {
                         throw new IllegalArgumentException(
                                 "Value of condition can not be null, " + queryCondition.toString());
@@ -247,7 +256,7 @@ public class JooqUtil {
                         case LESS_THAN:
                             currentCondition = field
                                     .lessThan(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -255,7 +264,7 @@ public class JooqUtil {
                         case LESS_OR_EQUALS:
                             currentCondition = field
                                     .lessOrEqual(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -263,7 +272,7 @@ public class JooqUtil {
                         case GREATER_THAN:
                             currentCondition = field
                                     .greaterThan(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -271,7 +280,7 @@ public class JooqUtil {
                         case GREATER_OR_EQUALS:
                             currentCondition = field
                                     .greaterOrEqual(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -279,7 +288,7 @@ public class JooqUtil {
                         case STARTS_WITH:
                             currentCondition = field
                                     .startsWith(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -287,14 +296,14 @@ public class JooqUtil {
                         case CONTAINS:
                             currentCondition = field
                                     .contains(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
                             break;
                         case BETWEEN:
                             List<Object> values = (List) getConditionRightClause(
-                                    parentDomainTypeName,
+                                    parentDomainTypeDefinition,
                                     parentTableAlias,
                                     queryCondition,
                                     sqlCustomizer);
@@ -305,7 +314,7 @@ public class JooqUtil {
                         case IN:
                             currentCondition = field
                                     .in(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -313,7 +322,7 @@ public class JooqUtil {
                         case NOT_EQUALS:
                             currentCondition = field
                                     .notEqual(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
@@ -324,14 +333,18 @@ public class JooqUtil {
                         case NOT_NULL:
                             currentCondition = field.isNotNull();
                             break;
-                        default:
+                        case EQUALS:
+                        case LENGTH:
                             currentCondition = field
                                     .eq(getConditionRightClause(
-                                            parentDomainTypeName,
+                                            parentDomainTypeDefinition,
                                             parentTableAlias,
                                             queryCondition,
                                             sqlCustomizer));
                             break;
+                        default:
+                            throw new IllegalArgumentException(
+                                    "Unsupported condition clause " + queryCondition.getCondition());
                     }
 
                     if (condition != null) {
@@ -358,12 +371,12 @@ public class JooqUtil {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = condition.or(getCondition(
-                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        parentDomainTypeDefinition, parentTableAlias, domainTypeDefinition, tableAlias,
                                         queryCondition.getConditions(), sqlCustomizer));
                                 break;
                             default:
                                 condition = condition.and(getCondition(
-                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        parentDomainTypeDefinition, parentTableAlias, domainTypeDefinition, tableAlias,
                                         queryCondition.getConditions(), sqlCustomizer));
                                 break;
                         }
@@ -371,12 +384,12 @@ public class JooqUtil {
                         switch (queryCondition.getOperator()) {
                             case OR:
                                 condition = DSL.or(getCondition(
-                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        parentDomainTypeDefinition, parentTableAlias, domainTypeDefinition, tableAlias,
                                         queryCondition.getConditions(), sqlCustomizer));
                                 break;
                             default:
                                 condition = DSL.and(getCondition(
-                                        parentDomainTypeName, parentTableAlias, domainTypeName, tableAlias,
+                                        parentDomainTypeDefinition, parentTableAlias, domainTypeDefinition, tableAlias,
                                         queryCondition.getConditions(), sqlCustomizer));
                                 break;
                         }
@@ -389,15 +402,33 @@ public class JooqUtil {
     }
 
     private static Object getConditionRightClause(
-            TypeName parentDomainTypeName, String parentTableAlias,
+            DomainTypeDefinition parentDomainTypeDefinition, String parentTableAlias,
             QueryCondition queryCondition, SqlCustomizer sqlCustomizer) {
         if (ConditionType.Field.equals(queryCondition.getType())) {
+            checkField(parentDomainTypeDefinition, queryCondition.getValue().toString());
+
             return DSL.field(
                     ((parentTableAlias != null) ? parentTableAlias + "." : "")
-                            + sqlCustomizer.getColumnName(parentDomainTypeName, queryCondition.getValue().toString()));
+                            + sqlCustomizer.getColumnName(
+                            parentDomainTypeDefinition.getTypeName(), queryCondition.getValue().toString()));
         }
 
         return transformValue(queryCondition);
+    }
+
+    public static void checkField(DomainTypeDefinition domainTypeDefinition, String fieldName) {
+        boolean exist = false;
+
+        for (Field field : domainTypeDefinition.getFields()) {
+            if (field.getName().equals(fieldName)) {
+                exist = true;
+            }
+        }
+
+        if (!exist) {
+            throw new IllegalArgumentException(
+                    "Field " + fieldName + " not defined in " + domainTypeDefinition.getTypeName().getFullname());
+        }
     }
 
     private static Object transformValue(QueryCondition queryCondition) {
@@ -413,6 +444,10 @@ public class JooqUtil {
 
             return transformedValues;
         } else {
+            if (ConditionType.String.equals(queryCondition.getType()) && queryCondition.getValue() == null) {
+                return "";
+            }
+
             return queryCondition.getValue();
         }
     }

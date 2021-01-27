@@ -89,8 +89,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         if (readQuery.getConditions() != null) {
             conditions.add(
                     JooqUtil.getCondition(
-                            readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
-                            readQuery.getConditions(), getSqlCustomizer()));
+                            getSchemaService().getDomainTypeDefinition(readQuery.getDomainTypeName()),
+                            TABLE_ALIAS_PREFIX, readQuery.getConditions(), getSqlCustomizer()));
         }
 
         Set<String> accessDecisionFields = getAccessDecisionFields(readQuery);
@@ -98,8 +98,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
         if (!accessDecisionFields.isEmpty()) {
             conditions.add(
                     JooqUtil.getCondition(
-                            readQuery.getDomainTypeName(), TABLE_ALIAS_PREFIX,
-                            readQuery.getAccessDecisionConditions(), getSqlCustomizer()));
+                            getSchemaService().getDomainTypeDefinition(readQuery.getDomainTypeName()),
+                            TABLE_ALIAS_PREFIX, readQuery.getAccessDecisionConditions(), getSqlCustomizer()));
         }
 
         List<org.jooq.Field<Object>> fields = getSelectFields(
@@ -229,14 +229,18 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                 joinedTable.setJoinCondition(
                         JooqUtil.getCondition(
-                                parentDomainTypeName, parentTableAliasPrefix,
-                                joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
+                                getSchemaService().getDomainTypeDefinition(parentDomainTypeName),
+                                parentTableAliasPrefix,
+                                getSchemaService().getDomainTypeDefinition(joinedReadQuery.getDomainTypeName()),
+                                joinedTable.getTableAlias(),
                                 joinConditions, getSqlCustomizer()));
 
                 joinedTable.setCondition(
                         JooqUtil.getCondition(
-                                parentDomainTypeName, parentTableAliasPrefix,
-                                joinedReadQuery.getDomainTypeName(), joinedTable.getTableAlias(),
+                                getSchemaService().getDomainTypeDefinition(parentDomainTypeName),
+                                parentTableAliasPrefix,
+                                getSchemaService().getDomainTypeDefinition(joinedReadQuery.getDomainTypeName()),
+                                joinedTable.getTableAlias(),
                                 joinedReadQuery.getConditions(), getSqlCustomizer()));
 
                 joinedTables.add(joinedTable);
@@ -279,6 +283,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             }
         } else if (CollectionUtils.isNotEmpty(fieldDefinitions)) {
             for (FieldDefinition fieldDefinition : fieldDefinitions) {
+                JooqUtil.checkField(domainTypeDefinition, fieldDefinition.getName());
+
                 String columnName = getSqlCustomizer().getColumnName(
                         domainTypeDefinition.getTypeName(), fieldDefinition.getName());
 
@@ -353,8 +359,8 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             if (saveQuery.getAccessDecisionConditions() != null) {
                 condition = condition.and(
                         JooqUtil.getCondition(
-                                saveQuery.getDomainTypeName(), null,
-                                saveQuery.getAccessDecisionConditions(), getSqlCustomizer()));
+                                getSchemaService().getDomainTypeDefinition(saveQuery.getDomainTypeName()),
+                                null, saveQuery.getAccessDecisionConditions(), getSqlCustomizer()));
             }
 
             for (Map.Entry<String, Object> dataEntry : data.entrySet()) {
@@ -445,14 +451,14 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
         conditions.add(
                 JooqUtil.getCondition(
-                        deleteQuery.getDomainTypeName(), null,
-                        deleteQuery.getConditions(), getSqlCustomizer()));
+                        getSchemaService().getDomainTypeDefinition(deleteQuery.getDomainTypeName()),
+                        null, deleteQuery.getConditions(), getSqlCustomizer()));
 
         if (deleteQuery.getAccessDecisionConditions() != null) {
             conditions.add(
                     JooqUtil.getCondition(
-                            deleteQuery.getDomainTypeName(), null,
-                            deleteQuery.getAccessDecisionConditions(), getSqlCustomizer()));
+                            getSchemaService().getDomainTypeDefinition(deleteQuery.getDomainTypeName()),
+                            null, deleteQuery.getAccessDecisionConditions(), getSqlCustomizer()));
         }
 
         DeleteFinalStep deleteFinalStep = getDslContext()
