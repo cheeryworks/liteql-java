@@ -4,6 +4,7 @@ import graphql.schema.DataFetchingEnvironment;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionClause;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.ReadQuery;
+import org.cheeryworks.liteql.skeleton.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.skeleton.query.read.result.ReadResults;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
 import org.cheeryworks.liteql.skeleton.service.query.QueryService;
@@ -86,6 +87,13 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
             DataFetchingEnvironment dataFetchingEnvironment =
                     (DataFetchingEnvironment) keyContext.get(
                             LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
+
+            FieldDefinitions fields = GraphQLServiceUtil.getFieldsFromSelections(
+                    dataFetchingEnvironment.getField().getSelectionSet().getSelections());
+
+            GraphQLServiceUtil.parseConditions(readQuery, fields, dataFetchingEnvironment);
+
+            GraphQLServiceUtil.parseSorts(readQuery, fields, dataFetchingEnvironment);
 
             ReadResults dataSubSet = queryService.read(dataFetchingEnvironment.getContext(), readQuery);
 
