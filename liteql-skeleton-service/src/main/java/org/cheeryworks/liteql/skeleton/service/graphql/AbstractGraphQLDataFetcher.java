@@ -140,7 +140,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 .getQuery();
 
         FieldDefinitions fields = GraphQLServiceUtil.getFieldsFromSelections(
-                outputType, environment.getField().getSelectionSet().getSelections());
+                environment.getField().getSelectionSet().getSelections());
 
         singleReadQuery.addCondition(
                 LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID, ConditionClause.EQUALS, ConditionType.String,
@@ -166,7 +166,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 .getQuery();
 
         FieldDefinitions fields = GraphQLServiceUtil.getFieldsFromSelections(
-                outputType, environment.getField().getSelectionSet().getSelections());
+                environment.getField().getSelectionSet().getSelections());
 
         GraphQLServiceUtil.parseConditions(readQuery, fields, environment);
 

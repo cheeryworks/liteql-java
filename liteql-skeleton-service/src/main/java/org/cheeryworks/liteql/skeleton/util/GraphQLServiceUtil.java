@@ -68,7 +68,7 @@ public abstract class GraphQLServiceUtil {
         readQuery.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
     }
 
-    public static FieldDefinitions getFieldsFromSelections(GraphQLObjectType outputType, List<Selection> selections) {
+    public static FieldDefinitions getFieldsFromSelections(List<Selection> selections) {
         FieldDefinitions fields = new FieldDefinitions();
 
         for (Selection selection : selections) {
