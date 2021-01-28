@@ -4,12 +4,10 @@ import graphql.schema.DataFetchingEnvironment;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionClause;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.ReadQuery;
-import org.cheeryworks.liteql.skeleton.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.skeleton.query.read.result.ReadResults;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
 import org.cheeryworks.liteql.skeleton.service.query.QueryService;
 import org.cheeryworks.liteql.skeleton.util.GraphQLServiceUtil;
-import org.cheeryworks.liteql.skeleton.util.LiteQL;
 import org.cheeryworks.liteql.skeleton.util.query.builder.QueryBuilder;
 import org.dataloader.BatchLoaderEnvironment;
 import org.dataloader.BatchLoaderWithContext;
@@ -23,6 +21,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_DOMAIN_TYPE_NAME_KEY;
 import static org.cheeryworks.liteql.skeleton.util.query.builder.QueryBuilderUtil.condition;
 
 public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<String, Object>> {
@@ -46,22 +48,22 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         for (String key : keys) {
             Map<String, Object> keyContext = (Map<String, Object>) keyContexts.get(key);
 
-            String type = keyContext.get(LiteQL.Constants.GraphQL.QUERY_DOMAIN_TYPE_NAME_KEY).toString();
+            String type = keyContext.get(QUERY_DOMAIN_TYPE_NAME_KEY).toString();
 
             if (!keysInTypes.containsKey(type)) {
                 keysInTypes.put(type, new HashMap<>());
             }
 
-            if (!keysInTypes.get(type).containsKey(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY)) {
+            if (!keysInTypes.get(type).containsKey(QUERY_DATA_FETCHING_KEYS_KEY)) {
                 keysInTypes.get(type).put(
-                        LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY, new LinkedHashSet<>());
+                        QUERY_DATA_FETCHING_KEYS_KEY, new LinkedHashSet<>());
                 keysInTypes.get(type).put(
-                        LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY,
-                        keyContext.get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY));
+                        QUERY_DATA_FETCHING_ENVIRONMENT_KEY,
+                        keyContext.get(QUERY_DATA_FETCHING_ENVIRONMENT_KEY));
             }
 
             Set<String> keysInType = (Set<String>) keysInTypes
-                    .get(type).get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY);
+                    .get(type).get(QUERY_DATA_FETCHING_KEYS_KEY);
 
             keysInType.add(key);
         }
@@ -78,22 +80,17 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
                     .fields()
                     .conditions(
                             condition(
-                                    LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID,
+                                    QUERY_ARGUMENT_NAME_ID,
                                     ConditionClause.IN, ConditionType.String,
-                                    keyContext.get(LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_KEYS_KEY))
+                                    keyContext.get(QUERY_DATA_FETCHING_KEYS_KEY))
                     )
                     .getQuery();
 
             DataFetchingEnvironment dataFetchingEnvironment =
                     (DataFetchingEnvironment) keyContext.get(
-                            LiteQL.Constants.GraphQL.QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
+                            QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
 
-            FieldDefinitions fields = GraphQLServiceUtil.getFieldsFromSelections(
-                    dataFetchingEnvironment.getField().getSelectionSet().getSelections());
-
-            GraphQLServiceUtil.parseConditions(readQuery, fields, dataFetchingEnvironment);
-
-            GraphQLServiceUtil.parseSorts(readQuery, fields, dataFetchingEnvironment);
+            GraphQLServiceUtil.parseFields(readQuery, dataFetchingEnvironment);
 
             ReadResults dataSubSet = queryService.read(dataFetchingEnvironment.getContext(), readQuery);
 
@@ -103,7 +100,7 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         Map<String, Map<String, Object>> dataSetInKey = new HashMap<>();
 
         for (Map<String, Object> data : dataSet) {
-            dataSetInKey.put(data.get(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID).toString(), data);
+            dataSetInKey.put(data.get(QUERY_ARGUMENT_NAME_ID).toString(), data);
         }
 
         List<Map<String, Object>> sortedDataSet = new ArrayList<>();

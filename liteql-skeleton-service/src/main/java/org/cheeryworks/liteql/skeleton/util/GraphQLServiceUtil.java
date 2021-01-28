@@ -17,7 +17,6 @@ import org.cheeryworks.liteql.skeleton.schema.TypeName;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 public abstract class GraphQLServiceUtil {
 
@@ -32,46 +31,20 @@ public abstract class GraphQLServiceUtil {
                 graphQLObjectTypeName.replaceAll(GRAPHQL_NAME_CONCAT, LiteQL.Constants.NAME_CONCAT));
     }
 
-    public static void parseConditions(
-            AbstractTypedReadQuery readQuery, FieldDefinitions fields, DataFetchingEnvironment environment) {
-        String conditions = "[]";
+    public static void fillReadQueryWithDataFetchingEnvironment(
+            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
+        parseFields(readQuery, dataFetchingEnvironment);
 
-        if (environment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS)) {
-            conditions = LiteQL.JacksonJsonUtils.toJson(
-                    environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS));
-        }
+        parseConditions(readQuery, dataFetchingEnvironment);
 
-        QueryCondition[] queryConditions = LiteQL.JacksonJsonUtils.toBean(conditions, QueryCondition[].class);
-
-        for (QueryCondition queryCondition : queryConditions) {
-            fields.add(new FieldDefinition(queryCondition.getField()));
-
-            readQuery.addCondition(queryCondition);
-        }
+        parseSorts(readQuery, dataFetchingEnvironment);
     }
 
-    public static void parseSorts(
-            AbstractTypedReadQuery readQuery, FieldDefinitions fields, DataFetchingEnvironment environment) {
-        String sorts = "[]";
-
-        if (environment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ORDER_BY)) {
-            sorts = LiteQL.JacksonJsonUtils.toJson(
-                    environment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ORDER_BY));
-        }
-
-        QuerySort[] querySorts = LiteQL.JacksonJsonUtils.toBean(sorts, QuerySort[].class);
-
-        for (QuerySort querySort : querySorts) {
-            fields.add(new FieldDefinition(querySort.getField()));
-        }
-
-        readQuery.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
-    }
-
-    public static FieldDefinitions getFieldsFromSelections(List<Selection> selections) {
+    public static void parseFields(
+            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
         FieldDefinitions fields = new FieldDefinitions();
 
-        for (Selection selection : selections) {
+        for (Selection selection : dataFetchingEnvironment.getField().getSelectionSet().getSelections()) {
             String fieldName = ((Field) selection).getName();
 
             fields.add(new FieldDefinition(fieldName));
@@ -79,7 +52,37 @@ public abstract class GraphQLServiceUtil {
 
         fields.add(new FieldDefinition(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID));
 
-        return fields;
+        readQuery.setFields(fields);
+    }
+
+    public static void parseConditions(
+            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
+        String conditions = "[]";
+
+        if (dataFetchingEnvironment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS)) {
+            conditions = LiteQL.JacksonJsonUtils.toJson(
+                    dataFetchingEnvironment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS));
+        }
+
+        QueryCondition[] queryConditions = LiteQL.JacksonJsonUtils.toBean(conditions, QueryCondition[].class);
+
+        for (QueryCondition queryCondition : queryConditions) {
+            readQuery.addCondition(queryCondition);
+        }
+    }
+
+    public static void parseSorts(
+            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
+        String sorts = "[]";
+
+        if (dataFetchingEnvironment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ORDER_BY)) {
+            sorts = LiteQL.JacksonJsonUtils.toJson(
+                    dataFetchingEnvironment.getArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ORDER_BY));
+        }
+
+        QuerySort[] querySorts = LiteQL.JacksonJsonUtils.toBean(sorts, QuerySort[].class);
+
+        readQuery.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
     }
 
     public static GraphQLObjectType getWrappedOutputType(GraphQLOutputType outputType) {

@@ -41,7 +41,6 @@ import org.cheeryworks.liteql.skeleton.service.query.QueryAccessDecisionService;
 import org.cheeryworks.liteql.skeleton.service.query.QueryService;
 import org.cheeryworks.liteql.skeleton.service.schema.SchemaService;
 import org.cheeryworks.liteql.skeleton.util.GraphQLServiceUtil;
-import org.cheeryworks.liteql.skeleton.util.LiteQL;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
@@ -64,6 +63,7 @@ import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUER
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_DEFAULT_DATA_LOADER_KEY;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_TYPE_NAME;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.StringUtils.plural;
 
 public class DefaultGraphQLService implements GraphQLService {
 
@@ -487,7 +487,7 @@ public class DefaultGraphQLService implements GraphQLService {
                                         .build())
                         .fieldDefinition(FieldDefinition
                                 .newFieldDefinition()
-                                .name(StringUtils.uncapitalize(LiteQL.StringUtils.plural(typeEntry.getKey())))
+                                .name(StringUtils.uncapitalize(plural(typeEntry.getKey())))
                                 .inputValueDefinition(
                                         InputValueDefinition
                                                 .newInputValueDefinition()
