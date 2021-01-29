@@ -7,7 +7,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({})
 @Retention(RUNTIME)
-public @interface LiteQLTypeIndex {
+public @interface LiteQLDomainTypeIndex {
 
     String[] fields();
 

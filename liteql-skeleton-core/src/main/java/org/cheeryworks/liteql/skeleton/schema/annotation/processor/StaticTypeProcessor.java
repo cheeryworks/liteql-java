@@ -18,7 +18,7 @@ import java.util.Set;
 public class StaticTypeProcessor extends AbstractStaticTypeProcessor {
 
     public static final String SUPPORTED_ANNOTATION_LITE_QL_TYPE
-            = "org.cheeryworks.liteql.schema.annotation.LiteQLType";
+            = "org.cheeryworks.liteql.schema.annotation.LiteQLDomainType";
 
     public static final String SUPPORTED_ANNOTATION_LITE_QL_MAPPED_TYPE
             = "org.cheeryworks.liteql.schema.annotation.LiteQLMappedType";
