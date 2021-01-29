@@ -1,23 +1,20 @@
 package org.cheeryworks.liteql.skeleton.schema.field.internal;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 
 public abstract class AbstractField implements Field {
 
     private String name;
 
-    private DataType type;
-
+    @JsonProperty
     private Boolean graphQLField;
 
-    protected AbstractField(DataType dataType) {
-        this(dataType, null);
+    protected AbstractField() {
+        this(null);
     }
 
-    protected AbstractField(DataType dataType, Boolean graphQLField) {
-        this.type = dataType;
+    protected AbstractField(Boolean graphQLField) {
         this.graphQLField = graphQLField;
     }
 
@@ -28,16 +25,6 @@ public abstract class AbstractField implements Field {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public DataType getType() {
-        return type;
-    }
-
-    @JsonGetter
-    private Boolean graphQLField() {
-        return graphQLField;
     }
 
     @Override
@@ -64,13 +51,13 @@ public abstract class AbstractField implements Field {
             return false;
         }
 
-        return type.equals(that.type);
+        return getType().equals(that.getType());
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + type.hashCode();
+        result = 31 * result + getType().hashCode();
         return result;
     }
 

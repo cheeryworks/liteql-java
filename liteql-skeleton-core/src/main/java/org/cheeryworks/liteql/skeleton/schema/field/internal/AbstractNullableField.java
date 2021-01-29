@@ -1,17 +1,12 @@
 package org.cheeryworks.liteql.skeleton.schema.field.internal;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cheeryworks.liteql.skeleton.schema.field.NullableField;
 
 public abstract class AbstractNullableField extends AbstractField implements NullableField {
 
+    @JsonProperty
     private Boolean nullable;
-
-    @JsonGetter
-    private Boolean nullable() {
-        return nullable;
-    }
 
     public void setNullable(Boolean nullable) {
         this.nullable = nullable;
@@ -26,12 +21,12 @@ public abstract class AbstractNullableField extends AbstractField implements Nul
         return nullable.booleanValue();
     }
 
-    protected AbstractNullableField(DataType dataType) {
-        super(dataType);
+    protected AbstractNullableField() {
+        super();
     }
 
-    protected AbstractNullableField(DataType dataType, Boolean graphQLField) {
-        super(dataType, graphQLField);
+    protected AbstractNullableField(Boolean graphQLField) {
+        super(graphQLField);
     }
 
 }

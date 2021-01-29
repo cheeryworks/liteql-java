@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.skeleton.schema.field.internal;
 
-import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
 import org.cheeryworks.liteql.skeleton.schema.field.StringField;
 
 public class DefaultStringField extends AbstractNullableField implements StringField {
@@ -17,11 +16,11 @@ public class DefaultStringField extends AbstractNullableField implements StringF
     }
 
     public DefaultStringField() {
-        this(null);
+        super();
     }
 
     public DefaultStringField(Boolean graphQLField) {
-        super(DataType.String, graphQLField);
+        super(graphQLField);
     }
 
 }

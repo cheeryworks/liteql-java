@@ -1,8 +1,7 @@
 package org.cheeryworks.liteql.skeleton.schema.field.internal;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
-import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
 import org.cheeryworks.liteql.skeleton.schema.field.ReferenceField;
 
 public class DefaultReferenceField extends AbstractNullableField implements ReferenceField {
@@ -11,6 +10,7 @@ public class DefaultReferenceField extends AbstractNullableField implements Refe
 
     private TypeName mappedDomainTypeName;
 
+    @JsonProperty
     private Boolean collection;
 
     @Override
@@ -31,11 +31,6 @@ public class DefaultReferenceField extends AbstractNullableField implements Refe
         this.mappedDomainTypeName = mappedDomainTypeName;
     }
 
-    @JsonGetter
-    private Boolean collection() {
-        return collection;
-    }
-
     @Override
     public boolean isCollection() {
         if (collection == null) {
@@ -50,11 +45,11 @@ public class DefaultReferenceField extends AbstractNullableField implements Refe
     }
 
     public DefaultReferenceField() {
-        this(null);
+        super(null);
     }
 
     public DefaultReferenceField(Boolean graphQLField) {
-        super(DataType.Reference, graphQLField);
+        super(graphQLField);
     }
 
 }

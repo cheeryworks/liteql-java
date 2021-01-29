@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.skeleton.schema.field.internal;
 
-import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
 import org.cheeryworks.liteql.skeleton.schema.field.DecimalField;
 
 public class DefaultDecimalField extends AbstractNullableField implements DecimalField {
@@ -28,11 +27,11 @@ public class DefaultDecimalField extends AbstractNullableField implements Decima
     }
 
     public DefaultDecimalField() {
-        this(null);
+        super();
     }
 
     public DefaultDecimalField(Boolean graphQLField) {
-        super(DataType.Decimal, graphQLField);
+        super(graphQLField);
     }
 
 }
