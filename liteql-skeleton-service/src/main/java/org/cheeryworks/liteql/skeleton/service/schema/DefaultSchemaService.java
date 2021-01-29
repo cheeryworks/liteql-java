@@ -7,6 +7,9 @@ import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,6 +111,22 @@ public class DefaultSchemaService extends AbstractSchemaService {
         for (SchemaMetadata schemaMetadata : schemaMetadataSet.values()) {
             processSchemaMetadata(schemaMetadata);
         }
+    }
+
+    protected static <T extends Annotation> T getAnnotation(
+            Method[] methods, String fieldName, AccessibleObject accessibleObject, Class<T> annotationClass) {
+        T annotation = accessibleObject.getAnnotation(annotationClass);
+
+        if (annotation == null) {
+            for (Method method : methods) {
+                if (LiteQL.ClassUtils.findFieldNameForMethod(method).equalsIgnoreCase(fieldName)) {
+                    annotation = method.getAnnotation(annotationClass);
+                    break;
+                }
+            }
+        }
+
+        return annotation;
     }
 
 }

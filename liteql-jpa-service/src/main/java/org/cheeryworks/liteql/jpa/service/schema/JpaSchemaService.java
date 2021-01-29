@@ -49,8 +49,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -294,22 +292,6 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             performUniquesAndIndexesOfDomainType(
                     domainTypeDefinition, (Class<? extends TraitType>) javaType, columnNameFieldNameMapping);
         }
-    }
-
-    private <T extends Annotation> T getAnnotation(
-            Method[] methods, String propertyName, AccessibleObject accessibleObject, Class<T> annotationClass) {
-        T annotation = accessibleObject.getAnnotation(annotationClass);
-
-        if (annotation == null) {
-            for (Method method : methods) {
-                if (LiteQL.ClassUtils.findFieldNameForMethod(method).equalsIgnoreCase(propertyName)) {
-                    annotation = method.getAnnotation(annotationClass);
-                    break;
-                }
-            }
-        }
-
-        return annotation;
     }
 
     private void performUniquesAndIndexesOfDomainType(
