@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 @LiteQLField
 public @interface LiteQLBlobField {
 
+    boolean nullable() default true;
+
 }

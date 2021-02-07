@@ -20,4 +20,6 @@ public @interface LiteQLReferenceField {
 
     Class<? extends TraitType> mappedDomainType() default VoidTraitType.class;
 
+    boolean nullable() default true;
+
 }
