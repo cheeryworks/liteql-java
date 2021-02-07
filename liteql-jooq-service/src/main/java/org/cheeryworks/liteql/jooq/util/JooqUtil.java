@@ -8,7 +8,9 @@ import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.page.Pageable;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
+import org.cheeryworks.liteql.skeleton.schema.field.DecimalField;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
+import org.cheeryworks.liteql.skeleton.schema.field.StringField;
 import org.cheeryworks.liteql.skeleton.service.sql.SqlCustomizer;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -34,12 +36,6 @@ import static org.cheeryworks.liteql.skeleton.query.enums.ConditionClause.NULL;
 
 public class JooqUtil {
 
-    public static final int STRING_DEFAULT_LENGTH = 255;
-
-    public static final int BIG_DECIMAL_PRECISION = 19;
-
-    public static final int BIG_DECIMAL_MIN_SCALE = 2;
-
     public static final Map<Integer, Class> SUPPORTED_DATA_TYPES = new HashMap<>();
 
     static {
@@ -54,7 +50,7 @@ public class JooqUtil {
     }
 
     public static DataType<String> getStringDataType() {
-        return SQLDataType.VARCHAR(STRING_DEFAULT_LENGTH);
+        return SQLDataType.VARCHAR(StringField.DEFAULT_LENGTH);
     }
 
     public static DataType<String> getStringDataType(boolean nullable) {
@@ -86,7 +82,7 @@ public class JooqUtil {
     }
 
     public static DataType<BigDecimal> getBigDecimalDataType() {
-        return SQLDataType.DECIMAL(BIG_DECIMAL_PRECISION, BIG_DECIMAL_MIN_SCALE);
+        return SQLDataType.DECIMAL(DecimalField.DEFAULT_PRECISION, DecimalField.DEFAULT_SCALE);
     }
 
     public static DataType<BigDecimal> getBigDecimalDataType(boolean nullable) {

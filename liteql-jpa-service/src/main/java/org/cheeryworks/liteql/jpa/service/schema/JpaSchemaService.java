@@ -21,6 +21,7 @@ import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLTraitInstance;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.schema.field.IdField;
+import org.cheeryworks.liteql.skeleton.schema.field.StringField;
 import org.cheeryworks.liteql.skeleton.schema.field.internal.AbstractField;
 import org.cheeryworks.liteql.skeleton.schema.field.internal.AbstractNullableField;
 import org.cheeryworks.liteql.skeleton.schema.field.internal.DefaultBlobField;
@@ -420,7 +421,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             Class<?> javaType, String name, Class<?> fieldType,
             Column columnAnnotation, Lob lobAnnotation,
             GraphQLField graphQLFieldAnnotation, LiteQLReferenceField liteQLReferenceFieldAnnotation) {
-        int length = 255;
+        int length = StringField.DEFAULT_LENGTH;
 
         boolean nullable = true;
 
