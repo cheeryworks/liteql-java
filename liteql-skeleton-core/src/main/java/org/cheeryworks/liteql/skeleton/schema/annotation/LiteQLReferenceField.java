@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@LiteQLField
 public @interface LiteQLReferenceField {
 
     String name() default "";
