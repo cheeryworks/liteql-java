@@ -45,7 +45,7 @@ public class JooqMigrationExecutor extends AbstractJooqExecutor implements SqlMi
             logger.info("Initializing schema version table " + migrationHistoryTableName);
 
             CreateTableFinalStep createTableFinalStep = getDslContext().createTable(migrationHistoryTableName)
-                    .column("domain_type_name", JooqUtil.getStringDataType(false, 255))
+                    .column("domain_type_name", JooqUtil.getStringDataType(false))
                     .column("version", JooqUtil.getStringDataType(false, 32))
                     .column("description", JooqUtil.getStringDataType(true, 1000))
                     .column("state", JooqUtil.getStringDataType(false, 30));
