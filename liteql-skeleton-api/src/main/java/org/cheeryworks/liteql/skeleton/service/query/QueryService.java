@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.skeleton.service.query;
 
-import org.cheeryworks.liteql.skeleton.model.DomainType;
+import org.cheeryworks.liteql.skeleton.schema.DomainType;
 import org.cheeryworks.liteql.skeleton.query.DefaultAuditQueryContext;
 import org.cheeryworks.liteql.skeleton.query.PublicQuery;
 import org.cheeryworks.liteql.skeleton.query.QueryContext;

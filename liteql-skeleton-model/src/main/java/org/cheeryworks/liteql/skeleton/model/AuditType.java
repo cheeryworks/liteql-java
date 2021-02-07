@@ -1,5 +1,6 @@
 package org.cheeryworks.liteql.skeleton.model;
 
+import org.cheeryworks.liteql.skeleton.schema.DomainType;
 import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLFieldPosition;
 import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLTraitType;

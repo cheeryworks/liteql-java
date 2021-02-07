@@ -1,9 +1,0 @@
-{
-  "trait": true,
-  "fields": [
-    {
-      "name": "id",
-      "type": "id"
-    }
-  ]
-}
