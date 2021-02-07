@@ -178,7 +178,7 @@ public final class LiteQL {
             String schema = getProperty(traitType, SchemaDefinitionProvider::getSchema);
 
             if (org.apache.commons.lang3.StringUtils.isBlank(schema)) {
-                if (DomainType.class.isAssignableFrom(traitType)) {
+                if (DomainType.class.isAssignableFrom(traitType) && !DomainType.class.equals(traitType)) {
                     LiteQLDomainType liteQLDomainTypeAnnotation = traitType.getAnnotation(LiteQLDomainType.class);
 
                     if (liteQLDomainTypeAnnotation != null
