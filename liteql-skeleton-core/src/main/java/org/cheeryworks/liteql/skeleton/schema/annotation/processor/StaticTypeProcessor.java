@@ -26,8 +26,8 @@ public class StaticTypeProcessor extends AbstractStaticTypeProcessor {
     public static final String SUPPORTED_ANNOTATION_LITE_QL_FIELD_ID
             = "org.cheeryworks.liteql.schema.annotation.LiteQLIdField";
 
-    public static final String SUPPORTED_ANNOTATION_LITE_QL_FIELD_LOB
-            = "org.cheeryworks.liteql.schema.annotation.LiteQLLobField";
+    public static final String SUPPORTED_ANNOTATION_LITE_QL_FIELD_CLOB
+            = "org.cheeryworks.liteql.schema.annotation.LiteQLClobField";
 
     @Override
     protected void checkAnnotationCompatibility(TypeElement typeElement, Set<TypeElement> typeInterfaceElements) {
@@ -54,7 +54,7 @@ public class StaticTypeProcessor extends AbstractStaticTypeProcessor {
         if (fieldTypeName.equals(String.class.getName())) {
             if (containAnyAnnotations(fieldElement, SUPPORTED_ANNOTATION_LITE_QL_FIELD_ID)) {
                 return IdField.class;
-            } else if (containAnyAnnotations(fieldElement, SUPPORTED_ANNOTATION_LITE_QL_FIELD_LOB)) {
+            } else if (containAnyAnnotations(fieldElement, SUPPORTED_ANNOTATION_LITE_QL_FIELD_CLOB)) {
                 return ClobField.class;
             }
         }
