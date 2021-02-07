@@ -16,10 +16,13 @@ import org.cheeryworks.liteql.skeleton.query.enums.QueryType;
 import org.cheeryworks.liteql.skeleton.query.event.QueryEvent;
 import org.cheeryworks.liteql.skeleton.query.read.field.FieldDefinitions;
 import org.cheeryworks.liteql.skeleton.query.save.SaveQueryAssociations;
+import org.cheeryworks.liteql.skeleton.schema.DomainType;
 import org.cheeryworks.liteql.skeleton.schema.SchemaDefinitionProvider;
 import org.cheeryworks.liteql.skeleton.schema.TraitType;
 import org.cheeryworks.liteql.skeleton.schema.TypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
+import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLDomainType;
+import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLTraitType;
 import org.cheeryworks.liteql.skeleton.schema.enums.DataType;
 import org.cheeryworks.liteql.skeleton.schema.enums.MigrationOperationType;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
@@ -172,7 +175,27 @@ public final class LiteQL {
         }
 
         public static String getSchemaOfTrait(Class<? extends TraitType> traitType) {
-            return getProperty(traitType, SchemaDefinitionProvider::getSchema);
+            String schema = getProperty(traitType, SchemaDefinitionProvider::getSchema);
+
+            if (org.apache.commons.lang3.StringUtils.isBlank(schema)) {
+                if (DomainType.class.isAssignableFrom(traitType)) {
+                    LiteQLDomainType liteQLDomainTypeAnnotation = traitType.getAnnotation(LiteQLDomainType.class);
+
+                    if (liteQLDomainTypeAnnotation != null
+                            && org.apache.commons.lang3.StringUtils.isNotBlank(liteQLDomainTypeAnnotation.schema())) {
+                        schema = liteQLDomainTypeAnnotation.schema();
+                    }
+                } else {
+                    LiteQLTraitType liteQLTraitTypeAnnotation = traitType.getAnnotation(LiteQLTraitType.class);
+
+                    if (liteQLTraitTypeAnnotation != null
+                            && org.apache.commons.lang3.StringUtils.isNotBlank(liteQLTraitTypeAnnotation.schema())) {
+                        schema = liteQLTraitTypeAnnotation.schema();
+                    }
+                }
+            }
+
+            return schema;
         }
 
         public static String getVersionOfTrait(Class<? extends TraitType> traitType) {
