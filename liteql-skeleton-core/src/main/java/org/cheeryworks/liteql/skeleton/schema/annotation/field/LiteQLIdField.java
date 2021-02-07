@@ -1,4 +1,4 @@
-package org.cheeryworks.liteql.skeleton.schema.annotation;
+package org.cheeryworks.liteql.skeleton.schema.annotation.field;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @LiteQLField
-public @interface LiteQLClobField {
+public @interface LiteQLIdField {
 
 }

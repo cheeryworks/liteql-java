@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.skeleton.schema.annotation.processor;
 
-import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLReferenceField;
+import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.field.ClobField;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.schema.field.IdField;
@@ -24,10 +24,10 @@ public class StaticTypeProcessor extends AbstractStaticTypeProcessor {
             = "org.cheeryworks.liteql.schema.annotation.LiteQLMappedType";
 
     public static final String SUPPORTED_ANNOTATION_LITE_QL_FIELD_ID
-            = "org.cheeryworks.liteql.schema.annotation.LiteQLIdField";
+            = "org.cheeryworks.liteql.schema.annotation.field.LiteQLIdField";
 
     public static final String SUPPORTED_ANNOTATION_LITE_QL_FIELD_CLOB
-            = "org.cheeryworks.liteql.schema.annotation.LiteQLClobField";
+            = "org.cheeryworks.liteql.schema.annotation.field.LiteQLClobField";
 
     @Override
     protected void checkAnnotationCompatibility(TypeElement typeElement, Set<TypeElement> typeInterfaceElements) {

@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.skeleton.schema.annotation.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLReferenceField;
+import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLStaticType;
 import org.cheeryworks.liteql.skeleton.schema.field.BlobField;
 import org.cheeryworks.liteql.skeleton.schema.field.BooleanField;

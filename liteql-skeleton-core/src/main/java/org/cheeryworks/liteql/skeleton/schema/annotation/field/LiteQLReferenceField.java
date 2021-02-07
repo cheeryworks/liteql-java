@@ -1,7 +1,8 @@
-package org.cheeryworks.liteql.skeleton.schema.annotation;
+package org.cheeryworks.liteql.skeleton.schema.annotation.field;
 
 import org.cheeryworks.liteql.skeleton.schema.TraitType;
 import org.cheeryworks.liteql.skeleton.schema.VoidTraitType;
+import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLField;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
