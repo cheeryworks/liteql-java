@@ -6,7 +6,7 @@ public interface LongField extends NullableField {
 
     @Override
     default DataType getType() {
-        return DataType.Blob;
+        return DataType.Long;
     }
 
 }
