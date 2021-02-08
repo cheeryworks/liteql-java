@@ -384,6 +384,12 @@ public class DefaultGraphQLService implements GraphQLService {
 
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
+                ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeEntry.getValue();
+
+                if (objectTypeDefinition.getFieldDefinitions().size() == 0) {
+                    continue;
+                }
+
                 InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder = InputObjectTypeDefinition
                         .newInputObjectDefinition()
                         .name(typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX);
@@ -391,7 +397,7 @@ public class DefaultGraphQLService implements GraphQLService {
                 processInputTypeFields(
                         inputObjectTypeDefinitionBuilder,
                         typeDefinitionRegistry.types(),
-                        ((ObjectTypeDefinition) typeEntry.getValue()).getFieldDefinitions());
+                        objectTypeDefinition.getFieldDefinitions());
 
                 typeDefinitionRegistry.add(inputObjectTypeDefinitionBuilder.build());
             }
