@@ -1,10 +1,10 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
-import org.cheeryworks.liteql.jooq.util.JooqUtil;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationDelegate;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
+import org.cheeryworks.liteql.jooq.util.JooqUtil;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationType;
@@ -70,9 +70,8 @@ public class DefaultJooqFlywayMigrator implements JooqFlywayMigrator {
                                         migrationDelegate.getSchemaVersionTablePrefix().toUpperCase() + "CR")
                                 .table(migrationDelegate.getSchemaVersionTablePrefix()
                                         + JooqFlywayMigrationDelegate.SCHEMA_VERSION_TABLE_SUFFIX)
-                                .resolvers(
-                                        new JooqFlywayMigrationResolver(
-                                                migrationDelegate, dslContext, jooqFlywayMigrationTransactionController))
+                                .resolvers(new JooqFlywayMigrationResolver(
+                                        migrationDelegate, dslContext, jooqFlywayMigrationTransactionController))
                                 .locations("db/" + JooqUtil.getDatabase(dslContext.dialect()).name().toLowerCase())
                                 .load();
 
