@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway;
 
-public interface JooqDatabaseMigrator {
+public interface JooqFlywayMigrator {
 
     void migrate();
 

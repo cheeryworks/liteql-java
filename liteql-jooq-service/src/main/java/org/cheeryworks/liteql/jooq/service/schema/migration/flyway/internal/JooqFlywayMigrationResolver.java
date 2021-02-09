@@ -1,9 +1,9 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationTransactionController;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigration;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationDelegate;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigration;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationDelegate;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.MigrationType;
 import org.flywaydb.core.api.MigrationVersion;
@@ -20,17 +20,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class JooqMigrationResolver implements MigrationResolver {
+public class JooqFlywayMigrationResolver implements MigrationResolver {
 
-    private JooqMigrationDelegate migrationDelegate;
+    private JooqFlywayMigrationDelegate migrationDelegate;
 
     private DSLContext dslContext;
 
-    private JooqMigrationTransactionController transactionController;
+    private JooqFlywayMigrationTransactionController transactionController;
 
-    public JooqMigrationResolver(
-            JooqMigrationDelegate migrationDelegate, DSLContext dslContext,
-            JooqMigrationTransactionController transactionController) {
+    public JooqFlywayMigrationResolver(
+            JooqFlywayMigrationDelegate migrationDelegate, DSLContext dslContext,
+            JooqFlywayMigrationTransactionController transactionController) {
         this.migrationDelegate = migrationDelegate;
         this.dslContext = dslContext;
         this.transactionController = transactionController;
@@ -45,8 +45,8 @@ public class JooqMigrationResolver implements MigrationResolver {
         if (!ArrayUtils.isEmpty(migrationClasses)) {
             for (Class migrationClass : migrationClasses) {
                 try {
-                    JooqMigration migration
-                            = (JooqMigration) migrationClass.getDeclaredConstructor().newInstance();
+                    JooqFlywayMigration migration
+                            = (JooqFlywayMigration) migrationClass.getDeclaredConstructor().newInstance();
 
                     MigrationVersion version = getVersion(migration, context.getConfiguration());
                     String description = migration.getDescription();
@@ -57,7 +57,7 @@ public class JooqMigrationResolver implements MigrationResolver {
                     ResolvedMigrationImpl resolvedMigration = new ResolvedMigrationImpl(
                             version, description, migration.getClass().getSimpleName(),
                             null, null, MigrationType.CUSTOM, ClassUtils.getLocationOnDisk(migrationClass),
-                            new JooqMigrationExecutor(migration, dslContext, transactionController)
+                            new JooqFlywayMigrationExecutor(migration, dslContext, transactionController)
                     );
 
                     migrations.add(resolvedMigration);
@@ -70,7 +70,7 @@ public class JooqMigrationResolver implements MigrationResolver {
         return migrations;
     }
 
-    private MigrationVersion getVersion(JooqMigration migration, Configuration configuration) {
+    private MigrationVersion getVersion(JooqFlywayMigration migration, Configuration configuration) {
         String latestVersion = migration.getClass().getSimpleName().substring(
                 configuration.getSqlMigrationPrefix().length(),
                 migration.getClass().getSimpleName().indexOf("__"));

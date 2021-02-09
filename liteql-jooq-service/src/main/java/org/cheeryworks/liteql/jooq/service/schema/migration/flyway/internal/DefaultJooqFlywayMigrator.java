@@ -1,10 +1,10 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqDatabaseMigrator;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationTransactionController;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
 import org.cheeryworks.liteql.jooq.util.JooqUtil;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationDelegate;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationDelegate;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationType;
@@ -17,20 +17,20 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
+public class DefaultJooqFlywayMigrator implements JooqFlywayMigrator {
 
     private DataSource dataSource;
 
     private DSLContext dslContext;
 
-    private JooqMigrationTransactionController jooqMigrationTransactionController;
+    private JooqFlywayMigrationTransactionController jooqFlywayMigrationTransactionController;
 
-    public DefaultJooqDatabaseMigrator(
+    public DefaultJooqFlywayMigrator(
             DataSource dataSource, DSLContext dslContext,
-            JooqMigrationTransactionController jooqMigrationTransactionController) {
+            JooqFlywayMigrationTransactionController jooqFlywayMigrationTransactionController) {
         this.dataSource = dataSource;
         this.dslContext = dslContext;
-        this.jooqMigrationTransactionController = jooqMigrationTransactionController;
+        this.jooqFlywayMigrationTransactionController = jooqFlywayMigrationTransactionController;
     }
 
     @Override
@@ -39,14 +39,14 @@ public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
 
         Set<String> migratedPackages = new HashSet<>();
 
-        List<JooqMigrationDelegate> migrationDelegates = ServiceLoader.load(JooqMigrationDelegate.class)
+        List<JooqFlywayMigrationDelegate> migrationDelegates = ServiceLoader.load(JooqFlywayMigrationDelegate.class)
                 .stream()
                 .map(jooqMigrationDelegateProvider -> jooqMigrationDelegateProvider.get())
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(migrationDelegates)) {
             while (finishedMigrations.size() != migrationDelegates.size()) {
-                for (JooqMigrationDelegate migrationDelegate : migrationDelegates) {
+                for (JooqFlywayMigrationDelegate migrationDelegate : migrationDelegates) {
                     String migrationDelegatePackageName = migrationDelegate.getClass().getPackage().getName();
 
                     int migratingPackageNameSuffix = migrationDelegatePackageName.indexOf(".migration");
@@ -69,10 +69,10 @@ public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
                                 .repeatableSqlMigrationPrefix(
                                         migrationDelegate.getSchemaVersionTablePrefix().toUpperCase() + "CR")
                                 .table(migrationDelegate.getSchemaVersionTablePrefix()
-                                        + JooqMigrationDelegate.SCHEMA_VERSION_TABLE_SUFFIX)
+                                        + JooqFlywayMigrationDelegate.SCHEMA_VERSION_TABLE_SUFFIX)
                                 .resolvers(
-                                        new JooqMigrationResolver(
-                                                migrationDelegate, dslContext, jooqMigrationTransactionController))
+                                        new JooqFlywayMigrationResolver(
+                                                migrationDelegate, dslContext, jooqFlywayMigrationTransactionController))
                                 .locations("db/" + JooqUtil.getDatabase(dslContext.dialect()).name().toLowerCase())
                                 .load();
 
@@ -93,7 +93,7 @@ public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
         flyway.clean();
     }
 
-    private void migrate(Flyway flyway, JooqMigrationDelegate migrationDelegate) {
+    private void migrate(Flyway flyway, JooqFlywayMigrationDelegate migrationDelegate) {
         if (needToBaseline(flyway)) {
             flyway.configure().baselineVersion(migrationDelegate.getBaselineVersion());
             flyway.configure().baselineDescription(migrationDelegate.getBaselineVersion() + " Baseline");
@@ -119,7 +119,7 @@ public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
         return needToBaseline;
     }
 
-    private boolean isMigrated(Set<String> finishedMigrations, JooqMigrationDelegate migrationDelegate) {
+    private boolean isMigrated(Set<String> finishedMigrations, JooqFlywayMigrationDelegate migrationDelegate) {
         if (finishedMigrations.contains(migrationDelegate.getClass().getName())) {
             return true;
         }
@@ -127,7 +127,7 @@ public class DefaultJooqDatabaseMigrator implements JooqDatabaseMigrator {
         return false;
     }
 
-    private boolean isReady(Set<String> migratedPackages, JooqMigrationDelegate migrationDelegate) {
+    private boolean isReady(Set<String> migratedPackages, JooqFlywayMigrationDelegate migrationDelegate) {
         if (migrationDelegate.getPreMigratedPackages() != null) {
             for (Package preMigratedPackage
                     : migrationDelegate.getPreMigratedPackages()) {

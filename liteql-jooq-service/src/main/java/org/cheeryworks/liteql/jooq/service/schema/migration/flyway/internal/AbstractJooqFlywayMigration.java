@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal;
 
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigration;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigration;
 
-public abstract class AbstractJooqMigration implements JooqMigration {
+public abstract class AbstractJooqFlywayMigration implements JooqFlywayMigration {
 
     @Override
     public String getDescription() {

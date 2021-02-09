@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class JooqMigrationServiceTest extends AbstractJooqTest {
+public class JooqFlywayMigrationServiceTest extends AbstractJooqTest {
 
     private JooqMigrationService jooqMigrationService;
 
-    public JooqMigrationServiceTest() {
+    public JooqFlywayMigrationServiceTest() {
         super();
 
         jooqMigrationService = new JooqMigrationService(

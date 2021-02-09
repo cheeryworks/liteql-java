@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigration;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqMigrationDelegate;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigration;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationDelegate;
 import org.flywaydb.core.api.Location;
 import org.flywaydb.core.internal.scanner.LocationScannerCache;
 import org.flywaydb.core.internal.scanner.ResourceNameCache;
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractJooqMigrationDelegate implements JooqMigrationDelegate {
+public abstract class AbstractJooqFlywayMigrationDelegate implements JooqFlywayMigrationDelegate {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -26,7 +26,7 @@ public abstract class AbstractJooqMigrationDelegate implements JooqMigrationDele
     public Class[] getMigrationClasses() {
         if (ArrayUtils.isEmpty(migrationClasses)) {
             Scanner scanner = new Scanner(
-                    JooqMigration.class,
+                    JooqFlywayMigration.class,
                     Collections.singletonList(new Location("classpath:"
                             + this.getClass().getPackage().getName().replace(".", "/"))),
                     this.getClass().getClassLoader(),
@@ -36,7 +36,7 @@ public abstract class AbstractJooqMigrationDelegate implements JooqMigrationDele
                     new LocationScannerCache());
 
             try {
-                Collection<Class<? extends JooqMigration>> classes = scanner.getClasses();
+                Collection<Class<? extends JooqFlywayMigration>> classes = scanner.getClasses();
 
                 List<Class> matchedMigrationClasses = new ArrayList<>();
                 for (Class clazz : classes) {

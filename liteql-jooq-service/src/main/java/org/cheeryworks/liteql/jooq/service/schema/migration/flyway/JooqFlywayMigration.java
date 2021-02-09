@@ -4,7 +4,7 @@ import org.jooq.DSLContext;
 
 import java.sql.SQLException;
 
-public interface JooqMigration {
+public interface JooqFlywayMigration {
 
     String getDescription();
 

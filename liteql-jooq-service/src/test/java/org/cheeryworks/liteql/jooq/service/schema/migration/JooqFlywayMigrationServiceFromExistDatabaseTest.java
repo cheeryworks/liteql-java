@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
-public class JooqMigrationServiceFromExistDatabaseTest extends JooqMigrationServiceTest {
+public class JooqFlywayMigrationServiceFromExistDatabaseTest extends JooqFlywayMigrationServiceTest {
 
-    public JooqMigrationServiceFromExistDatabaseTest() {
+    public JooqFlywayMigrationServiceFromExistDatabaseTest() {
         super();
     }
 

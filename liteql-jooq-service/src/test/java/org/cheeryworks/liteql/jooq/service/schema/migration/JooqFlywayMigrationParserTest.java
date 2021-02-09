@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class JooqMigrationParserTest extends AbstractJooqTest {
+public class JooqFlywayMigrationParserTest extends AbstractJooqTest {
 
-    private Logger logger = LoggerFactory.getLogger(JooqMigrationParserTest.class);
+    private Logger logger = LoggerFactory.getLogger(JooqFlywayMigrationParserTest.class);
 
     private JooqMigrationParser jooqMigrationParser;
 
-    public JooqMigrationParserTest() {
+    public JooqFlywayMigrationParserTest() {
         super();
 
         jooqMigrationParser = new JooqMigrationParser(
