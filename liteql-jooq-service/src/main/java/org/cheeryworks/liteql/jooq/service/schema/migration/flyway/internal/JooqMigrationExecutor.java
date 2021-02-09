@@ -42,4 +42,9 @@ public class JooqMigrationExecutor implements MigrationExecutor {
         return true;
     }
 
+    @Override
+    public boolean shouldExecute() {
+        return true;
+    }
+
 }
