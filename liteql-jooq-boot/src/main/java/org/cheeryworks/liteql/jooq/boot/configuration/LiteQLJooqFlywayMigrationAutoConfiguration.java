@@ -3,8 +3,8 @@ package org.cheeryworks.liteql.jooq.boot.configuration;
 
 import org.cheeryworks.liteql.jooq.component.SpringJooqFlywayMigrationTransactionController;
 import org.cheeryworks.liteql.jooq.event.listener.BeforeMigrationEventListenerForFlywayMigration;
-import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
+import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.internal.DefaultJooqFlywayMigrator;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
@@ -34,7 +34,8 @@ public class LiteQLJooqFlywayMigrationAutoConfiguration {
 
     @Bean
     public JooqFlywayMigrator databaseMigrator(
-            DataSource dataSource, DSLContext dslContext, JooqFlywayMigrationTransactionController transactionController) {
+            DataSource dataSource, DSLContext dslContext,
+            JooqFlywayMigrationTransactionController transactionController) {
         JooqFlywayMigrator jooqFlywayMigrator = new DefaultJooqFlywayMigrator(
                 dataSource, dslContext, transactionController);
 
