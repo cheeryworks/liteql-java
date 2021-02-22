@@ -7,8 +7,6 @@ public interface ReferenceField extends NullableField {
 
     TypeName getDomainTypeName();
 
-    TypeName getMappedDomainTypeName();
-
     boolean isCollection();
 
     @Override

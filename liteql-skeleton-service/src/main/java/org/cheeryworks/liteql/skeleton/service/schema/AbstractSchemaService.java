@@ -5,7 +5,9 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
+import org.cheeryworks.liteql.skeleton.schema.AbstractTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
+import org.cheeryworks.liteql.skeleton.schema.GraphQLTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.Schema;
 import org.cheeryworks.liteql.skeleton.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeDefinition;
@@ -57,6 +59,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
     private List<Schema> schemas = new ArrayList<>();
 
+    private Set<GraphQLTypeDefinition> graphQLTypeDefinitions = new HashSet<>();
+
     private Map<TypeName, TypeName> traitImplements = new HashMap<>();
 
     private Map<TypeName, Class<?>> staticTypeMapping = new HashMap<>();
@@ -105,9 +109,9 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             TypeDefinition typeDefinition = LiteQL.JacksonJsonUtils.toBean(
                     typeMetadata.getContents().get(key), TypeDefinition.class);
 
-            TraitTypeDefinition traitTypeDefinition = (TraitTypeDefinition) typeDefinition;
-            traitTypeDefinition.setTypeName(typeName);
-            traitTypeDefinition.setVersion(key.split(VERSION_CONCAT)[0]);
+            AbstractTypeDefinition abstractTypeDefinition = (AbstractTypeDefinition) typeDefinition;
+            abstractTypeDefinition.setTypeName(typeName);
+            abstractTypeDefinition.setVersion(key.split(VERSION_CONCAT)[0]);
 
             addType(typeDefinition);
 
@@ -139,6 +143,10 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             typeDefinition = getTraitTypeDefinition(typeName);
         }
 
+        if (typeDefinition == null) {
+            typeDefinition = getGraphQLTypeDefinition(typeName);
+        }
+
         return typeDefinition;
     }
 
@@ -150,7 +158,13 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             this.schemas.add(schema);
         }
 
-        if (typeDefinition instanceof DomainTypeDefinition) {
+        if (typeDefinition instanceof GraphQLTypeDefinition) {
+            GraphQLTypeDefinition graphQLTypeDefinition = (GraphQLTypeDefinition) typeDefinition;
+
+            schema.getGraphQLTypeDefinitions().add(graphQLTypeDefinition);
+
+            this.graphQLTypeDefinitions.add(graphQLTypeDefinition);
+        } else if (typeDefinition instanceof DomainTypeDefinition) {
             DomainTypeDefinition domainTypeDefinition = (DomainTypeDefinition) typeDefinition;
 
             schema.getDomainTypeDefinitions().add(domainTypeDefinition);
@@ -168,8 +182,8 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     private void processStaticType(TypeDefinition typeDefinition) {
         Class<?> staticType = staticTypeMapping.get(typeDefinition.getTypeName());
 
-        if (staticType != null && typeDefinition instanceof TraitTypeDefinition) {
-            ((TraitTypeDefinition) typeDefinition).getFields().stream().forEach(field -> {
+        if (staticType != null) {
+            typeDefinition.getFields().stream().forEach(field -> {
                 try {
                     if (FieldUtils.getField(staticType, field.getName()) != null) {
                         FieldUtils.writeStaticField(staticType, field.getName(), field, true);
@@ -384,17 +398,6 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     }
 
     @Override
-    public Set<TraitTypeDefinition> getTraitTypeDefinitions(String schemaName) {
-        Schema schema = getSchema(schemaName);
-
-        if (schema != null) {
-            return schema.getTraitTypeDefinitions();
-        }
-
-        return Collections.EMPTY_SET;
-    }
-
-    @Override
     public Set<DomainTypeDefinition> getDomainTypeDefinitions(String schemaName) {
         Schema schema = getSchema(schemaName);
 
@@ -403,32 +406,6 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         }
 
         return Collections.EMPTY_SET;
-    }
-
-    private Schema getSchema(String schemaName) {
-        return this.schemas
-                .stream()
-                .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
-                .findFirst()
-                .orElse(null);
-    }
-
-    @Override
-    public TraitTypeDefinition getTraitTypeDefinition(TypeName typeName) {
-        Objects.requireNonNull(typeName, "TypeName is required");
-
-        Schema schema = getSchema(typeName.getSchema());
-
-        if (schema != null && schema.getTraitTypeDefinitions() != null) {
-            return getSchema(typeName.getSchema())
-                    .getTraitTypeDefinitions()
-                    .stream()
-                    .filter(traitType -> traitType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        return null;
     }
 
     @Override
@@ -441,7 +418,38 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
             return getSchema(typeName.getSchema())
                     .getDomainTypeDefinitions()
                     .stream()
-                    .filter(domainType -> domainType.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
+                    .filter(domainTypeDefinition ->
+                            domainTypeDefinition.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Set<TraitTypeDefinition> getTraitTypeDefinitions(String schemaName) {
+        Schema schema = getSchema(schemaName);
+
+        if (schema != null) {
+            return schema.getTraitTypeDefinitions();
+        }
+
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
+    public TraitTypeDefinition getTraitTypeDefinition(TypeName typeName) {
+        Objects.requireNonNull(typeName, "TypeName is required");
+
+        Schema schema = getSchema(typeName.getSchema());
+
+        if (schema != null && schema.getTraitTypeDefinitions() != null) {
+            return getSchema(typeName.getSchema())
+                    .getTraitTypeDefinitions()
+                    .stream()
+                    .filter(traitTypeDefinition ->
+                            traitTypeDefinition.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
                     .findFirst()
                     .orElse(null);
         }
@@ -460,9 +468,62 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
         return null;
     }
 
+    private Schema getSchema(String schemaName) {
+        return this.schemas
+                .stream()
+                .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     public TypeName getTraitImplement(TypeName traitTypeName) {
         return this.traitImplements.get(traitTypeName);
+    }
+
+    @Override
+    public Set<GraphQLTypeDefinition> getGraphQLTypeDefinitions() {
+        return this.graphQLTypeDefinitions;
+    }
+
+    @Override
+    public Set<GraphQLTypeDefinition> getGraphQLTypeDefinitions(String schemaName) {
+        Schema schema = getSchema(schemaName);
+
+        if (schema != null) {
+            return schema.getGraphQLTypeDefinitions();
+        }
+
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
+    public Set<GraphQLTypeDefinition> getGraphQLTypeDefinitionsByExtensionTypeName(TypeName typeName) {
+        Objects.requireNonNull(typeName, "TypeName is required");
+
+        return this.graphQLTypeDefinitions
+                .stream()
+                .filter(graphQLTypeDefinition -> graphQLTypeDefinition.getExtension().equals(typeName))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public GraphQLTypeDefinition getGraphQLTypeDefinition(TypeName typeName) {
+        Objects.requireNonNull(typeName, "TypeName is required");
+
+        Schema schema = getSchema(typeName.getSchema());
+
+        if (schema != null && schema.getGraphQLTypeDefinitions() != null) {
+            return getSchema(typeName.getSchema())
+                    .getGraphQLTypeDefinitions()
+                    .stream()
+                    .filter(graphQLTypeDefinition ->
+                            graphQLTypeDefinition.getTypeName().getName().equalsIgnoreCase(typeName.getName()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        return null;
     }
 
     @Override

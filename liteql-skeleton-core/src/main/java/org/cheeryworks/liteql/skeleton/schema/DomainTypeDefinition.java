@@ -128,9 +128,6 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
             for (Field field : getFields()) {
                 if (IdField.ID_FIELD_NAME.equalsIgnoreCase(field.getName())) {
                     haveIdField = true;
-                } else if (field instanceof ReferenceField) {
-                    ReferenceField referenceField = (ReferenceField) field;
-                    havePersistentField = !referenceField.isCollection();
                 } else {
                     havePersistentField = true;
                 }

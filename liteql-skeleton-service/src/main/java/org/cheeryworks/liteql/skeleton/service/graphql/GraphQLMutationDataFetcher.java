@@ -35,11 +35,11 @@ public class GraphQLMutationDataFetcher extends AbstractGraphQLDataFetcher {
 
         if (mutationName.startsWith(MUTATION_NAME_PREFIX_CREATE)) {
             saveQuery = new CreateQuery();
-            saveQuery.setDomainTypeName(GraphQLServiceUtil.toDomainTypeName(outputType.getName()));
+            saveQuery.setDomainTypeName(GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());
         } else if (mutationName.startsWith(MUTATION_NAME_PREFIX_UPDATE)) {
             saveQuery = new UpdateQuery();
-            saveQuery.setDomainTypeName(GraphQLServiceUtil.toDomainTypeName(outputType.getName()));
+            saveQuery.setDomainTypeName(GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(outputType.getName()));
             saveQuery.setData(environment.getArguments());
         }
 

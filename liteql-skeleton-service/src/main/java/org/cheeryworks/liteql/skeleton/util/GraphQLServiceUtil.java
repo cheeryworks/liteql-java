@@ -3,6 +3,7 @@ package org.cheeryworks.liteql.skeleton.util;
 import graphql.language.Field;
 import graphql.language.Selection;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -17,6 +18,7 @@ import org.cheeryworks.liteql.skeleton.schema.TypeName;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 public abstract class GraphQLServiceUtil {
 
@@ -26,14 +28,15 @@ public abstract class GraphQLServiceUtil {
         return typeName.getFullname().replaceAll("\\" + LiteQL.Constants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
     }
 
-    public static TypeName toDomainTypeName(String graphQLObjectTypeName) {
+    public static TypeName graphQLTypeNameToDomainTypeName(String graphQLObjectTypeName) {
         return LiteQL.SchemaUtils.getTypeName(
                 graphQLObjectTypeName.replaceAll(GRAPHQL_NAME_CONCAT, LiteQL.Constants.NAME_CONCAT));
     }
 
     public static void fillReadQueryWithDataFetchingEnvironment(
-            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
-        parseFields(readQuery, dataFetchingEnvironment);
+            AbstractTypedReadQuery readQuery, GraphQLObjectType outputType,
+            DataFetchingEnvironment dataFetchingEnvironment) {
+        parseFields(readQuery, outputType, dataFetchingEnvironment);
 
         parseConditions(readQuery, dataFetchingEnvironment);
 
@@ -41,11 +44,16 @@ public abstract class GraphQLServiceUtil {
     }
 
     public static void parseFields(
-            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
+            AbstractTypedReadQuery readQuery, GraphQLObjectType outputType,
+            DataFetchingEnvironment dataFetchingEnvironment) {
         FieldDefinitions fields = new FieldDefinitions();
 
         for (Selection selection : dataFetchingEnvironment.getField().getSelectionSet().getSelections()) {
             String fieldName = ((Field) selection).getName();
+
+            if (isListField(outputType.getFieldDefinitions(), fieldName)) {
+                continue;
+            }
 
             fields.add(new FieldDefinition(fieldName));
         }
@@ -53,6 +61,16 @@ public abstract class GraphQLServiceUtil {
         fields.add(new FieldDefinition(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID));
 
         readQuery.setFields(fields);
+    }
+
+    private static boolean isListField(List<GraphQLFieldDefinition> fieldDefinitions, String fieldName) {
+        for (GraphQLFieldDefinition fieldDefinition : fieldDefinitions) {
+            if (fieldDefinition.getName().equals(fieldName) && fieldDefinition.getType() instanceof GraphQLList) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static void parseConditions(

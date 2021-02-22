@@ -8,12 +8,13 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
 import org.cheeryworks.liteql.skeleton.graphql.annotation.GraphQLField;
 import org.cheeryworks.liteql.skeleton.graphql.annotation.GraphQLType;
+import org.cheeryworks.liteql.skeleton.schema.AbstractTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
+import org.cheeryworks.liteql.skeleton.schema.GraphQLTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TraitType;
 import org.cheeryworks.liteql.skeleton.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
-import org.cheeryworks.liteql.skeleton.schema.VoidTraitType;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLDomainType;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLDomainTypeIndex;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLTraitInstance;
@@ -83,14 +84,24 @@ public class DefaultSchemaService extends AbstractSchemaService {
 
         Map<String, Set<TypeDefinition>> typeDefinitionWithinSchemas = getTypeDefinitionWithinSchemas();
 
-        typeDefinitionWithinSchemas.putAll(getAdditionalTypeDefinitionWithinSchemas());
+        Map<String, Set<TypeDefinition>> additionalTypeDefinitionWithinSchemas
+                = getAdditionalTypeDefinitionWithinSchemas();
 
-        processGraphQLType(typeDefinitionWithinSchemas);
+        for (Map.Entry<String, Set<TypeDefinition>> additionalTypeDefinitionWithinSchemaEntry
+                : additionalTypeDefinitionWithinSchemas.entrySet()) {
+            if (typeDefinitionWithinSchemas.containsKey(additionalTypeDefinitionWithinSchemaEntry.getKey())) {
+                typeDefinitionWithinSchemas.get(additionalTypeDefinitionWithinSchemaEntry.getKey())
+                        .addAll(additionalTypeDefinitionWithinSchemaEntry.getValue());
+            } else {
+                typeDefinitionWithinSchemas.put(
+                        additionalTypeDefinitionWithinSchemaEntry.getKey(),
+                        additionalTypeDefinitionWithinSchemaEntry.getValue());
+            }
+        }
 
         for (Map.Entry<String, Set<TypeDefinition>> typeDefinitionWithinSchema
                 : typeDefinitionWithinSchemas.entrySet()) {
             for (TypeDefinition typeDefinition : typeDefinitionWithinSchema.getValue()) {
-
                 TypeDefinition existTypeDefinition = getType(typeDefinition.getTypeName());
 
                 if (existTypeDefinition != null && !typeDefinition.equals(existTypeDefinition)) {
@@ -205,20 +216,9 @@ public class DefaultSchemaService extends AbstractSchemaService {
 
             TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitType);
 
-            if (typeName != null) {
-                Set<TypeDefinition> typeDefinitionWithinSchema =
-                        typeDefinitionWithinSchemas.get(typeName.getSchema());
+            TraitTypeDefinition traitTypeDefinition = traitInterfaceToTraitTypeDefinition(traitType, typeName);
 
-                if (typeDefinitionWithinSchema == null) {
-                    typeDefinitionWithinSchema = new LinkedHashSet<>();
-                    typeDefinitionWithinSchemas.put(typeName.getSchema(), typeDefinitionWithinSchema);
-                }
-
-                TraitTypeDefinition traitTypeDefinition =
-                        traitInterfaceToTraitTypeDefinition(traitType, typeName);
-
-                typeDefinitionWithinSchema.add(traitTypeDefinition);
-            }
+            addType(typeDefinitionWithinSchemas, typeName, traitTypeDefinition);
         }
 
         Set<Class<?>> liteQLJavaTypes = new HashSet<>();
@@ -230,6 +230,8 @@ public class DefaultSchemaService extends AbstractSchemaService {
         }
 
         javaTypesToDomainTypeDefinitions(liteQLJavaTypes, typeDefinitionWithinSchemas);
+
+        processGraphQLType(typeDefinitionWithinSchemas);
 
         return typeDefinitionWithinSchemas;
     }
@@ -249,19 +251,23 @@ public class DefaultSchemaService extends AbstractSchemaService {
 
             TypeName typeName = LiteQL.SchemaUtils.getTypeName(traitType);
 
-            if (typeName != null) {
-                Set<TypeDefinition> typeDefinitionWithinSchema = typeDefinitionWithinSchemas.get(typeName.getSchema());
+            DomainTypeDefinition domainTypeDefinition = javaTypeToDomainTypeDefinition(traitType, typeName);
 
-                if (typeDefinitionWithinSchema == null) {
-                    typeDefinitionWithinSchema = new LinkedHashSet<>();
-                    typeDefinitionWithinSchemas.put(typeName.getSchema(), typeDefinitionWithinSchema);
-                }
-
-                DomainTypeDefinition domainTypeDefinition = javaTypeToDomainTypeDefinition(traitType, typeName);
-
-                typeDefinitionWithinSchema.add(domainTypeDefinition);
-            }
+            addType(typeDefinitionWithinSchemas, typeName, domainTypeDefinition);
         }
+    }
+
+    private void addType(
+            Map<String, Set<TypeDefinition>> typeDefinitionWithinSchemas,
+            TypeName typeName, TypeDefinition typeDefinition) {
+        Set<TypeDefinition> typeDefinitionWithinSchema = typeDefinitionWithinSchemas.get(typeName.getSchema());
+
+        if (typeDefinitionWithinSchema == null) {
+            typeDefinitionWithinSchema = new LinkedHashSet<>();
+            typeDefinitionWithinSchemas.put(typeName.getSchema(), typeDefinitionWithinSchema);
+        }
+
+        typeDefinitionWithinSchema.add(typeDefinition);
     }
 
     private void processGraphQLType(Map<String, Set<TypeDefinition>> typeDefinitionWithinSchemas) {
@@ -274,19 +280,12 @@ public class DefaultSchemaService extends AbstractSchemaService {
         }
 
         for (Class<?> graphQLJavaType : graphQLJavaTypes) {
-            GraphQLType graphQLType = graphQLJavaType.getAnnotation(GraphQLType.class);
+            TypeName typeName = LiteQL.SchemaUtils.getTypeName(graphQLJavaType);
 
-            if (graphQLType != null && !graphQLType.extension().equals(Void.class) && !graphQLType.ignored()) {
-                TypeName domainTypeName = LiteQL.SchemaUtils.getTypeName(graphQLType.extension());
+            GraphQLTypeDefinition graphQLTypeDefinition = javaTypeToGraphQLTypeDefinition(graphQLJavaType);
 
-                Set<TypeDefinition> domainTypeDefinitions = typeDefinitionWithinSchemas.get(domainTypeName.getSchema());
-
-                for (TypeDefinition domainTypeDefinition : domainTypeDefinitions) {
-                    if (domainTypeDefinition.getTypeName().equals(domainTypeName)) {
-                        performFieldsOfDomainType((DomainTypeDefinition) domainTypeDefinition, graphQLJavaType);
-                        break;
-                    }
-                }
+            if (graphQLTypeDefinition != null) {
+                addType(typeDefinitionWithinSchemas, typeName, javaTypeToGraphQLTypeDefinition(graphQLJavaType));
             }
         }
     }
@@ -307,9 +306,11 @@ public class DefaultSchemaService extends AbstractSchemaService {
             domainTypeDefinition.setImplementTrait(LiteQL.SchemaUtils.getTypeName(traitInstance.implement()));
         }
 
-        domainTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(traitType));
+        domainTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersion(traitType));
 
-        performFieldsOfDomainType(domainTypeDefinition, traitType);
+        performFieldsOfJavaType(domainTypeDefinition, traitType);
+
+        performUniquesAndIndexesOfDomainType(domainTypeDefinition, traitType);
 
         performTraits(domainTypeDefinition, traitType);
 
@@ -320,7 +321,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
             Class<? extends TraitType> traitType, TypeName typeName) {
         TraitTypeDefinition traitTypeDefinition = new TraitTypeDefinition(typeName);
 
-        traitTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersionOfTrait(traitType));
+        traitTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersion(traitType));
 
         performFieldsOfTrait(traitTypeDefinition, traitType);
 
@@ -329,7 +330,26 @@ public class DefaultSchemaService extends AbstractSchemaService {
         return traitTypeDefinition;
     }
 
-    protected void performFieldsOfDomainType(DomainTypeDefinition domainTypeDefinition, Class<?> javaType) {
+    private GraphQLTypeDefinition javaTypeToGraphQLTypeDefinition(Class<?> javaType) {
+        GraphQLType graphQLType = javaType.getAnnotation(GraphQLType.class);
+
+        if (graphQLType == null || graphQLType.ignored() || graphQLType.extension().equals(Void.class)) {
+            return null;
+        }
+
+        GraphQLTypeDefinition graphQLTypeDefinition
+                = new GraphQLTypeDefinition(LiteQL.SchemaUtils.getTypeName(javaType));
+
+        graphQLTypeDefinition.setVersion(LiteQL.SchemaUtils.getVersion(javaType));
+
+        graphQLTypeDefinition.setExtension(LiteQL.SchemaUtils.getTypeName(graphQLType.extension()));
+
+        performFieldsOfJavaType(graphQLTypeDefinition, javaType);
+
+        return graphQLTypeDefinition;
+    }
+
+    protected void performFieldsOfJavaType(AbstractTypeDefinition typeDefinition, Class<?> javaType) {
         Set<Field> fields = new LinkedHashSet<>();
 
         List<java.lang.reflect.Field> javaFields = FieldUtils.getAllFieldsList(javaType);
@@ -361,19 +381,14 @@ public class DefaultSchemaService extends AbstractSchemaService {
             fields.add(field);
         }
 
-        if (CollectionUtils.isEmpty(domainTypeDefinition.getFields())) {
-            domainTypeDefinition.setFields(fields);
+        if (CollectionUtils.isEmpty(typeDefinition.getFields())) {
+            typeDefinition.setFields(fields);
         } else {
-            domainTypeDefinition.getFields().addAll(fields);
-        }
-
-        if (TraitType.class.isAssignableFrom(javaType)) {
-            performUniquesAndIndexesOfDomainType(
-                    domainTypeDefinition, (Class<? extends TraitType>) javaType);
+            typeDefinition.getFields().addAll(fields);
         }
     }
 
-    protected void performUniquesAndIndexesOfDomainType(
+    private void performUniquesAndIndexesOfDomainType(
             DomainTypeDefinition domainTypeDefinition, Class<? extends TraitType> javaType) {
         LiteQLDomainType liteQLDomainType = javaType.getAnnotation(LiteQLDomainType.class);
 
@@ -619,13 +634,6 @@ public class DefaultSchemaService extends AbstractSchemaService {
 
             if (Collection.class.isAssignableFrom(fieldType)) {
                 referenceField.setCollection(true);
-
-                if (!liteQLReferenceFieldAnnotation.mappedDomainType().equals(VoidTraitType.class)
-                        && !liteQLReferenceFieldAnnotation.targetDomainType().equals(
-                        liteQLReferenceFieldAnnotation.mappedDomainType())) {
-                    referenceField.setMappedDomainTypeName(
-                            LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
-                }
             }
 
             field = referenceField;

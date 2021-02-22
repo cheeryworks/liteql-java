@@ -34,6 +34,10 @@ public class Schema implements Serializable {
             (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
                     o1.getTypeName().getName(), o2.getTypeName().getName()));
 
+    private Set<GraphQLTypeDefinition> graphQLTypeDefinitions = new TreeSet<>(
+            (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
+                    o1.getTypeName().getName(), o2.getTypeName().getName()));
+
     private Map<TypeName, Map<String, Migration>> migrations = new TreeMap<>(
             (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
                     o1.getName(), o2.getName()));
@@ -52,6 +56,10 @@ public class Schema implements Serializable {
 
     public Set<TraitTypeDefinition> getTraitTypeDefinitions() {
         return traitTypeDefinitions;
+    }
+
+    public Set<GraphQLTypeDefinition> getGraphQLTypeDefinitions() {
+        return graphQLTypeDefinitions;
     }
 
     public Map<TypeName, Map<String, Migration>> getMigrations() {

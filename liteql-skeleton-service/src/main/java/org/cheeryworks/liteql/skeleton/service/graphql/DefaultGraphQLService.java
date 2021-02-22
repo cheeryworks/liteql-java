@@ -34,6 +34,7 @@ import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.enums.Direction;
 import org.cheeryworks.liteql.skeleton.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
+import org.cheeryworks.liteql.skeleton.schema.GraphQLTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.schema.field.NullableField;
 import org.cheeryworks.liteql.skeleton.schema.field.ReferenceField;
@@ -128,7 +129,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
         buildScalarDefinitions(typeDefinitionRegistry);
 
-        buildObjectTypeDefinitions(schemaService, typeDefinitionRegistry);
+        buildObjectTypeDefinitions(typeDefinitionRegistry);
 
         buildDefaultQueries(typeDefinitionRegistry);
 
@@ -212,8 +213,7 @@ public class DefaultGraphQLService implements GraphQLService {
                         .build());
     }
 
-    public void buildObjectTypeDefinitions(
-            SchemaService schemaService, TypeDefinitionRegistry typeDefinitionRegistry) {
+    private void buildObjectTypeDefinitions(TypeDefinitionRegistry typeDefinitionRegistry) {
         Map<String, ObjectTypeDefinition.Builder> objectTypeDefinitions = new HashMap<>();
 
         for (String schema : schemaService.getSchemaNames()) {
@@ -230,20 +230,13 @@ public class DefaultGraphQLService implements GraphQLService {
 
                 objectTypeDefinitions.put(objectTypeName, objectTypeDefinitionBuilder);
 
-                for (Field field : domainTypeDefinition.getFields()) {
-                    if (!field.isGraphQLField()) {
-                        continue;
-                    }
+                buildFields(objectTypeDefinitionBuilder, domainTypeDefinition.getFields());
 
-                    FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
-                            .newFieldDefinition()
-                            .name(field.getName())
-                            .type(getGraphQLTypeFromField(field))
-                            .inputValueDefinitions(defaultFieldArguments());
+                Set<GraphQLTypeDefinition> graphQLTypeDefinitions = schemaService
+                        .getGraphQLTypeDefinitionsByExtensionTypeName(domainTypeDefinition.getTypeName());
 
-                    FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
-
-                    objectTypeDefinitionBuilder.fieldDefinition(fieldDefinition);
+                for (GraphQLTypeDefinition graphQLTypeDefinition : graphQLTypeDefinitions) {
+                    buildFields(objectTypeDefinitionBuilder, graphQLTypeDefinition.getFields());
                 }
             }
         }
@@ -251,8 +244,36 @@ public class DefaultGraphQLService implements GraphQLService {
         objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
     }
 
+    private void buildFields(ObjectTypeDefinition.Builder objectTypeDefinitionBuilder, Set<Field> fields) {
+        for (Field field : fields) {
+            if (!field.isGraphQLField()) {
+                continue;
+            }
+
+            FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                    .newFieldDefinition()
+                    .name(field.getName())
+                    .type(getGraphQLTypeFromField(field))
+                    .inputValueDefinitions(defaultFieldArguments());
+
+            FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
+
+            objectTypeDefinitionBuilder.fieldDefinition(fieldDefinition);
+        }
+    }
+
     private Type getGraphQLTypeFromField(Field field) {
         String typeName = getGraphQLTypeNameFromField(field);
+
+        if (field instanceof ReferenceField) {
+            ReferenceField referenceField = (ReferenceField) field;
+
+            if (referenceField.isCollection()) {
+                return new ListType(
+                        new NonNullType(
+                                new TypeName(typeName)));
+            }
+        }
 
         if (field instanceof NullableField) {
             NullableField nullableField = (NullableField) field;

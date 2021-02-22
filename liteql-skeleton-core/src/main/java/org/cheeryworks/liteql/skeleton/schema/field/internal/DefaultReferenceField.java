@@ -8,8 +8,6 @@ public class DefaultReferenceField extends AbstractNullableField implements Refe
 
     private TypeName domainTypeName;
 
-    private TypeName mappedDomainTypeName;
-
     @JsonProperty
     private Boolean collection;
 
@@ -20,15 +18,6 @@ public class DefaultReferenceField extends AbstractNullableField implements Refe
 
     public void setDomainTypeName(TypeName domainTypeName) {
         this.domainTypeName = domainTypeName;
-    }
-
-    @Override
-    public TypeName getMappedDomainTypeName() {
-        return mappedDomainTypeName;
-    }
-
-    public void setMappedDomainTypeName(TypeName mappedDomainTypeName) {
-        this.mappedDomainTypeName = mappedDomainTypeName;
     }
 
     @Override

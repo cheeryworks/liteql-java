@@ -8,12 +8,12 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.cheeryworks.liteql.skeleton.LiteQLProperties;
 import org.cheeryworks.liteql.skeleton.graphql.annotation.GraphQLField;
+import org.cheeryworks.liteql.skeleton.schema.AbstractTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.Schema;
 import org.cheeryworks.liteql.skeleton.schema.TraitType;
 import org.cheeryworks.liteql.skeleton.schema.TraitTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.TypeDefinition;
-import org.cheeryworks.liteql.skeleton.schema.VoidTraitType;
 import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.schema.field.IdField;
@@ -90,7 +90,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
     }
 
     @Override
-    protected void performFieldsOfDomainType(DomainTypeDefinition domainTypeDefinition, Class<?> javaType) {
+    protected void performFieldsOfJavaType(AbstractTypeDefinition typeDefinition, Class<?> javaType) {
         Set<Field> fields = new LinkedHashSet<>();
 
         List<java.lang.reflect.Field> javaFields = FieldUtils.getAllFieldsList(javaType);
@@ -145,15 +145,16 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
             fields.add(field);
         }
 
-        if (CollectionUtils.isEmpty(domainTypeDefinition.getFields())) {
-            domainTypeDefinition.setFields(fields);
+        if (CollectionUtils.isEmpty(typeDefinition.getFields())) {
+            typeDefinition.setFields(fields);
         } else {
-            domainTypeDefinition.getFields().addAll(fields);
+            typeDefinition.getFields().addAll(fields);
         }
 
-        if (TraitType.class.isAssignableFrom(javaType)) {
+        if (typeDefinition instanceof DomainTypeDefinition) {
             performUniquesAndIndexesOfDomainType(
-                    domainTypeDefinition, (Class<? extends TraitType>) javaType, columnNameFieldNameMapping);
+                    (DomainTypeDefinition) typeDefinition,
+                    (Class<? extends TraitType>) javaType, columnNameFieldNameMapping);
         }
     }
 
@@ -340,13 +341,6 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
 
             if (Collection.class.isAssignableFrom(fieldType)) {
                 referenceField.setCollection(true);
-
-                if (!liteQLReferenceFieldAnnotation.mappedDomainType().equals(VoidTraitType.class)
-                        && !liteQLReferenceFieldAnnotation.targetDomainType().equals(
-                        liteQLReferenceFieldAnnotation.mappedDomainType())) {
-                    referenceField.setMappedDomainTypeName(
-                            LiteQL.SchemaUtils.getTypeName(liteQLReferenceFieldAnnotation.targetDomainType()));
-                }
             }
 
             field = referenceField;

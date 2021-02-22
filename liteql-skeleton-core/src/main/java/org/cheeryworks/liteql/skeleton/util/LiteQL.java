@@ -174,19 +174,19 @@ public final class LiteQL {
             return schemaDefinitionPackages;
         }
 
-        public static String getSchemaOfTrait(Class<? extends TraitType> traitType) {
-            String schema = getProperty(traitType, SchemaDefinitionProvider::getSchema);
+        public static String getSchema(Class<?> javaType) {
+            String schema = getProperty(javaType, SchemaDefinitionProvider::getSchema);
 
             if (org.apache.commons.lang3.StringUtils.isBlank(schema)) {
-                if (DomainType.class.isAssignableFrom(traitType) && !traitType.isInterface()) {
-                    LiteQLDomainType liteQLDomainTypeAnnotation = traitType.getAnnotation(LiteQLDomainType.class);
+                if (DomainType.class.isAssignableFrom(javaType) && !javaType.isInterface()) {
+                    LiteQLDomainType liteQLDomainTypeAnnotation = javaType.getAnnotation(LiteQLDomainType.class);
 
                     if (liteQLDomainTypeAnnotation != null
                             && org.apache.commons.lang3.StringUtils.isNotBlank(liteQLDomainTypeAnnotation.schema())) {
                         schema = liteQLDomainTypeAnnotation.schema();
                     }
                 } else {
-                    LiteQLTraitType liteQLTraitTypeAnnotation = traitType.getAnnotation(LiteQLTraitType.class);
+                    LiteQLTraitType liteQLTraitTypeAnnotation = javaType.getAnnotation(LiteQLTraitType.class);
 
                     if (liteQLTraitTypeAnnotation != null
                             && org.apache.commons.lang3.StringUtils.isNotBlank(liteQLTraitTypeAnnotation.schema())) {
@@ -198,16 +198,16 @@ public final class LiteQL {
             return schema;
         }
 
-        public static String getVersionOfTrait(Class<? extends TraitType> traitType) {
-            return getProperty(traitType, SchemaDefinitionProvider::getVersion);
+        public static String getVersion(Class<?> javaType) {
+            return getProperty(javaType, SchemaDefinitionProvider::getVersion);
         }
 
         private static <T> T getProperty(
-                Class<? extends TraitType> traitType, Function<SchemaDefinitionProvider, T> consumer) {
+                Class<?> javaType, Function<SchemaDefinitionProvider, T> consumer) {
             for (SchemaDefinitionProvider schemaDefinitionProvider : schemaDefinitionProviders) {
                 boolean matched = Arrays.stream(schemaDefinitionProvider.getPackages())
                         .anyMatch(schemaDefinitionPackage -> schemaDefinitionPackage.equals(
-                                traitType.getPackage().getName()));
+                                javaType.getPackage().getName()));
 
                 if (matched) {
                     return consumer.apply(schemaDefinitionProvider);
@@ -217,14 +217,14 @@ public final class LiteQL {
             return null;
         }
 
-        public static TypeName getTypeName(Class<? extends TraitType> traitType) {
-            String schema = getSchemaOfTrait(traitType);
+        public static TypeName getTypeName(Class<?> javaType) {
+            String schema = getSchema(javaType);
 
             if (org.apache.commons.lang3.StringUtils.isNotBlank(schema)) {
                 TypeName typeName = new TypeName();
-                typeName.setSchema(getSchemaOfTrait(traitType));
+                typeName.setSchema(getSchema(javaType));
                 typeName.setName(
-                        StringUtils.camelNameToLowerDashConnectedLowercaseName(traitType.getSimpleName()));
+                        StringUtils.camelNameToLowerDashConnectedLowercaseName(javaType.getSimpleName()));
 
                 return typeName;
             }
@@ -265,6 +265,11 @@ public final class LiteQL {
         }
 
         public static String camelNameToLowerDashConnectedLowercaseName(String camelName) {
+            camelName = camelName.replaceAll("GraphQL", "Graphql");
+            camelName = camelName.replaceAll("graphQL", "graphql");
+            camelName = camelName.replaceAll("LiteQL", "Liteql");
+            camelName = camelName.replaceAll("liteQL", "liteql");
+
             String[] words = org.apache.commons.lang3.StringUtils.splitByCharacterTypeCamelCase(camelName);
 
             return String.join("_", words).toLowerCase();

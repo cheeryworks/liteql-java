@@ -1,52 +1,15 @@
 package org.cheeryworks.liteql.skeleton.schema;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.cheeryworks.liteql.skeleton.schema.field.Field;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class TraitTypeDefinition implements TypeDefinition {
-
-    @JsonIgnore
-    private TypeName typeName;
-
-    @JsonIgnore
-    private String version;
-
-    @JsonDeserialize(as = LinkedHashSet.class)
-    private Set<Field> fields;
+public class TraitTypeDefinition extends AbstractTypeDefinition {
 
     @JsonDeserialize(as = LinkedHashSet.class)
     private Set<TypeName> traits;
-
-    @Override
-    public TypeName getTypeName() {
-        return typeName;
-    }
-
-    public void setTypeName(TypeName typeName) {
-        this.typeName = typeName;
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public Set<Field> getFields() {
-        return fields;
-    }
-
-    public void setFields(Set<Field> fields) {
-        this.fields = fields;
-    }
 
     public Set<TypeName> getTraits() {
         return traits;
@@ -57,15 +20,15 @@ public class TraitTypeDefinition implements TypeDefinition {
     }
 
     public TraitTypeDefinition() {
-
+        super();
     }
 
     public TraitTypeDefinition(TypeName typeName) {
-        this(typeName.getSchema(), typeName.getName());
+        super(typeName.getSchema(), typeName.getName());
     }
 
     public TraitTypeDefinition(String schema, String typeName) {
-        this.typeName = new TypeName(schema, typeName);
+        super(schema, typeName);
     }
 
     public boolean isTrait() {
@@ -90,21 +53,22 @@ public class TraitTypeDefinition implements TypeDefinition {
             return true;
         }
 
-        if (!(o instanceof TraitTypeDefinition)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
-        TraitTypeDefinition traitTypeDefinition = (TraitTypeDefinition) o;
+        if (!super.equals(o)) {
+            return false;
+        }
 
-        return Objects.equals(typeName, traitTypeDefinition.typeName) &&
-                Objects.equals(version, traitTypeDefinition.version) &&
-                Objects.equals(fields, traitTypeDefinition.fields) &&
-                Objects.equals(traits, traitTypeDefinition.traits);
+        TraitTypeDefinition that = (TraitTypeDefinition) o;
+
+        return Objects.equals(traits, that.traits);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(typeName, version, fields, traits);
+        return Objects.hash(super.hashCode(), traits);
     }
 
 }

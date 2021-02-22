@@ -1,6 +1,9 @@
 package org.cheeryworks.liteql.skeleton.schema;
 
+import org.cheeryworks.liteql.skeleton.schema.field.Field;
+
 import java.io.Serializable;
+import java.util.Set;
 
 public interface TypeDefinition extends Serializable {
 
@@ -9,6 +12,8 @@ public interface TypeDefinition extends Serializable {
     TypeName getTypeName();
 
     String getVersion();
+
+    Set<Field> getFields();
 
     boolean isTrait();
 

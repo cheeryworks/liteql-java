@@ -1,6 +1,7 @@
 package org.cheeryworks.liteql.skeleton.service.graphql;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLObjectType;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionClause;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.ReadQuery;
@@ -73,7 +74,7 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
         for (Map.Entry<String, Map<String, Object>> keysInTypesEntry : keysInTypes.entrySet()) {
             Map<String, Object> keyContext = keysInTypesEntry.getValue();
 
-            TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(keysInTypesEntry.getKey());
+            TypeName domainTypeName = GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(keysInTypesEntry.getKey());
 
             ReadQuery readQuery = QueryBuilder
                     .read(domainTypeName)
@@ -90,7 +91,10 @@ public class GraphQLBatchLoader implements BatchLoaderWithContext<String, Map<St
                     (DataFetchingEnvironment) keyContext.get(
                             QUERY_DATA_FETCHING_ENVIRONMENT_KEY);
 
-            GraphQLServiceUtil.parseFields(readQuery, dataFetchingEnvironment);
+            GraphQLObjectType outputType
+                    = GraphQLServiceUtil.getWrappedOutputType(dataFetchingEnvironment.getFieldType());
+
+            GraphQLServiceUtil.parseFields(readQuery, outputType, dataFetchingEnvironment);
 
             ReadResults dataSubSet = queryService.read(dataFetchingEnvironment.getContext(), readQuery);
 

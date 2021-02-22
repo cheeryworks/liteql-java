@@ -102,8 +102,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 Map<String, Object> childrenContext = getChildrenContext(
                         queryContext,
                         source.get(QUERY_ARGUMENT_NAME_ID).toString(),
-                        environment.getField().getName(),
-                        outputType.getName(), keyContext);
+                        ((GraphQLObjectType) environment.getParentType()).getName(), outputType.getName(), keyContext);
                 data = defaultDataLoader.loadMany(
                         Arrays.asList(childrenContext.keySet().toArray()),
                         Arrays.asList(childrenContext.values().toArray()));
@@ -135,7 +134,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     private Object getById(QueryContext queryContext, DataFetchingEnvironment dataFetchingEnvironment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(dataFetchingEnvironment.getFieldType());
 
-        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(outputType.getName());
+        TypeName domainTypeName = GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(outputType.getName());
 
         SingleReadQuery singleReadQuery = QueryBuilder
                 .read(domainTypeName)
@@ -143,7 +142,7 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
                 .single()
                 .getQuery();
 
-        GraphQLServiceUtil.parseFields(singleReadQuery, dataFetchingEnvironment);
+        GraphQLServiceUtil.parseFields(singleReadQuery, outputType, dataFetchingEnvironment);
 
         singleReadQuery.addCondition(
                 QUERY_ARGUMENT_NAME_ID,
@@ -161,14 +160,14 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
             QueryContext queryContext, DataFetchingEnvironment dataFetchingEnvironment) {
         GraphQLObjectType outputType = GraphQLServiceUtil.getWrappedOutputType(dataFetchingEnvironment.getFieldType());
 
-        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(outputType.getName());
+        TypeName domainTypeName = GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(outputType.getName());
 
         ReadQuery readQuery = QueryBuilder
                 .read(domainTypeName)
                 .fields()
                 .getQuery();
 
-        GraphQLServiceUtil.fillReadQueryWithDataFetchingEnvironment(readQuery, dataFetchingEnvironment);
+        GraphQLServiceUtil.fillReadQueryWithDataFetchingEnvironment(readQuery, outputType, dataFetchingEnvironment);
 
         Integer offset = null;
         if (dataFetchingEnvironment.containsArgument(QUERY_ARGUMENT_NAME_PAGINATION_OFFSET)) {
@@ -194,16 +193,18 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
     }
 
     private Map<String, Object> getChildrenContext(
-            QueryContext queryContext, String parentId, String fieldName,
+            QueryContext queryContext, String parentId, String parentTypeName,
             String childTypeName, Map<String, Object> keyContext) {
         Map<String, Object> childrenContext = new LinkedHashMap<>();
 
-        TypeName domainTypeName = GraphQLServiceUtil.toDomainTypeName(childTypeName);
+        TypeName parentDomainTypeName = GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(parentTypeName);
 
-        String parentFieldName = fieldName;
+        TypeName childDomainTypeName = GraphQLServiceUtil.graphQLTypeNameToDomainTypeName(childTypeName);
+
+        String parentFieldName = parentDomainTypeName.getName();
 
         ReadQuery readQuery = QueryBuilder
-                .read(domainTypeName)
+                .read(childDomainTypeName)
                 .fields(
                         field(QUERY_ARGUMENT_NAME_ID),
                         field(parentFieldName)
