@@ -169,8 +169,7 @@ public class DefaultSchemaService extends AbstractSchemaService {
                             typeMetadata.getContents().put(contentName, content);
                         }
 
-                        if (schemaDefinitionResourceRelativePath
-                                .contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
+                        if (schemaDefinitionResourceRelativePath.contains("/" + NAME_OF_MIGRATIONS_DIRECTORY + "/")) {
                             typeMetadata.getMigrationContents().put(contentName, content);
                         }
 
