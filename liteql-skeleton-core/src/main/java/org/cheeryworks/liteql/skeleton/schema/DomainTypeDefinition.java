@@ -1,7 +1,7 @@
 package org.cheeryworks.liteql.skeleton.schema;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
 import org.cheeryworks.liteql.skeleton.schema.field.IdField;
@@ -24,8 +24,10 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
     @JsonDeserialize(as = LinkedHashSet.class)
     private Set<IndexDefinition> indexes = new HashSet<>();
 
+    @JsonProperty
     private Boolean graphQLType;
 
+    @JsonProperty
     private Boolean dropped;
 
     private TypeName implementTrait;
@@ -46,11 +48,6 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
         this.indexes = indexes;
     }
 
-    @JsonGetter
-    private Boolean graphQLEntity() {
-        return graphQLType;
-    }
-
     public boolean isGraphQLType() {
         if (graphQLType == null) {
             return true;
@@ -61,11 +58,6 @@ public class DomainTypeDefinition extends TraitTypeDefinition {
 
     public void setGraphQLType(Boolean graphQLType) {
         this.graphQLType = graphQLType;
-    }
-
-    @JsonGetter
-    private Boolean dropped() {
-        return dropped;
     }
 
     public boolean isDropped() {
