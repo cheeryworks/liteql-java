@@ -17,8 +17,8 @@ import org.cheeryworks.liteql.skeleton.schema.field.ReferenceField;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +106,7 @@ public abstract class SqlQueryServiceUtil {
 
     public static <T extends TraitType> List<T> getTypedResults(
             List<ReadResult> data, Class<T> type, DomainTypeDefinition domainTypeDefinition) {
-        List<T> typedResults = new LinkedList<>();
+        List<T> typedResults = new ArrayList<>();
 
         data
                 .stream()

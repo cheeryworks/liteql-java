@@ -1,6 +1,6 @@
 package org.cheeryworks.liteql.skeleton.query.read.result;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class TreeReadResult extends ReadResult {
@@ -17,17 +17,17 @@ public class TreeReadResult extends ReadResult {
 
     public static final String PRIORITY_FIELD_NAME = "priority";
 
-    private LinkedList<TreeReadResult> children;
+    private List<TreeReadResult> children;
 
     public TreeReadResult(Map<String, Object> source) {
         super(source);
     }
 
-    public LinkedList<TreeReadResult> getChildren() {
+    public List<TreeReadResult> getChildren() {
         return children;
     }
 
-    public void setChildren(LinkedList<TreeReadResult> children) {
+    public void setChildren(List<TreeReadResult> children) {
         this.children = children;
 
         this.put(CHILDREN_FIELD_NAME, children);

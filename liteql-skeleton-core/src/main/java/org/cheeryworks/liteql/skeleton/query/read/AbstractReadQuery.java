@@ -4,12 +4,11 @@ import org.cheeryworks.liteql.skeleton.query.read.join.JoinedReadQuery;
 import org.cheeryworks.liteql.skeleton.query.read.sort.QuerySort;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AbstractReadQuery<T extends AbstractReadQuery> extends JoinedReadQuery {
 
-    private LinkedList<QuerySort> sorts;
+    private List<QuerySort> sorts;
 
     private LinkedHashMap<String, String> references;
 
@@ -17,11 +16,11 @@ public abstract class AbstractReadQuery<T extends AbstractReadQuery> extends Joi
 
     private String scope;
 
-    public LinkedList<QuerySort> getSorts() {
+    public List<QuerySort> getSorts() {
         return sorts;
     }
 
-    public void setSorts(LinkedList<QuerySort> sorts) {
+    public void setSorts(List<QuerySort> sorts) {
         this.sorts = sorts;
     }
 

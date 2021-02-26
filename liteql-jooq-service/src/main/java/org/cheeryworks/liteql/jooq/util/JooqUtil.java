@@ -24,9 +24,9 @@ import org.jooq.impl.SQLDataType;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -429,7 +429,7 @@ public class JooqUtil {
 
     private static Object transformValue(QueryCondition queryCondition) {
         if (queryCondition.getValue() instanceof List) {
-            List<Object> transformedValues = new LinkedList<>();
+            List<Object> transformedValues = new ArrayList<>();
             for (Object value : (List) queryCondition.getValue()) {
                 transformedValues.add(value);
             }

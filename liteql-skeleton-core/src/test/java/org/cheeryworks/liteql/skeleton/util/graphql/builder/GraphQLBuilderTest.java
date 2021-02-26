@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.cheeryworks.liteql.skeleton.util.graphql.builder.GraphQLEntryFieldQueryBuilder.field;
@@ -20,7 +20,7 @@ public class GraphQLBuilderTest extends AbstractTest {
 
     @Test
     public void testingGraphQLBuilder() {
-        List<QueryCondition> conditions = new LinkedList<>();
+        List<QueryCondition> conditions = new ArrayList<>();
         conditions.add(
                 new QueryCondition(
                         "code", ConditionClause.EQUALS, ConditionType.String,

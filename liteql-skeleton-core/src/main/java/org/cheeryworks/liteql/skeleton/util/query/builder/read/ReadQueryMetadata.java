@@ -6,12 +6,13 @@ import org.cheeryworks.liteql.skeleton.query.read.join.JoinedReadQuery;
 import org.cheeryworks.liteql.skeleton.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.skeleton.util.query.builder.read.join.ReadQueryJoinMetadata;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.List;
 
 public class ReadQueryMetadata extends AbstractReadQueryMetadata {
 
-    private LinkedList<QuerySort> sorts = new LinkedList<>();
+    private List<QuerySort> sorts = new ArrayList<>();
 
     private Integer expandLevel;
 
@@ -25,11 +26,11 @@ public class ReadQueryMetadata extends AbstractReadQueryMetadata {
 
     private AbstractReadQuery[] associations;
 
-    public LinkedList<QuerySort> getSorts() {
+    public List<QuerySort> getSorts() {
         return sorts;
     }
 
-    public void setSorts(LinkedList<QuerySort> sorts) {
+    public void setSorts(List<QuerySort> sorts) {
         this.sorts = sorts;
     }
 
@@ -90,7 +91,7 @@ public class ReadQueryMetadata extends AbstractReadQueryMetadata {
         joinedReadQuery.setConditions(readQueryJoinMetadata.getConditions());
 
         if (ArrayUtils.isNotEmpty(readQueryJoinMetadata.getReadQueryJoinMetadataArray())) {
-            joinedReadQuery.setJoins(new LinkedList<>());
+            joinedReadQuery.setJoins(new ArrayList<>());
 
             for (ReadQueryJoinMetadata childReadQueryJoinMetadata
                     : readQueryJoinMetadata.getReadQueryJoinMetadataArray()) {

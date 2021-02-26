@@ -6,7 +6,7 @@ import org.cheeryworks.liteql.skeleton.query.enums.QueryType;
 import org.cheeryworks.liteql.skeleton.query.read.result.ReadResult;
 import org.cheeryworks.liteql.skeleton.query.read.result.ReadResults;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery, ReadResult> implements PublicQuery {
 
@@ -23,7 +23,7 @@ public class SingleReadQuery extends AbstractTypedReadQuery<SingleReadQuery, Rea
         setReferences(readQuery.getReferences());
 
         if (CollectionUtils.isNotEmpty(readQuery.getAssociations())) {
-            setAssociations(new LinkedList<>());
+            setAssociations(new ArrayList<>());
 
             for (ReadQuery associatedReadQuery : readQuery.getAssociations()) {
                 getAssociations().add(new SingleReadQuery(associatedReadQuery));

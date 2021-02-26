@@ -6,13 +6,13 @@ import org.cheeryworks.liteql.skeleton.query.enums.ConditionClause;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionType;
 import org.cheeryworks.liteql.skeleton.query.read.AbstractFieldReadQuery;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public class JoinedReadQuery extends AbstractFieldReadQuery {
 
     private QueryConditions joinConditions;
 
-    private LinkedList<JoinedReadQuery> joins;
+    private List<JoinedReadQuery> joins;
 
     public QueryConditions getJoinConditions() {
         return joinConditions;
@@ -34,11 +34,11 @@ public class JoinedReadQuery extends AbstractFieldReadQuery {
         this.addJoinCondition(new QueryCondition(field, condition, type, value));
     }
 
-    public LinkedList<JoinedReadQuery> getJoins() {
+    public List<JoinedReadQuery> getJoins() {
         return joins;
     }
 
-    public void setJoins(LinkedList<JoinedReadQuery> joins) {
+    public void setJoins(List<JoinedReadQuery> joins) {
         this.joins = joins;
     }
 

@@ -3,8 +3,8 @@ package org.cheeryworks.liteql.skeleton.query.read.result;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +17,7 @@ import static org.cheeryworks.liteql.skeleton.query.read.result.TreeReadResult.P
 import static org.cheeryworks.liteql.skeleton.query.read.result.TreeReadResult.SORT_CODE_FIELD_NAME;
 import static org.cheeryworks.liteql.skeleton.schema.field.IdField.ID_FIELD_NAME;
 
-public class TreeReadResults extends LinkedList<TreeReadResult> implements ReadResultsData<TreeReadResult> {
+public class TreeReadResults extends ArrayList<TreeReadResult> implements ReadResultsData<TreeReadResult> {
 
     public TreeReadResults(List<TreeReadResult> source) {
         super(source);
@@ -30,7 +30,7 @@ public class TreeReadResults extends LinkedList<TreeReadResult> implements ReadR
 
     public static List<Map<String, Object>> sortInTree(
             List<Map<String, Object>> dataSet) {
-        List<Map<String, Object>> sortedMapsInTree = new LinkedList<>();
+        List<Map<String, Object>> sortedMapsInTree = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(dataSet)) {
             Map<String, Object> firstRow = dataSet.get(0);
@@ -130,7 +130,7 @@ public class TreeReadResults extends LinkedList<TreeReadResult> implements ReadR
         List<Map<String, Object>> children = (List<Map<String, Object>>) parent.get(CHILDREN_FIELD_NAME);
 
         if (children == null) {
-            children = new LinkedList<>();
+            children = new ArrayList<>();
             parent.put(CHILDREN_FIELD_NAME, children);
         }
 
@@ -144,7 +144,7 @@ public class TreeReadResults extends LinkedList<TreeReadResult> implements ReadR
     }
 
     private static List<TreeReadResult> hierarchicalEntitiesInTreeForMap(List<ReadResult> hierarchicalEntities) {
-        List<TreeReadResult> hierarchicalEntitiesInTree = new LinkedList<>();
+        List<TreeReadResult> hierarchicalEntitiesInTree = new ArrayList<>();
 
         if (hierarchicalEntities != null && hierarchicalEntities.size() > 0) {
             for (Map<String, Object> hierarchicalEntity : hierarchicalEntities) {
@@ -190,10 +190,10 @@ public class TreeReadResults extends LinkedList<TreeReadResult> implements ReadR
 
                     hierarchicalEntity.put(LEAF_FIELD_NAME, true);
 
-                    LinkedList<TreeReadResult> children = hierarchicalEntityInTree.getChildren();
+                    List<TreeReadResult> children = hierarchicalEntityInTree.getChildren();
 
                     if (children == null) {
-                        children = new LinkedList<>();
+                        children = new ArrayList<>();
                         hierarchicalEntityInTree.setChildren(children);
                     }
 

@@ -5,8 +5,8 @@ import org.cheeryworks.liteql.skeleton.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.skeleton.query.read.PageReadQuery;
 import org.cheeryworks.liteql.skeleton.util.query.builder.read.join.ReadQueryJoinMetadata;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 public class ReadQueryEndBuilder<T extends AbstractTypedReadQuery> {
 
@@ -28,7 +28,7 @@ public class ReadQueryEndBuilder<T extends AbstractTypedReadQuery> {
         readQuery.setFields(readQueryMetadata.getFields());
 
         if (ArrayUtils.isNotEmpty(readQueryMetadata.getReadQueryJoinMetadataArray())) {
-            readQuery.setJoins(new LinkedList<>());
+            readQuery.setJoins(new ArrayList<>());
 
             for (ReadQueryJoinMetadata readQueryJoinMetadata : readQueryMetadata.getReadQueryJoinMetadataArray()) {
                 readQuery.getJoins().add(readQueryMetadata.getJoinedQuery(readQueryJoinMetadata));

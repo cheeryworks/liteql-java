@@ -6,7 +6,7 @@ import org.cheeryworks.liteql.skeleton.query.enums.QueryType;
 import org.cheeryworks.liteql.skeleton.query.read.result.PageReadResults;
 import org.cheeryworks.liteql.skeleton.query.read.result.ReadResults;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery, PageReadResults> implements PublicQuery {
 
@@ -43,7 +43,7 @@ public class PageReadQuery extends AbstractTypedReadQuery<PageReadQuery, PageRea
         setReferences(readQuery.getReferences());
 
         if (CollectionUtils.isNotEmpty(readQuery.getAssociations())) {
-            setAssociations(new LinkedList<>());
+            setAssociations(new ArrayList<>());
 
             for (ReadQuery associatedReadQuery : readQuery.getAssociations()) {
                 getAssociations().add(new PageReadQuery(associatedReadQuery, page, size));

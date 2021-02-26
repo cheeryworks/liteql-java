@@ -2,7 +2,7 @@ package org.cheeryworks.liteql.skeleton.util.query.builder.delete;
 
 import org.cheeryworks.liteql.skeleton.query.delete.DeleteQuery;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DeleteQueriesBuilder extends DeleteQueryBuilder {
@@ -14,7 +14,7 @@ public class DeleteQueriesBuilder extends DeleteQueryBuilder {
     }
 
     public List<DeleteQuery> getQueries() {
-        List<DeleteQuery> deleteQueries = new LinkedList<>();
+        List<DeleteQuery> deleteQueries = new ArrayList<>();
 
         for (DeleteQueryMetadata deleteQueryMetadata : deleteQueryMetadataArray) {
             deleteQueries.add(getQuery(deleteQueryMetadata));

@@ -17,7 +17,6 @@ import org.cheeryworks.liteql.skeleton.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.skeleton.schema.TypeName;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public abstract class GraphQLServiceUtil {
@@ -100,7 +99,7 @@ public abstract class GraphQLServiceUtil {
 
         QuerySort[] querySorts = LiteQL.JacksonJsonUtils.toBean(sorts, QuerySort[].class);
 
-        readQuery.setSorts(new LinkedList<>(Arrays.asList(querySorts)));
+        readQuery.setSorts(Arrays.asList(querySorts));
     }
 
     public static GraphQLObjectType getWrappedOutputType(GraphQLOutputType outputType) {

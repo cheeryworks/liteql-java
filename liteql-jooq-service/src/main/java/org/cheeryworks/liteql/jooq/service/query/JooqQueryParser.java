@@ -56,7 +56,6 @@ import org.jooq.impl.DSL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
     public SqlReadQuery getSqlReadQuery(AbstractTypedReadQuery readQuery) {
         SqlReadQuery sqlReadQuery = new InlineSqlReadQuery();
 
-        List<Condition> conditions = new LinkedList<>();
+        List<Condition> conditions = new ArrayList<>();
 
         if (readQuery.getConditions() != null) {
             conditions.add(

@@ -3,7 +3,7 @@ package org.cheeryworks.liteql.skeleton.util.query.builder.save;
 import org.cheeryworks.liteql.skeleton.query.save.AbstractSaveQuery;
 import org.cheeryworks.liteql.skeleton.query.save.SaveQueryAssociations;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SaveQueryBuilder<T extends AbstractSaveQuery> {
@@ -25,7 +25,7 @@ public class SaveQueryBuilder<T extends AbstractSaveQuery> {
     }
 
     private List<AbstractSaveQuery> getQueries(SaveQueryMetadata[] saveQueryMetadataEndBuilders) {
-        List<AbstractSaveQuery> saveQueries = new LinkedList<>();
+        List<AbstractSaveQuery> saveQueries = new ArrayList<>();
 
         for (SaveQueryMetadata saveQueryMetadata : saveQueryMetadataEndBuilders) {
             saveQueries.add(getQuery(saveQueryMetadata));

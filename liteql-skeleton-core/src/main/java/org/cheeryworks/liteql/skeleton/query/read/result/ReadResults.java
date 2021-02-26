@@ -1,10 +1,10 @@
 package org.cheeryworks.liteql.skeleton.query.read.result;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ReadResults extends LinkedList<ReadResult> implements ReadResultsData<ReadResult> {
+public class ReadResults extends ArrayList<ReadResult> implements ReadResultsData<ReadResult> {
 
     private final long total;
 
