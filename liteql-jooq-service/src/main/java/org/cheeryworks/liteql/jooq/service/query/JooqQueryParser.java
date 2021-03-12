@@ -152,7 +152,9 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
             for (QuerySort querySort : querySorts) {
                 selectOrderByStep.orderBy(
-                        field("x." + querySort.getField()).sort(SortOrder.valueOf(querySort.getDirection().name())));
+                        field(
+                                "x." + querySort.getField())
+                                .sort(SortOrder.valueOf(querySort.getDirection().name())));
             }
         }
 
@@ -277,9 +279,9 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                 String columnName = getSqlCustomizer().getColumnName(
                         domainTypeDefinition.getTypeName(), field.getName());
 
-                fields.add(field(tableAlias + "." + columnName));
+                fields.add(field(tableAlias + "." + columnName).as(field.getName()));
 
-                sqlReadQuery.getFields().put(columnName.toLowerCase(), field.getName());
+                sqlReadQuery.getFields().put(field.getName().toLowerCase(), field.getName());
             }
         } else if (CollectionUtils.isNotEmpty(fieldDefinitions)) {
             for (FieldDefinition fieldDefinition : fieldDefinitions) {
@@ -290,7 +292,11 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
 
                 fields.add(field(tableAlias + "." + columnName).as(fieldDefinition.getAlias()));
 
-                sqlReadQuery.getFields().put(fieldDefinition.getAlias().toLowerCase(), fieldDefinition.getAlias());
+                if (columnName.equalsIgnoreCase(fieldDefinition.getAlias())) {
+                    sqlReadQuery.getFields().put(columnName.toLowerCase(), fieldDefinition.getAlias());
+                } else {
+                    sqlReadQuery.getFields().put(fieldDefinition.getAlias().toLowerCase(), fieldDefinition.getAlias());
+                }
             }
         }
 
