@@ -568,7 +568,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 if (saveQuery instanceof PublicQuery) {
-                    publishQuery((PublicQuery) saveQuery);
+                    publishQuery(saveQuery);
                 }
 
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(
@@ -731,22 +731,22 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
     @Override
     public Object execute(QueryContext queryContext, PublicQuery query) {
-        if (query instanceof AbstractTypedReadQuery) {
-            AbstractTypedReadQuery readQuery = (AbstractTypedReadQuery) query;
-
-            return query(queryContext, readQuery);
-        } else if (query instanceof AbstractSaveQuery) {
-            AbstractSaveQuery saveQuery = (AbstractSaveQuery) query;
-
-            return save(queryContext, saveQuery);
+        if (query instanceof ReadQuery) {
+            return read(queryContext, (ReadQuery) query);
+        } else if (query instanceof PageReadQuery) {
+            return read(queryContext, (PageReadQuery) query);
+        } else if (query instanceof SingleReadQuery) {
+            return query(queryContext, (SingleReadQuery) query);
+        } else if (query instanceof TreeReadQuery) {
+            return query(queryContext, (TreeReadQuery) query);
+        } else if (query instanceof CreateQuery) {
+            return create(queryContext, (CreateQuery) query);
+        } else if (query instanceof UpdateQuery) {
+            return update(queryContext, (UpdateQuery) query);
         } else if (query instanceof SaveQueries) {
-            SaveQueries saveQueries = (SaveQueries) query;
-
-            return save(queryContext, saveQueries);
+            return save(queryContext, (SaveQueries) query);
         } else if (query instanceof DeleteQuery) {
-            DeleteQuery deleteQuery = (DeleteQuery) query;
-
-            return delete(queryContext, deleteQuery);
+            return delete(queryContext, (DeleteQuery) query);
         } else if (query instanceof Queries) {
             Queries queries = (Queries) query;
 
