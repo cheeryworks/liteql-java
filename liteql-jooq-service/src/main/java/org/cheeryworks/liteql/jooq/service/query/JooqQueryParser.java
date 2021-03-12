@@ -45,8 +45,8 @@ import org.jooq.DataType;
 import org.jooq.DeleteFinalStep;
 import org.jooq.InsertFinalStep;
 import org.jooq.InsertSetStep;
-import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
+import org.jooq.SelectOrderByStep;
 import org.jooq.SortOrder;
 import org.jooq.UpdateFinalStep;
 import org.jooq.UpdateSetMoreStep;
@@ -140,18 +140,19 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
             }
         }
 
-        SelectConditionStep selectConditionStep = selectJoinStep.where(conditions);
+        SelectOrderByStep selectOrderByStep = getDslContext()
+                .select(field("x.*"))
+                .from(selectJoinStep.where(conditions).asTable("x"));
 
-        sqlReadQuery.setTotalSql(getDslContext().select(count()).from(selectConditionStep).getSQL());
-        sqlReadQuery.setTotalSqlParameters(selectConditionStep.getBindValues().toArray());
+        sqlReadQuery.setTotalSql(getDslContext().select(count()).from(selectOrderByStep).getSQL());
+        sqlReadQuery.setTotalSqlParameters(selectOrderByStep.getBindValues().toArray());
 
         if (CollectionUtils.isNotEmpty(readQuery.getSorts())) {
             List<QuerySort> querySorts = readQuery.getSorts();
 
             for (QuerySort querySort : querySorts) {
-                selectConditionStep.orderBy(
-                        field(getSqlCustomizer().getColumnName(readQuery.getDomainTypeName(), querySort.getField()))
-                                .sort(SortOrder.valueOf(querySort.getDirection().name())));
+                selectOrderByStep.orderBy(
+                        field("x." + querySort.getField()).sort(SortOrder.valueOf(querySort.getDirection().name())));
             }
         }
 
@@ -160,12 +161,12 @@ public class JooqQueryParser extends AbstractJooqParser implements SqlQueryParse
                     ((PageReadQuery) readQuery).getPage(),
                     ((PageReadQuery) readQuery).getSize());
 
-            sqlReadQuery.setSql(JooqUtil.getPageSql(selectConditionStep, pageable));
+            sqlReadQuery.setSql(JooqUtil.getPageSql(selectOrderByStep, pageable));
         } else {
-            sqlReadQuery.setSql(selectConditionStep.getSQL());
+            sqlReadQuery.setSql(selectOrderByStep.getSQL());
         }
 
-        sqlReadQuery.setSqlParameters(selectConditionStep.getBindValues().toArray());
+        sqlReadQuery.setSqlParameters(selectOrderByStep.getBindValues().toArray());
 
         return sqlReadQuery;
     }
