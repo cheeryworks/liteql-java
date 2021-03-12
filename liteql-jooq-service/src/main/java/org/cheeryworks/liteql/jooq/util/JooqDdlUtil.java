@@ -173,7 +173,7 @@ public abstract class JooqDdlUtil {
             String oldColumnName, Class<F> oldColumnDataType, String newColumnName, Class<T> newColumnDataType) {
         boolean exist = false;
 
-        Map<String, Object> anyResult = dslContext.select(field("*")).from(tableName).fetchAnyMap();
+        Map<String, Object> anyResult = dslContext.select().from(tableName).fetchAnyMap();
 
         for (String columnName : anyResult.keySet()) {
             if (columnName.equalsIgnoreCase(oldColumnName)) {
