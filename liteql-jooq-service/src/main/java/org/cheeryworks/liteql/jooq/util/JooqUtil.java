@@ -15,7 +15,6 @@ import org.cheeryworks.liteql.skeleton.service.sql.SqlCustomizer;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.SQLDialect;
-import org.jooq.SelectConditionStep;
 import org.jooq.SelectLimitStep;
 import org.jooq.exception.SQLDialectNotSupportedException;
 import org.jooq.impl.DSL;
@@ -202,8 +201,8 @@ public class JooqUtil {
         return null;
     }
 
-    public static String getPageSql(SelectConditionStep selectConditionStep, Pageable pageable) {
-        return getPageSql(selectConditionStep, pageable.getPage() * pageable.getSize(), pageable.getSize());
+    public static String getPageSql(SelectLimitStep selectLimitStep, Pageable pageable) {
+        return getPageSql(selectLimitStep, pageable.getPage() * pageable.getSize(), pageable.getSize());
     }
 
     public static String getPageSql(SelectLimitStep selectLimitStep, int start, int limit) {
