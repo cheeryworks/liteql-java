@@ -9,6 +9,7 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
+import org.cheeryworks.liteql.skeleton.query.AbstractConditionalQuery;
 import org.cheeryworks.liteql.skeleton.query.QueryCondition;
 import org.cheeryworks.liteql.skeleton.query.read.AbstractTypedReadQuery;
 import org.cheeryworks.liteql.skeleton.query.read.field.FieldDefinition;
@@ -19,17 +20,18 @@ import org.cheeryworks.liteql.skeleton.schema.TypeName;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.SCHEMA_AND_TYPE_CONCAT;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.NAME_CONCAT;
+
 public abstract class GraphQLServiceUtil {
 
-    public static final String GRAPHQL_NAME_CONCAT = "__";
-
     public static String toObjectTypeName(TypeName typeName) {
-        return typeName.getFullname().replaceAll("\\" + LiteQL.Constants.NAME_CONCAT, GRAPHQL_NAME_CONCAT);
+        return typeName.getFullname().replaceAll("\\" + NAME_CONCAT, SCHEMA_AND_TYPE_CONCAT);
     }
 
     public static TypeName graphQLTypeNameToDomainTypeName(String graphQLObjectTypeName) {
         return LiteQL.SchemaUtils.getTypeName(
-                graphQLObjectTypeName.replaceAll(GRAPHQL_NAME_CONCAT, LiteQL.Constants.NAME_CONCAT));
+                graphQLObjectTypeName.replaceAll(SCHEMA_AND_TYPE_CONCAT, NAME_CONCAT));
     }
 
     public static void fillReadQueryWithDataFetchingEnvironment(
@@ -73,7 +75,7 @@ public abstract class GraphQLServiceUtil {
     }
 
     public static void parseConditions(
-            AbstractTypedReadQuery readQuery, DataFetchingEnvironment dataFetchingEnvironment) {
+            AbstractConditionalQuery conditionalQuery, DataFetchingEnvironment dataFetchingEnvironment) {
         String conditions = "[]";
 
         if (dataFetchingEnvironment.containsArgument(LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS)) {
@@ -84,7 +86,7 @@ public abstract class GraphQLServiceUtil {
         QueryCondition[] queryConditions = LiteQL.JacksonJsonUtils.toBean(conditions, QueryCondition[].class);
 
         for (QueryCondition queryCondition : queryConditions) {
-            readQuery.addCondition(queryCondition);
+            conditionalQuery.addCondition(queryCondition);
         }
     }
 

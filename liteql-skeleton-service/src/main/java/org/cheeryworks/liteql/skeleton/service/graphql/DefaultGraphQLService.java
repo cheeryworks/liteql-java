@@ -36,6 +36,7 @@ import org.cheeryworks.liteql.skeleton.query.read.sort.QuerySort;
 import org.cheeryworks.liteql.skeleton.schema.DomainTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.GraphQLTypeDefinition;
 import org.cheeryworks.liteql.skeleton.schema.field.Field;
+import org.cheeryworks.liteql.skeleton.schema.field.IdField;
 import org.cheeryworks.liteql.skeleton.schema.field.NullableField;
 import org.cheeryworks.liteql.skeleton.schema.field.ReferenceField;
 import org.cheeryworks.liteql.skeleton.service.query.QueryAccessDecisionService;
@@ -54,8 +55,12 @@ import java.util.Map;
 import java.util.Set;
 
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.DELETE_RESULT_FIELD_COUNT_NAME;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.INPUT_RAW_ARGUMENT_NAME;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.INPUT_TYPE_NAME_SUFFIX;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_CREATE;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_DELETE;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.MUTATION_NAME_PREFIX_UPDATE;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.MUTATION_TYPE_NAME;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_CONDITIONS;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_ID;
@@ -64,6 +69,8 @@ import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUER
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_ARGUMENT_NAME_PAGINATION_OFFSET;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_DEFAULT_DATA_LOADER_KEY;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.QUERY_TYPE_NAME;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.SCHEMA_AND_TYPE_CONCAT;
+import static org.cheeryworks.liteql.skeleton.util.LiteQL.Constants.GraphQL.TYPE_NAME_DELETE_RESULT;
 import static org.cheeryworks.liteql.skeleton.util.LiteQL.StringUtils.plural;
 
 public class DefaultGraphQLService implements GraphQLService {
@@ -241,6 +248,20 @@ public class DefaultGraphQLService implements GraphQLService {
             }
         }
 
+        FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                .newFieldDefinition()
+                .name(DELETE_RESULT_FIELD_COUNT_NAME)
+                .type(new NonNullType(new TypeName(graphql.Scalars.GraphQLInt.getName())));
+
+        FieldDefinition fieldDefinition = fieldDefinitionBuilder.build();
+
+        ObjectTypeDefinition.Builder objectTypeDefinitionBuilder = ObjectTypeDefinition
+                .newObjectTypeDefinition()
+                .name(TYPE_NAME_DELETE_RESULT)
+                .fieldDefinition(fieldDefinition);
+
+        objectTypeDefinitions.put(TYPE_NAME_DELETE_RESULT, objectTypeDefinitionBuilder);
+
         objectTypeDefinitions.values().stream().map(x -> x.build()).forEach(typeDefinitionRegistry::add);
     }
 
@@ -283,12 +304,17 @@ public class DefaultGraphQLService implements GraphQLService {
             }
         }
 
+        if (field instanceof IdField) {
+            return new NonNullType(new TypeName(typeName));
+        }
+
         return new TypeName(typeName);
     }
 
     private String getGraphQLTypeNameFromField(Field field) {
         switch (field.getType()) {
             case Id:
+                return graphql.Scalars.GraphQLID.getName();
             case Clob:
             case String:
                 return graphql.Scalars.GraphQLString.getName();
@@ -405,90 +431,78 @@ public class DefaultGraphQLService implements GraphQLService {
 
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
-                ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeEntry.getValue();
-
-                if (objectTypeDefinition.getFieldDefinitions().size() == 0) {
+                if (!typeEntry.getKey().contains(SCHEMA_AND_TYPE_CONCAT)) {
                     continue;
                 }
 
-                InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder = InputObjectTypeDefinition
+                ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeEntry.getValue();
+
+                InputObjectTypeDefinition.Builder createInputObjectTypeDefinitionBuilder = InputObjectTypeDefinition
                         .newInputObjectDefinition()
-                        .name(typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX);
+                        .name(MUTATION_NAME_PREFIX_CREATE + typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX);
 
                 processInputTypeFields(
-                        inputObjectTypeDefinitionBuilder,
+                        createInputObjectTypeDefinitionBuilder,
                         typeDefinitionRegistry.types(),
-                        objectTypeDefinition.getFieldDefinitions());
+                        objectTypeDefinition.getFieldDefinitions(), false);
 
-                typeDefinitionRegistry.add(inputObjectTypeDefinitionBuilder.build());
+                typeDefinitionRegistry.add(createInputObjectTypeDefinitionBuilder.build());
+
+                InputObjectTypeDefinition.Builder updateInputObjectTypeDefinitionBuilder = InputObjectTypeDefinition
+                        .newInputObjectDefinition()
+                        .name(MUTATION_NAME_PREFIX_UPDATE + typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX);
+
+                processInputTypeFields(
+                        updateInputObjectTypeDefinitionBuilder,
+                        typeDefinitionRegistry.types(),
+                        objectTypeDefinition.getFieldDefinitions(), true);
+
+                typeDefinitionRegistry.add(updateInputObjectTypeDefinitionBuilder.build());
             }
         }
     }
 
     private void processInputTypeFields(
             InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
-            Map<String, TypeDefinition> typeDefinitions, List<FieldDefinition> fieldDefinitions) {
+            Map<String, TypeDefinition> typeDefinitions, List<FieldDefinition> fieldDefinitions, boolean update) {
         for (int i = 0; i < fieldDefinitions.size(); i++) {
             FieldDefinition fieldDefinition = fieldDefinitions.get(i);
 
-            if (fieldDefinition.getType() instanceof TypeName) {
-                TypeName typeName = (TypeName) fieldDefinition.getType();
-
-                processTypeInInputType(
-                        inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
-            } else if (fieldDefinition.getType() instanceof NonNullType) {
-                if (((NonNullType) fieldDefinition.getType()).getType() instanceof TypeName) {
-                    TypeName typeName = (TypeName) ((NonNullType) fieldDefinition.getType()).getType();
-
-                    if (!typeName.getName().equals(graphql.Scalars.GraphQLID.getName())) {
-                        processTypeInInputType(
-                                inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
-                    }
-                } else if (((NonNullType) fieldDefinition.getType()).getType() instanceof ListType) {
-                    ListType listType = (ListType) ((NonNullType) fieldDefinition.getType()).getType();
-
-                    processListTypeInInputType(
-                            inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
-                }
-            } else if (fieldDefinition.getType() instanceof ListType) {
-                ListType listType = (ListType) fieldDefinition.getType();
-
-                processListTypeInInputType(
-                        inputObjectTypeDefinitionBuilder, typeDefinitions, fieldDefinition, listType);
-            }
+            processTypeInInputType(
+                    inputObjectTypeDefinitionBuilder, typeDefinitions,
+                    fieldDefinition, fieldDefinition.getType(), update);
         }
     }
 
     private void processTypeInInputType(
             InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
-            Map<String, TypeDefinition> typeDefinitions, FieldDefinition fieldDefinition, TypeName typeName) {
-        inputObjectTypeDefinitionBuilder.inputValueDefinition(
-                InputValueDefinition.newInputValueDefinition()
-                        .name(fieldDefinition.getName())
-                        .type(typeDefinitions.containsKey(typeName.getName())
-                                ? new TypeName(typeName.getName() + INPUT_TYPE_NAME_SUFFIX)
-                                : typeName)
-                        .build());
-    }
+            Map<String, TypeDefinition> typeDefinitions, FieldDefinition fieldDefinition, Type type, boolean update) {
+        String typeName = null;
 
-    private void processListTypeInInputType(
-            InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder,
-            Map<String, TypeDefinition> typeDefinitions,
-            FieldDefinition fieldDefinition, ListType listType) {
-        TypeName typeName;
-
-        if (listType.getType() instanceof NonNullType) {
-            typeName = (TypeName) ((NonNullType) listType.getType()).getType();
-        } else {
-            typeName = (TypeName) listType.getType();
+        if (type instanceof TypeName) {
+            typeName = ((TypeName) type).getName();
         }
 
-        inputObjectTypeDefinitionBuilder.inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-                .name(fieldDefinition.getName())
-                .type(typeDefinitions.containsKey(typeName.getName())
-                        ? new ListType(new TypeName(typeName.getName() + INPUT_TYPE_NAME_SUFFIX))
-                        : new ListType(typeName))
-                .build());
+        if (type instanceof NonNullType && ((NonNullType) type).getType() instanceof TypeName) {
+            typeName = ((TypeName) ((NonNullType) type).getType()).getName();
+        }
+
+        if (type instanceof TypeName
+                || (type instanceof NonNullType && ((NonNullType) type).getType() instanceof TypeName)) {
+            Type inputFieldType = typeDefinitions.containsKey(typeName)
+                    ? new TypeName(graphql.Scalars.GraphQLString.getName())
+                    : type;
+
+            if (update && !typeName.equals(graphql.Scalars.GraphQLID.getName()) && type instanceof NonNullType) {
+                inputFieldType = new TypeName(typeName);
+            }
+
+            inputObjectTypeDefinitionBuilder.inputValueDefinition(
+                    InputValueDefinition.newInputValueDefinition()
+                            .name(fieldDefinition.getName())
+                            .type(inputFieldType)
+                            .build());
+        }
     }
 
     private void buildDefaultQueries(TypeDefinitionRegistry typeDefinitionRegistry) {
@@ -560,65 +574,64 @@ public class DefaultGraphQLService implements GraphQLService {
             TypeDefinitionRegistry typeDefinitionRegistry) {
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
+                if (!typeEntry.getKey().contains(SCHEMA_AND_TYPE_CONCAT)) {
+                    continue;
+                }
+
                 ObjectTypeExtensionDefinition.Builder objectTypeExtensionDefinitionBuilder
                         = ObjectTypeExtensionDefinition
                         .newObjectTypeExtensionDefinition()
                         .name(MUTATION_TYPE_NAME);
 
-                FieldDefinition.Builder fieldDefinitionBuilder = FieldDefinition
+                FieldDefinition.Builder createFieldDefinitionBuilder = FieldDefinition
                         .newFieldDefinition()
                         .name(MUTATION_NAME_PREFIX_CREATE + typeEntry.getKey())
                         .type(new TypeName(typeEntry.getKey()));
 
-                processMutationInput(
-                        fieldDefinitionBuilder,
-                        typeDefinitionRegistry.types(),
-                        ((ObjectTypeDefinition) typeEntry.getValue()).getFieldDefinitions());
+                createFieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
+                        .newInputValueDefinition()
+                        .name(INPUT_RAW_ARGUMENT_NAME)
+                        .type(new NonNullType(
+                                new TypeName(
+                                        MUTATION_NAME_PREFIX_CREATE + typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX)))
+                        .build());
 
-                objectTypeExtensionDefinitionBuilder.fieldDefinition(fieldDefinitionBuilder.build());
+                objectTypeExtensionDefinitionBuilder.fieldDefinition(createFieldDefinitionBuilder.build());
+
+                FieldDefinition.Builder updateFieldDefinitionBuilder = FieldDefinition
+                        .newFieldDefinition()
+                        .name(MUTATION_NAME_PREFIX_UPDATE + typeEntry.getKey())
+                        .type(new TypeName(typeEntry.getKey()));
+
+                createFieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
+                        .newInputValueDefinition()
+                        .name(INPUT_RAW_ARGUMENT_NAME)
+                        .type(new NonNullType(
+                                new TypeName(
+                                        MUTATION_NAME_PREFIX_UPDATE + typeEntry.getKey() + INPUT_TYPE_NAME_SUFFIX)))
+                        .build());
+
+                objectTypeExtensionDefinitionBuilder.fieldDefinition(updateFieldDefinitionBuilder.build());
+
+                FieldDefinition.Builder deleteFieldDefinitionBuilder = FieldDefinition
+                        .newFieldDefinition()
+                        .name(MUTATION_NAME_PREFIX_DELETE + typeEntry.getKey())
+                        .type(new NonNullType(new TypeName(TYPE_NAME_DELETE_RESULT)));
+
+                deleteFieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
+                        .newInputValueDefinition()
+                        .name(QUERY_ARGUMENT_NAME_CONDITIONS)
+                        .type(
+                                new ListType(
+                                        new NonNullType(
+                                                new TypeName(
+                                                        QueryCondition.class.getSimpleName()))))
+                        .build());
+
+                objectTypeExtensionDefinitionBuilder.fieldDefinition(deleteFieldDefinitionBuilder.build());
 
                 typeDefinitionRegistry.add(objectTypeExtensionDefinitionBuilder.build());
             }
-        }
-    }
-
-    private void processMutationInput(
-            FieldDefinition.Builder fieldDefinitionBuilder,
-            Map<String, TypeDefinition> typeDefinitions, List<FieldDefinition> fieldDefinitions) {
-        for (int i = 0; i < fieldDefinitions.size(); i++) {
-            FieldDefinition fieldDefinition = fieldDefinitions.get(i);
-
-            if (fieldDefinition.getType() instanceof TypeName) {
-                TypeName typeName = (TypeName) fieldDefinition.getType();
-
-                processMutationInput(fieldDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
-            } else if (fieldDefinition.getType() instanceof NonNullType) {
-                if (((NonNullType) fieldDefinition.getType()).getType() instanceof TypeName) {
-                    TypeName typeName = (TypeName) ((NonNullType) fieldDefinition.getType()).getType();
-
-                    if (!typeName.getName().equals(graphql.Scalars.GraphQLID.getName())) {
-                        processMutationInput(fieldDefinitionBuilder, typeDefinitions, fieldDefinition, typeName);
-                    }
-                }
-            }
-        }
-    }
-
-    private void processMutationInput(
-            FieldDefinition.Builder fieldDefinitionBuilder, Map<String, TypeDefinition> typeDefinitions,
-            FieldDefinition fieldDefinition, TypeName typeName) {
-        if (typeDefinitions.containsKey(typeName.getName())) {
-            fieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
-                    .newInputValueDefinition()
-                    .name(fieldDefinition.getName() + StringUtils.capitalize(QUERY_ARGUMENT_NAME_ID))
-                    .type(new TypeName(graphql.Scalars.GraphQLID.getName()))
-                    .build());
-        } else {
-            fieldDefinitionBuilder.inputValueDefinition(InputValueDefinition
-                    .newInputValueDefinition()
-                    .name(fieldDefinition.getName())
-                    .type(new TypeName(typeName.getName()))
-                    .build());
         }
     }
 

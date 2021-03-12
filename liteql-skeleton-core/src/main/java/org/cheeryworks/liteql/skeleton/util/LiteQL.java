@@ -92,6 +92,9 @@ public final class LiteQL {
         }
 
         public static final class GraphQL {
+
+            public static final String SCHEMA_AND_TYPE_CONCAT = "__";
+
             public static final String QUERY_TYPE_NAME = "Query";
 
             public static final String QUERY_ARGUMENT_NAME_ID = IdField.ID_FIELD_NAME;
@@ -110,6 +113,8 @@ public final class LiteQL {
 
             public static final String MUTATION_NAME_PREFIX_UPDATE = "update_";
 
+            public static final String MUTATION_NAME_PREFIX_DELETE = "delete_";
+
             public static final String QUERY_DOMAIN_TYPE_NAME_KEY = "domain_type_name";
 
             public static final String QUERY_DATA_FETCHING_ENVIRONMENT_KEY = "data_fetching_environment";
@@ -126,7 +131,14 @@ public final class LiteQL {
 
             public static final String SCALAR_CONDITION_VALUE_NAME = "ConditionValue";
 
-            public static final String INPUT_TYPE_NAME_SUFFIX = "Input";
+            public static final String INPUT_RAW_ARGUMENT_NAME = "input";
+
+            public static final String INPUT_TYPE_NAME_SUFFIX = "_" + INPUT_RAW_ARGUMENT_NAME;
+
+            public static final String TYPE_NAME_DELETE_RESULT = "DeleteResult";
+
+            public static final String DELETE_RESULT_FIELD_COUNT_NAME = "count";
+
         }
 
     }
