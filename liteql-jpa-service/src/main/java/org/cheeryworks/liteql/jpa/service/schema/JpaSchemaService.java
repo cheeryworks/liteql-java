@@ -50,7 +50,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -66,7 +67,7 @@ import static org.cheeryworks.liteql.skeleton.schema.Schema.VERSION_CONCAT;
 
 public class JpaSchemaService extends DefaultSchemaService implements SchemaService {
 
-    private static final SimpleDateFormat MIGRATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS");
+    private static final DateTimeFormatter MIGRATION_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 
     public JpaSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties);
@@ -372,7 +373,7 @@ public class JpaSchemaService extends DefaultSchemaService implements SchemaServ
         if (MapUtils.isEmpty(migrations) || migrations.size() == 1) {
             String migrationName = domainTypeDefinition.getVersion() +
                     VERSION_BASELINE_SUFFIX + VERSION_CONCAT +
-                    MIGRATION_TIME_FORMAT.format(new Date()) +
+                    MIGRATION_TIME_FORMAT.format(Instant.now()) +
                     LiteQL.Constants.WORD_CONCAT +
                     "create_" + domainTypeDefinition.getTypeName().getName();
 

@@ -33,11 +33,11 @@ import org.reflections.Reflections;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +65,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
 
     private Map<TypeName, Class<?>> staticTypeMapping = new HashMap<>();
 
-    private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
+    private static final DateTimeFormatter FILE_NAME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss-SSS");
 
     public AbstractSchemaService(LiteQLProperties liteQLProperties) {
         super(liteQLProperties);
@@ -529,7 +529,7 @@ public abstract class AbstractSchemaService extends AbstractLiteQLService implem
     @Override
     public String export() {
         String schemasRootPath
-                = getLiteQLProperties().getDataPath() + "/schemas-" + FILE_NAME_FORMAT.format(new Date());
+                = getLiteQLProperties().getDataPath() + "/schemas-" + FILE_NAME_FORMAT.format(Instant.now());
 
         try {
             File schemasRoot = new File(schemasRootPath);
