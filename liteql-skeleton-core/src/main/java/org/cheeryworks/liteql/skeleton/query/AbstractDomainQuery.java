@@ -26,7 +26,6 @@ public abstract class AbstractDomainQuery implements DomainQuery {
         return accessDecisionConditions;
     }
 
-    @Override
     public void setAccessDecisionConditions(QueryConditions accessDecisionConditions) {
         this.accessDecisionConditions = accessDecisionConditions;
     }

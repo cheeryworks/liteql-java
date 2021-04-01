@@ -7,8 +7,8 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import org.cheeryworks.liteql.skeleton.graphql.exception.UnsupportedGraphQLOutputTypeException;
+import org.cheeryworks.liteql.skeleton.query.AbstractDomainQuery;
 import org.cheeryworks.liteql.skeleton.query.AuditQueryContext;
-import org.cheeryworks.liteql.skeleton.query.DomainQuery;
 import org.cheeryworks.liteql.skeleton.query.PublicQuery;
 import org.cheeryworks.liteql.skeleton.query.QueryContext;
 import org.cheeryworks.liteql.skeleton.query.enums.ConditionClause;
@@ -185,8 +185,9 @@ public abstract class AbstractGraphQLDataFetcher implements DataFetcher {
             query = new PageReadQuery(readQuery, offset / first, first);
         }
 
-        if (queryContext instanceof AuditQueryContext) {
-            getQueryAccessDecisionService().decide(((AuditQueryContext) queryContext).getUser(), (DomainQuery) query);
+        if (queryContext instanceof AuditQueryContext && query instanceof AbstractDomainQuery) {
+            getQueryAccessDecisionService().decide(
+                    ((AuditQueryContext) queryContext).getUser(), (AbstractDomainQuery) query);
         }
 
         return ((ReadResultsData<ReadResult>) queryService.execute(queryContext, query)).getData();

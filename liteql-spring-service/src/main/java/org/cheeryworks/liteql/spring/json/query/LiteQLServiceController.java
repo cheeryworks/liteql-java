@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.cheeryworks.liteql.skeleton.query.AbstractDomainQuery;
 import org.cheeryworks.liteql.skeleton.query.AuditQueryContext;
-import org.cheeryworks.liteql.skeleton.query.DomainQuery;
 import org.cheeryworks.liteql.skeleton.query.PublicQuery;
 import org.cheeryworks.liteql.skeleton.query.Queries;
 import org.cheeryworks.liteql.skeleton.query.delete.DeleteQuery;
@@ -169,8 +169,6 @@ public class LiteQLServiceController extends AbstractServiceController {
                     return schemaGen.generateSchema(PageReadQuery.class);
                 case Create:
                 case Update:
-                case Save:
-                    return schemaGen.generateSchema(AbstractSaveQuery.class);
                 case Delete:
                     return schemaGen.generateSchema(DeleteQuery.class);
                 default:
@@ -199,8 +197,8 @@ public class LiteQLServiceController extends AbstractServiceController {
     }
 
     private void decide(PublicQuery query, AuditQueryContext auditQueryContext) {
-        if (query instanceof DomainQuery) {
-            queryAccessDecisionService.decide(auditQueryContext.getUser(), (DomainQuery) query);
+        if (query instanceof AbstractDomainQuery) {
+            queryAccessDecisionService.decide(auditQueryContext.getUser(), (AbstractDomainQuery) query);
         } else if (query instanceof Queries) {
             for (PublicQuery subQuery : ((Queries) query).values()) {
                 decide(subQuery, auditQueryContext);
