@@ -1,6 +1,5 @@
 package org.cheeryworks.liteql.skeleton.query.read.field;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -17,9 +16,6 @@ public class FieldDefinition implements Serializable {
     private boolean visible = true;
 
     private int priority;
-
-    @JsonIgnore
-    private Class type;
 
     public String getName() {
         return name;
@@ -73,39 +69,26 @@ public class FieldDefinition implements Serializable {
         this.priority = priority;
     }
 
-    public Class getType() {
-        return type;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
-    }
-
     public FieldDefinition() {
 
     }
 
     public FieldDefinition(String name) {
-        this(name, null, null, null);
+        this(name, null, null);
     }
 
     public FieldDefinition(String name, String alias) {
-        this(name, alias, null, null);
+        this(name, alias, null);
     }
 
     public FieldDefinition(String name, String alias, String description) {
-        this(name, alias, description, null);
+        this(name, alias, description, 0);
     }
 
-    public FieldDefinition(String name, String alias, String description, Class type) {
-        this(name, alias, description, type, 0);
-    }
-
-    public FieldDefinition(String name, String alias, String description, Class type, int priority) {
+    public FieldDefinition(String name, String alias, String description, int priority) {
         this.name = name;
         this.alias = alias;
         this.description = description;
-        this.type = type;
         this.priority = priority;
     }
 
