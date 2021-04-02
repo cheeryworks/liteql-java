@@ -1,0 +1,147 @@
+@startuml
+
+enum IndexType {
+  Unique
+  Normal
+}
+
+abstract class AbstractIndexDefinition {
+  IndexType type
+  Set<String> fields
+}
+
+AbstractIndexDefinition "1" *-- "1" IndexType : type
+
+class IndexDefinition extends AbstractIndexDefinition {
+}
+
+class UniqueDefinition extends AbstractIndexDefinition {
+}
+
+enum MigrationOperationType {
+    CREATE_TYPE
+    DROP_TYPE
+    CREATE_FIELD
+    DROP_FIELD
+    CREATE_UNIQUE
+    DROP_UNIQUE
+    CREATE_INDEX
+    DROP_INDEX
+    DATA_MIGRATION
+}
+
+interface MigrationOperation {
+  MigrationOperationType getType()
+}
+
+abstract class AbstractMigrationOperation implements MigrationOperation {
+    MigrationOperationType type
+}
+
+AbstractMigrationOperation "1" *-- "1" MigrationOperationType : type
+
+class CreateTypeMigrationOperation extends AbstractMigrationOperation {
+  Set<Field> fields
+  Set<UniqueDefinition> uniques
+  Set<IndexDefinition> indexes
+}
+
+class DropTypeMigrationOperation extends AbstractMigrationOperation {
+}
+
+abstract class AbstractIndexMigrationOperation<T extends AbstractIndexDefinition> extends AbstractMigrationOperation {
+  Set<T> indexes
+}
+
+class CreateIndexMigrationOperation extends AbstractIndexMigrationOperation {
+}
+
+class DropIndexMigrationOperation extends AbstractIndexMigrationOperation {
+}
+
+class CreateUniqueMigrationOperation extends AbstractIndexMigrationOperation {
+}
+
+class DropUniqueMigrationOperation extends AbstractIndexMigrationOperation {
+}
+
+class CreateFieldMigrationOperation extends AbstractMigrationOperation {
+  Set<Field> fields
+}
+
+class DropFieldMigrationOperation extends AbstractMigrationOperation {
+  List<String> fields
+}
+
+class DataMigrationOperation extends AbstractMigrationOperation {
+  Queries queries
+}
+
+class Migration {
+  String name
+  TypeName domainTypeName
+  String version
+  String description
+  boolean baseline
+  List<MigrationOperation> operations
+}
+
+Migration "1" o-- "many" MigrationOperation : operations
+
+interface TypeDefinition {
+  TypeName getTypeName()
+  String getVersion()
+  Set<Field> getFields()
+  boolean isTrait()
+}
+
+class TypeName {
+  String schema
+  String name
+}
+
+interface Field {
+  String getName()
+  DataType getType()
+  boolean isGraphQLField()
+}
+
+abstract class AbstractTypeDefinition implements TypeDefinition {
+  TypeName typeName
+  String version
+  Set<Field> fields
+}
+
+class TraitTypeDefinition extends AbstractTypeDefinition {
+   Set<TypeName> traits
+}
+
+class DomainTypeDefinition extends TraitTypeDefinition {
+  Set<UniqueDefinition> uniques
+  Set<IndexDefinition> indexes
+  Boolean graphQLType
+  Boolean dropped
+  TypeName implementTrait
+}
+
+DomainTypeDefinition "1" o-- "many" UniqueDefinition : uniques
+DomainTypeDefinition "1" o-- "many" IndexDefinition : indexes
+
+class GraphQLTypeDefinition extends AbstractTypeDefinition {
+  TypeName extension
+}
+
+class Schema {
+  String name;
+  Set<DomainTypeDefinition> domainTypeDefinitions
+  Set<TraitTypeDefinition> traitTypeDefinitions
+  Set<GraphQLTypeDefinition> graphQLTypeDefinitions
+  Map<TypeName, Map<String, Migration>> migrations
+}
+
+Schema "1" o-- "many" DomainTypeDefinition : domainTypeDefinitions
+Schema "1" o-- "many" TraitTypeDefinition : traitTypeDefinitions
+Schema "1" o-- "many" GraphQLTypeDefinition : graphQLTypeDefinitions
+Schema "1" o-- "many" Migration : migrations
+
+@enduml

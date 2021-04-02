@@ -1,0 +1,87 @@
+@startuml
+
+interface Field {
+  String getName()
+  DataType getType()
+  boolean isGraphQLField()
+}
+
+interface NullableField extends Field {
+  boolean isNullable()
+}
+
+interface BlobField extends NullableField {
+}
+
+interface BooleanField extends Field {
+}
+
+interface ClobField extends NullableField {
+}
+
+interface DecimalField extends NullableField {
+}
+
+interface IdField extends Field {
+}
+
+interface IntegerField extends NullableField {
+}
+
+interface LongField extends NullableField {
+}
+
+interface ReferenceField extends NullableField {
+  TypeName getDomainTypeName()
+  boolean isCollection()
+}
+
+interface StringField extends NullableField {
+  int DEFAULT_LENGTH = 255
+  int MAX_LENGTH = 4000
+  Integer getLength()
+}
+
+interface TimestampField extends NullableField {
+}
+
+abstract class AbstractField implements Field {
+  String name
+  Boolean graphQLField
+}
+
+abstract class AbstractNullableField extends AbstractField implements NullableField {
+  Boolean nullable
+}
+
+class DefaultBlobField extends AbstractNullableField implements BlobField {
+}
+
+class DefaultBooleanField extends AbstractField implements BooleanField {
+}
+
+class DefaultClobField extends AbstractNullableField implements ClobField {
+}
+
+class DefaultDecimalField extends AbstractNullableField implements DecimalField {
+}
+
+class DefaultIdField extends AbstractField implements IdField {
+}
+
+class DefaultIntegerField extends AbstractNullableField implements IntegerField {
+}
+
+class DefaultLongField extends AbstractNullableField implements LongField {
+}
+
+class DefaultReferenceField extends AbstractNullableField implements ReferenceField {
+}
+
+class DefaultStringField extends AbstractNullableField implements StringField {
+}
+
+class DefaultTimestampField extends AbstractNullableField implements TimestampField {
+}
+
+@enduml

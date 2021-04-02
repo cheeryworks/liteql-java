@@ -1,0 +1,245 @@
+@startuml
+
+enum ConditionClause {
+  EQUALS
+  NOT_EQUALS
+  LESS_THAN
+  LESS_OR_EQUALS
+  GREATER_THAN
+  GREATER_OR_EQUALS
+  STARTS_WITH
+  CONTAINS
+  BETWEEN
+  IN
+  NULL
+  NOT_NULL
+  LENGTH
+}
+
+enum ConditionOperator {
+  AND
+  OR
+}
+
+enum ConditionType {
+  Field
+  String
+  Long
+  Integer
+  Timestamp
+  Boolean
+  Decimal
+  +static ConditionType getConditionType(Class javaType)
+}
+
+enum Direction {
+  ASC
+  DESC
+}
+
+enum QueryPhase {
+  Before
+  After
+}
+
+enum QueryType {
+  Read
+  SingleRead
+  TreeRead
+  PageRead
+  Create
+  Update
+  Save
+  Delete
+}
+
+interface Query {
+}
+
+interface TypedQuery extends Query {
+  String QUERY_TYPE_KEY = "queryType"
+  QueryType getQueryType()
+}
+
+TypedQuery "1" *-- "1" QueryType : getQueryType
+
+interface PublicQuery extends Query {
+}
+
+interface DomainQuery extends Query {
+  TypeName getDomainTypeName()
+  QueryConditions getAccessDecisionConditions()
+}
+
+abstract class AbstractDomainQuery implements DomainQuery {
+  TypeName domainTypeName
+  QueryConditions accessDecisionConditions
+}
+
+abstract class AbstractConditionalQuery extends AbstractDomainQuery {
+  QueryConditions conditions
+}
+
+class QueryCondition {
+  ConditionOperator operator
+  String field
+  ConditionClause condition
+  ConditionType type
+  Object value
+  QueryConditions conditions
+}
+
+QueryCondition "1" *-- "1" ConditionOperator : operator
+QueryCondition "1" *-- "1" ConditionClause : condition
+QueryCondition "1" *-- "1" ConditionType : type
+
+class QuerySort {
+  String field
+  Direction direction
+}
+
+QuerySort "1" *-- "1" Direction : direction
+
+AbstractConditionalQuery "1" *-- "many" QueryCondition : conditions
+
+class FieldDefinition {
+  String name
+  String alias
+  String description
+  boolean visible
+  int priority
+}
+
+abstract class AbstractFieldReadQuery extends AbstractConditionalQuery {
+  FieldDefinitions fields
+}
+
+AbstractFieldReadQuery "1" *-- "many" FieldDefinition : fields
+
+class JoinedReadQuery extends AbstractFieldReadQuery {
+  QueryConditions joinConditions
+  List<JoinedReadQuery> joins
+}
+
+abstract class AbstractReadQuery<T extends AbstractReadQuery> extends JoinedReadQuery {
+  List<QuerySort> sorts
+  LinkedHashMap<String, String> references
+  List<T> associations
+  String scope
+}
+
+AbstractReadQuery "1" o-- "many" QuerySort : sorts
+
+abstract class AbstractTypedReadQuery<R extends Object> extends AbstractReadQuery implements TypedQuery {
+  +abstract R getResult(ReadResults readResults)
+}
+
+interface Pageable {
+  int getPage()
+  int getSize()
+}
+
+abstract class AbstractPageable implements Pageable {
+  final int page;
+  final int size;
+}
+
+interface Page extends Pageable, Iterable {
+  List<T> getData()
+  int getCount()
+  long getTotal()
+  int getTotalPage()
+}
+
+class PageRequest extends AbstractPageable {
+}
+
+class PageReadQuery extends AbstractTypedReadQuery implements PublicQuery {
+  Integer page
+  Integer size
+  +PageReadResults getResult(ReadResults readResults)
+}
+
+class ReadQuery extends AbstractTypedReadQuery implements PublicQuery {
+  +ReadResults getResult(ReadResults readResults)
+}
+
+class SingleReadQuery extends AbstractTypedReadQuery implements PublicQuery {
+  +ReadResult getResult(ReadResults readResults)
+}
+
+class TreeReadQuery extends AbstractTypedReadQuery implements PublicQuery {
+  +TreeReadResults getResult(ReadResults readResults)
+}
+
+abstract class AbstractSaveQuery extends AbstractDomainQuery {
+  Map<String, Object> data
+  Map<String, String> references
+  SaveQueryAssociations associations
+}
+
+class CreateQuery extends AbstractSaveQuery implements TypedQuery, PublicQuery {
+}
+
+class UpdateQuery extends AbstractSaveQuery implements TypedQuery, PublicQuery {
+}
+
+class DeleteQuery extends AbstractConditionalQuery implements TypedQuery, PublicQuery {
+  boolean truncated
+}
+
+class Queries implements PublicQuery {
+}
+
+interface QueryEvent extends LiteQLEvent {
+  String QUERY_PHASE_KEY = "queryPhase"
+  TypeName getDomainTypeName()
+  QueryType getQueryType()
+  QueryPhase getQueryPhase()
+  QueryContext getQueryContext()
+  Object getSource()
+}
+
+abstract class AbstractQueryEvent<T> implements QueryEvent {
+  T source
+  TypeName domainTypeName
+  QueryType queryType
+  QueryPhase queryPhase
+  QueryContext queryContext
+}
+
+AbstractQueryEvent "1" o-- "1" QueryPhase : queryPhase
+AbstractQueryEvent "1" o-- "1" QueryType : queryType
+
+abstract class AbstractListMapQueryEvent extends AbstractQueryEvent {
+}
+
+abstract class AbstractReadableQueryEvent extends AbstractListMapQueryEvent {
+  String scope;
+}
+
+abstract class AbstractWritableQueryEvent extends AbstractListMapQueryEvent {
+}
+
+class BeforeCreateQueryEvent extends AbstractWritableQueryEvent {
+}
+
+class BeforeUpdateQueryEvent extends AbstractWritableQueryEvent {
+}
+
+class BeforeDeleteQueryEvent extends AbstractWritableQueryEvent {
+}
+
+class AfterReadQueryEvent extends AbstractReadableQueryEvent {
+}
+
+class AfterCreateQueryEvent extends AbstractWritableQueryEvent {
+}
+
+class AfterUpdateQueryEvent extends AbstractWritableQueryEvent {
+}
+
+class AfterDeleteQueryEvent extends AbstractWritableQueryEvent {
+}
+
+@enduml

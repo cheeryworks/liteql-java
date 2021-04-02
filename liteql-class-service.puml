@@ -1,0 +1,96 @@
+@startuml
+
+interface AuditQueryContext extends QueryContext {
+  UserType getUser()
+}
+
+class DefaultAuditQueryContext implements AuditQueryContext {
+  UserType user
+}
+
+interface QueryService {
+  QueryContext EMPTY_QUERY_CONTEXT = new DefaultAuditQueryContext()
+  ReadResults read(ReadQuery readQuery)
+  <T extends DomainType> List<T> read(ReadQuery readQuery, Class<T> domainType)
+  <T extends DomainType> List<T> read(QueryContext queryContext, ReadQuery readQuery, Class<T> domainType)
+  ReadResults read(QueryContext queryContext, ReadQuery readQuery)
+  ReadResult read(SingleReadQuery singleReadQuery)
+  <T extends DomainType> T read(SingleReadQuery singleReadQuery, Class<T> domainType)
+  <T extends DomainType> T read(QueryContext queryContext, SingleReadQuery singleReadQuery, Class<T> domainType)
+  ReadResult read(QueryContext queryContext, SingleReadQuery singleReadQuery)
+  TreeReadResults read(TreeReadQuery treeReadQuery)
+  TreeReadResults read(QueryContext queryContext, TreeReadQuery treeReadQuery)
+  PageReadResults read(PageReadQuery pageReadQuery)
+  <T extends DomainType> Page<T> read(PageReadQuery pageReadQuery, Class<T> domainType)
+  <T extends DomainType> Page<T> read(QueryContext queryContext, PageReadQuery pageReadQuery, Class<T> domainType)
+  PageReadResults read(QueryContext queryContext, PageReadQuery pageReadQuery)
+  CreateQuery create(CreateQuery createQuery)
+  <T extends DomainType> T create(T domainEntity)
+  <T extends DomainType> T create(QueryContext queryContext, T domainEntity)
+  <T extends DomainType> List<T> create(Collection<T> domainEntities)
+  <T extends DomainType> List<T> create(QueryContext queryContext, Collection<T> domainEntities)
+  CreateQuery create(QueryContext queryContext, CreateQuery createQuery)
+  UpdateQuery update(UpdateQuery updateQuery)
+  <T extends DomainType> T update(T domainEntity)
+  <T extends DomainType> T update(QueryContext queryContext, T domainEntity)
+  <T extends DomainType> List<T> update(Collection<T> domainEntities)
+  <T extends DomainType> List<T> update(QueryContext queryContext, Collection<T> domainEntities)
+  UpdateQuery update(QueryContext queryContext, UpdateQuery updateQuery)
+  AbstractSaveQuery save(AbstractSaveQuery saveQuery)
+  AbstractSaveQuery save(QueryContext queryContext, AbstractSaveQuery saveQuery)
+  List<AbstractSaveQuery> save(List<AbstractSaveQuery> saveQueries)
+  List<AbstractSaveQuery> save(QueryContext queryContext, List<AbstractSaveQuery> saveQueries)
+  int delete(DeleteQuery deleteQuery)
+  int delete(QueryContext queryContext, DeleteQuery deleteQuery)
+  void delete(List<DeleteQuery> deleteQueries)
+  void delete(QueryContext queryContext, List<DeleteQuery> deleteQueries)
+  Object execute(PublicQuery query)
+  Object execute(QueryContext queryContext, PublicQuery query)
+}
+
+interface QueryAuditingService {
+  void auditingDomainObject(Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, QueryContext queryContext)
+  void auditingExistedDomainObject(Map<String, Object> domainObject, DomainTypeDefinition domainTypeDefinition, QueryContext queryContext)
+}
+
+interface QueryAccessDecisionService {
+  void decide(UserType user, AbstractDomainQuery query)
+}
+
+interface SchemaService {
+  Set<String> getSchemaNames()
+  Set<DomainTypeDefinition> getDomainTypeDefinitions(String schemaName)
+  DomainTypeDefinition getDomainTypeDefinition(TypeName typeName)
+  Set<TraitTypeDefinition> getTraitTypeDefinitions(String schemaName)
+  TraitTypeDefinition getTraitTypeDefinition(TypeName typeName)
+  Map<TypeName, Map<String, Migration>> getMigrations(String schemaName)
+  TypeName getTraitImplement(TypeName traitTypeName)
+  Set<GraphQLTypeDefinition> getGraphQLTypeDefinitions()
+  Set<GraphQLTypeDefinition> getGraphQLTypeDefinitions(String schemaName)
+  GraphQLTypeDefinition getGraphQLTypeDefinition(TypeName typeName)
+  Set<GraphQLTypeDefinition> getGraphQLTypeDefinitionsByExtensionTypeName(TypeName typeName)
+  String export()
+}
+
+interface MigrationService {
+  void migrate()
+}
+
+interface GraphQLService {
+  ExecutionResult graphQL(QueryContext queryContext, String query)
+  ExecutionResult graphQL(QueryContext queryContext, String query, String operationName, Map<String, Object> variables)
+}
+
+interface QueryEventPublisher {
+  void publish(QueryEvent queryEvent)
+}
+
+interface QueryPublisher {
+  void publish(PublicQuery publicQuery)
+}
+
+interface MigrationEventPublisher {
+  void publish(MigrationEvent migrationEvent)
+}
+
+@enduml

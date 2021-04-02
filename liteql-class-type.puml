@@ -1,0 +1,13 @@
+@startuml
+
+interface Type
+
+interface TraitType extends Type {
+
+}
+
+interface DomainType extends TraitType {
+  String getId()
+}
+
+@enduml
