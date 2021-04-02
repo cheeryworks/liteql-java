@@ -1,12 +1,10 @@
 package org.cheeryworks.liteql.skeleton.query.save;
 
 import org.cheeryworks.liteql.skeleton.query.AbstractDomainQuery;
-import org.cheeryworks.liteql.skeleton.query.PublicQuery;
-import org.cheeryworks.liteql.skeleton.query.TypedQuery;
 
 import java.util.Map;
 
-public abstract class AbstractSaveQuery extends AbstractDomainQuery implements TypedQuery, PublicQuery {
+public abstract class AbstractSaveQuery extends AbstractDomainQuery {
 
     private Map<String, Object> data;
 

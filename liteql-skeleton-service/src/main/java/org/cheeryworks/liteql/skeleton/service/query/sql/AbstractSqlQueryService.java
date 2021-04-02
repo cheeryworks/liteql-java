@@ -568,7 +568,7 @@ public abstract class AbstractSqlQueryService extends AbstractSqlService impleme
 
             for (AbstractSaveQuery saveQuery : saveQueriesWithTypeEntry.getValue()) {
                 if (saveQuery instanceof PublicQuery) {
-                    publishQuery(saveQuery);
+                    publishQuery((PublicQuery) saveQuery);
                 }
 
                 SqlSaveQuery sqlSaveQuery = sqlQueryParser.getSqlSaveQuery(

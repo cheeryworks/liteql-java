@@ -199,13 +199,13 @@ public class LiteQLServiceController extends AbstractServiceController {
     private void decide(PublicQuery query, AuditQueryContext auditQueryContext) {
         if (query instanceof AbstractDomainQuery) {
             queryAccessDecisionService.decide(auditQueryContext.getUser(), (AbstractDomainQuery) query);
+        } else if (query instanceof SaveQueries) {
+            for (AbstractSaveQuery saveQuery : (SaveQueries) query) {
+                queryAccessDecisionService.decide(auditQueryContext.getUser(), saveQuery);
+            }
         } else if (query instanceof Queries) {
             for (PublicQuery subQuery : ((Queries) query).values()) {
                 decide(subQuery, auditQueryContext);
-            }
-        } else if (query instanceof SaveQueries) {
-            for (AbstractSaveQuery saveQuery : (SaveQueries) query) {
-                decide(saveQuery, auditQueryContext);
             }
         } else {
             throw new IllegalArgumentException("Unsupported query " + query.getClass().getSimpleName());
