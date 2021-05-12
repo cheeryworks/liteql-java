@@ -1,1 +1,1 @@
-## [LiteQL](https://github.com/cheeryworks/liteql) Java
+## [LiteQL](https://cheeryworks.org/liteql) Java
