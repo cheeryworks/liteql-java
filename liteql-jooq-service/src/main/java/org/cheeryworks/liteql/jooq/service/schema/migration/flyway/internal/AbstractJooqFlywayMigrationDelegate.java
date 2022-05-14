@@ -32,8 +32,10 @@ public abstract class AbstractJooqFlywayMigrationDelegate implements JooqFlywayM
                     this.getClass().getClassLoader(),
                     StandardCharsets.UTF_8,
                     false,
+                    false,
                     new ResourceNameCache(),
-                    new LocationScannerCache());
+                    new LocationScannerCache(),
+                    false);
 
             try {
                 Collection<Class<? extends JooqFlywayMigration>> classes = scanner.getClasses();

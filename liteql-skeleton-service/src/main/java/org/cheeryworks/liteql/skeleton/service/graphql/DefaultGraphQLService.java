@@ -18,6 +18,7 @@ import graphql.language.SchemaDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
+import graphql.scalars.ExtendedScalars;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -329,7 +330,7 @@ public class DefaultGraphQLService implements GraphQLService {
             case Decimal:
                 return Scalars.DECIMAL.getName();
             case Blob:
-                return graphql.Scalars.GraphQLByte.getName();
+                return ExtendedScalars.GraphQLByte.getName();
             case Reference:
                 ReferenceField referenceField = (ReferenceField) field;
 
@@ -642,6 +643,7 @@ public class DefaultGraphQLService implements GraphQLService {
         builder.scalar(Scalars.DECIMAL);
         builder.scalar(Scalars.CONDITION_VALUE);
         builder.scalar(Scalars.TIMESTAMP);
+        builder.scalar(ExtendedScalars.GraphQLByte);
 
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitions.entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
