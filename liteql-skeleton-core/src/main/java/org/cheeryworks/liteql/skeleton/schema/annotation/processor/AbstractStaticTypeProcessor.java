@@ -1,8 +1,8 @@
 package org.cheeryworks.liteql.skeleton.schema.annotation.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.annotation.LiteQLStaticType;
+import org.cheeryworks.liteql.skeleton.schema.annotation.field.LiteQLReferenceField;
 import org.cheeryworks.liteql.skeleton.schema.field.BlobField;
 import org.cheeryworks.liteql.skeleton.schema.field.BooleanField;
 import org.cheeryworks.liteql.skeleton.schema.field.DecimalField;
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,8 +98,7 @@ public abstract class AbstractStaticTypeProcessor extends AbstractProcessor {
                     typeElement.getQualifiedName() + STATIC_TYPE_NAME_SUFFIX);
 
             OutputStream os = javaFileObject.openOutputStream();
-            PrintWriter pw = new PrintWriter(os);
-
+            PrintWriter pw = new PrintWriter(os, false, StandardCharsets.UTF_8);
 
             String packageName
                     = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();

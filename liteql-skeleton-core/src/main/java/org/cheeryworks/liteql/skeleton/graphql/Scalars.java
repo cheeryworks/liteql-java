@@ -13,7 +13,6 @@ import org.cheeryworks.liteql.skeleton.util.LiteQL;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.util.Date;
 
 public abstract class Scalars {
 
@@ -215,10 +214,10 @@ public abstract class Scalars {
                             }
 
                             @Override
-                            public Timestamp parseValue(Object input) {
+                            public Object parseValue(Object input) {
                                 try {
                                     if (!(input instanceof StringValue)) {
-                                        return null;
+                                        return input;
                                     }
 
                                     String value = ((StringValue) input).getValue();
@@ -231,7 +230,7 @@ public abstract class Scalars {
                             }
 
                             @Override
-                            public Date parseLiteral(Object input) {
+                            public Object parseLiteral(Object input) {
                                 return parseValue(input);
                             }
                         }

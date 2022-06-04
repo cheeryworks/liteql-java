@@ -62,11 +62,7 @@ public class JooqSchemaParser extends AbstractJooqParser implements SqlSchemaPar
         CreateTableColumnStep createTableColumnStep = getDslContext().createTable(tableName);
 
         for (Field field : getJooqFields(domainTypeDefinition.getFields())) {
-            if (createTableColumnStep == null) {
-                createTableColumnStep = createTableColumnStep.column(field, field.getDataType());
-            } else {
-                createTableColumnStep.column(field, field.getDataType());
-            }
+            createTableColumnStep.column(field, field.getDataType());
         }
 
         schemaSqlBuilder.append(createTableColumnStep.getSQL()).append(";").append("\n\n");
