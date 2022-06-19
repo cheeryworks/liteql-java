@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.cheeryworks</groupId>
         <artifactId>java</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>2022.0.0-SNAPSHOT</version>
     </parent>
     <groupId>org.cheeryworks.liteql</groupId>
     <artifactId>liteql-java</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2022.0.0-SNAPSHOT</version>
     <modules>
         <module>liteql-skeleton-core</module>
         <module>liteql-skeleton-model</module>
@@ -25,9 +25,9 @@
     </modules>
     <packaging>pom</packaging>
     <name>LiteQL</name>
-    <url>https://cheeryworks.org/liteql-java</url>
+    <url>https://github.com/cheeryworks/liteql-java</url>
     <properties>
-        <liteql.version>1.0.0-SNAPSHOT</liteql.version>
+        <liteql.version>${project.version}</liteql.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -142,22 +142,9 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>cheeryworks-releases</id>
-            <name>CheeryWorks Releases Repository</name>
-            <url>https://repository.cheeryworks.net/repository/maven-releases</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>cheeryworks-snapshots</id>
-            <name>CheeryWorks Snapshots Repository</name>
-            <url>https://repository.cheeryworks.net/repository/maven-snapshots</url>
+            <id>cheeryworks-public-maven-snapshots</id>
+            <name>CheeryWorks Public Maven Snapshots Repository</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
                 <updatePolicy>never</updatePolicy>
@@ -170,22 +157,9 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
-            <id>cheeryworks-maven-plugin-releases</id>
-            <name>CheeryWorks Maven Plugin Releases</name>
-            <url>https://repository.cheeryworks.net/repository/maven-releases</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>cheeryworks-maven-plugin-snapshots</id>
-            <name>CheeryWorks Maven Plugin Snapshots</name>
-            <url>https://repository.cheeryworks.net/repository/maven-snapshots</url>
+            <id>cheeryworks-public-maven-plugin-snapshots</id>
+            <name>CheeryWorks Public Maven Plugin Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
                 <updatePolicy>never</updatePolicy>

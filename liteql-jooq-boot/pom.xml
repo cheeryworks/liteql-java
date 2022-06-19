@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.cheeryworks.liteql</groupId>
         <artifactId>liteql-java</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>2022.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>liteql-jooq-boot</artifactId>
