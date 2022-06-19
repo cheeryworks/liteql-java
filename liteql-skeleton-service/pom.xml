@@ -15,6 +15,7 @@
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-skeleton-api</artifactId>
+            <version>2022.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -31,12 +32,14 @@
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-skeleton-core</artifactId>
+            <version>2022.0.0-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-skeleton-model</artifactId>
+            <version>2022.0.0-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

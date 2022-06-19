@@ -15,10 +15,12 @@
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-jpa-model</artifactId>
+            <version>2022.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.cheeryworks.liteql</groupId>
             <artifactId>liteql-skeleton-service</artifactId>
+            <version>2022.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
