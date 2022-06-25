@@ -131,8 +131,6 @@ public class DefaultGraphQLService implements GraphQLService {
     private TypeDefinitionRegistry buildTypeDefinitionRegistry() {
         TypeDefinitionRegistry typeDefinitionRegistry = new TypeDefinitionRegistry();
 
-        buildSchemaDefinition(typeDefinitionRegistry);
-
         buildEnumDefinitions(typeDefinitionRegistry);
 
         buildScalarDefinitions(typeDefinitionRegistry);
@@ -146,29 +144,6 @@ public class DefaultGraphQLService implements GraphQLService {
         buildDefaultMutations(typeDefinitionRegistry);
 
         return typeDefinitionRegistry;
-    }
-
-    public void buildSchemaDefinition(TypeDefinitionRegistry typeDefinitionRegistry) {
-        typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
-                .name(QUERY_TYPE_NAME)
-                .build());
-
-        typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
-                .name(MUTATION_TYPE_NAME)
-                .build());
-
-        typeDefinitionRegistry.add(
-                SchemaDefinition.newSchemaDefinition()
-                        .operationTypeDefinition(
-                                OperationTypeDefinition.newOperationTypeDefinition()
-                                        .name(QUERY_TYPE_NAME.toLowerCase())
-                                        .typeName(new TypeName(QUERY_TYPE_NAME))
-                                        .build())
-                        .operationTypeDefinition(OperationTypeDefinition.newOperationTypeDefinition()
-                                .name(MUTATION_TYPE_NAME.toLowerCase())
-                                .typeName(new TypeName(MUTATION_TYPE_NAME))
-                                .build())
-                        .build());
     }
 
     public void buildEnumDefinitions(TypeDefinitionRegistry typeDefinitionRegistry) {
@@ -507,6 +482,27 @@ public class DefaultGraphQLService implements GraphQLService {
     }
 
     private void buildDefaultQueries(TypeDefinitionRegistry typeDefinitionRegistry) {
+        Map.Entry<String, TypeDefinition> anyTypeEntry = typeDefinitionRegistry.types().entrySet()
+                .stream()
+                .filter((typeEntry) -> typeEntry.getValue() instanceof ObjectTypeDefinition)
+                .findAny()
+                .orElse(null);
+
+        if (anyTypeEntry != null) {
+            typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
+                    .name(QUERY_TYPE_NAME)
+                    .build());
+
+            typeDefinitionRegistry.add(
+                    SchemaDefinition.newSchemaDefinition()
+                            .operationTypeDefinition(
+                                    OperationTypeDefinition.newOperationTypeDefinition()
+                                            .name(QUERY_TYPE_NAME.toLowerCase())
+                                            .typeName(new TypeName(QUERY_TYPE_NAME))
+                                            .build())
+                            .build());
+        }
+
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
                 ObjectTypeExtensionDefinition objectTypeExtensionDefinition = ObjectTypeExtensionDefinition
@@ -573,6 +569,28 @@ public class DefaultGraphQLService implements GraphQLService {
 
     private void buildDefaultMutations(
             TypeDefinitionRegistry typeDefinitionRegistry) {
+        Map.Entry<String, TypeDefinition> anyTypeEntry = typeDefinitionRegistry.types().entrySet()
+                .stream()
+                .filter((typeEntry) ->
+                        typeEntry.getValue() instanceof ObjectTypeDefinition
+                                && typeEntry.getKey().contains(SCHEMA_AND_TYPE_CONCAT))
+                .findAny()
+                .orElse(null);
+
+        if (anyTypeEntry != null) {
+            typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
+                    .name(MUTATION_TYPE_NAME)
+                    .build());
+
+            typeDefinitionRegistry.add(
+                    SchemaDefinition.newSchemaDefinition()
+                            .operationTypeDefinition(OperationTypeDefinition.newOperationTypeDefinition()
+                                    .name(MUTATION_TYPE_NAME.toLowerCase())
+                                    .typeName(new TypeName(MUTATION_TYPE_NAME))
+                                    .build())
+                            .build());
+        }
+
         for (Map.Entry<String, TypeDefinition> typeEntry : typeDefinitionRegistry.types().entrySet()) {
             if (typeEntry.getValue() instanceof ObjectTypeDefinition) {
                 if (!typeEntry.getKey().contains(SCHEMA_AND_TYPE_CONCAT)) {
