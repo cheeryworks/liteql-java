@@ -10,6 +10,9 @@
     <groupId>org.cheeryworks.liteql</groupId>
     <artifactId>liteql-java</artifactId>
     <version>2022.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>LiteQL</name>
+    <url>https://github.com/cheeryworks/liteql-java</url>
     <modules>
         <module>liteql-skeleton-core</module>
         <module>liteql-skeleton-model</module>
@@ -24,9 +27,6 @@
         <module>liteql-jpa-boot</module>
         <module>liteql-dependencies</module>
     </modules>
-    <packaging>pom</packaging>
-    <name>LiteQL</name>
-    <url>https://github.com/cheeryworks/liteql-java</url>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
