@@ -49,6 +49,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
     <repositories>
         <repository>
             <id>cheeryworks-public-maven-snapshots</id>
@@ -84,4 +92,15 @@
         <connection>scm:git:git@github.com:cheeryworks/liteql-java.git</connection>
         <developerConnection>scm:git:git@github.com:cheeryworks/liteql-java.git</developerConnection>
     </scm>
+    <organization>
+        <name>CheeryWorks</name>
+        <url>https://github.com/cheeryworks</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/cheeryworks/liteql-java/blob/main/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 </project>
