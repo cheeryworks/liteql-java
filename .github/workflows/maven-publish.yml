@@ -28,7 +28,7 @@ jobs:
         gpg-passphrase: GPG_PASSPHRASE
 
     - name: Publish to OSSRH
-      run: mvn clean deploy -P oss-release
+      run: ./mvnw clean deploy -P oss-release
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
