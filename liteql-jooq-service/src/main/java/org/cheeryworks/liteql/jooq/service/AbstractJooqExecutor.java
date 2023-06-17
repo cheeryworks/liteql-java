@@ -43,7 +43,7 @@ public abstract class AbstractJooqExecutor extends AbstractSqlExecutor {
 
             logger.info("Database is ready");
         } catch (Exception ex) {
-            throw new IllegalStateException("Database is not ready");
+            throw new IllegalStateException("Database is not ready, " + ex.getMessage(), ex);
         }
     }
 
