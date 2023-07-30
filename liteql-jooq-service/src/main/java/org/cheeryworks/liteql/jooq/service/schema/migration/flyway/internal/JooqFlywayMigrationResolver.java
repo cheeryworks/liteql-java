@@ -4,11 +4,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationTransactionController;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigration;
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrationDelegate;
+import org.flywaydb.core.api.CoreMigrationType;
 import org.flywaydb.core.api.FlywayException;
-import org.flywaydb.core.api.MigrationType;
 import org.flywaydb.core.api.MigrationVersion;
 import org.flywaydb.core.api.configuration.Configuration;
-import org.flywaydb.core.api.resolver.Context;
 import org.flywaydb.core.api.resolver.MigrationResolver;
 import org.flywaydb.core.api.resolver.ResolvedMigration;
 import org.flywaydb.core.internal.resolver.ResolvedMigrationImpl;
@@ -48,7 +47,7 @@ public class JooqFlywayMigrationResolver implements MigrationResolver {
                     JooqFlywayMigration migration
                             = (JooqFlywayMigration) migrationClass.getDeclaredConstructor().newInstance();
 
-                    MigrationVersion version = getVersion(migration, context.getConfiguration());
+                    MigrationVersion version = getVersion(migration, context.configuration);
                     String description = migration.getDescription();
                     if (!StringUtils.hasText(description)) {
                         throw new FlywayException("Missing description for migration " + version);
@@ -56,7 +55,7 @@ public class JooqFlywayMigrationResolver implements MigrationResolver {
 
                     ResolvedMigrationImpl resolvedMigration = new ResolvedMigrationImpl(
                             version, description, migration.getClass().getSimpleName(),
-                            null, null, MigrationType.CUSTOM, ClassUtils.getLocationOnDisk(migrationClass),
+                            null, null, CoreMigrationType.CUSTOM, ClassUtils.getLocationOnDisk(migrationClass),
                             new JooqFlywayMigrationExecutor(migration, dslContext, transactionController)
                     );
 

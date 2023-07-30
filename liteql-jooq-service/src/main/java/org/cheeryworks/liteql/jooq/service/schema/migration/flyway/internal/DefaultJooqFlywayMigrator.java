@@ -6,8 +6,8 @@ import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMig
 import org.cheeryworks.liteql.jooq.service.schema.migration.flyway.JooqFlywayMigrator;
 import org.cheeryworks.liteql.jooq.util.JooqUtil;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.CoreMigrationType;
 import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.MigrationType;
 import org.jooq.DSLContext;
 
 import javax.sql.DataSource;
@@ -109,7 +109,7 @@ public class DefaultJooqFlywayMigrator implements JooqFlywayMigrator {
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         for (MigrationInfo appliedMigration : appliedMigrations) {
-            if (appliedMigration.getType().equals(MigrationType.BASELINE)) {
+            if (appliedMigration.getType().equals(CoreMigrationType.BASELINE)) {
                 needToBaseline = false;
                 break;
             }
